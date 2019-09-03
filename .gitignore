@@ -1,0 +1,5 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+drone_fp/__pycache__/
+drone_fp.egg-info/
+dist/
