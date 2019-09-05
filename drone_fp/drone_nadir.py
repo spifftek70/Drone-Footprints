@@ -9,7 +9,7 @@ import shapely.geometry
 from shapely.geometry import shape, LineString, Point, Polygon
 from shapely.ops import cascaded_union, transform
 import argparse
-import exiftool
+from pyexiftool import exiftool
 import datetime
 from operator import itemgetter
 import geopandas as gp
@@ -316,6 +316,7 @@ def image_poly(imgar):
             header = 360 - (gimz)
         # print(header)
         ngf = affinity.rotate(g2, header, origin='centroid')
+        print("NGF", ngf)
         over_poly.append(ngf)
         # therepo = 'epsg:' + repo
         # darepo = therepo

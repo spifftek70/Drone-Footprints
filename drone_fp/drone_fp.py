@@ -232,7 +232,7 @@ def format_data(exif_array):
 
 
 def writeOutputtoText(filename, file_list):
-    print("FILE FILE", file_list)
+    # print("FILE FILE", file_list)
     """
     :param filename:
     :param file_list:
@@ -291,13 +291,12 @@ def image_poly(imgar):
     pop4 = json.loads(pop3)
     pop4 = rewind(pop4)
     bar.finish()
-    print("POLYS", polys)
     return polys, pop4
 
 
 def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
-    print(" coords", cds1, "\n Alt", alt, "\n focal length", fl, "\n gimbal pitch",
-          gimp, "\n gimbal roll", gimr, "\n gimbal yaw", gimy)
+    # print(" coords", cds1, "\n Alt", alt, "\n focal length", fl, "\n gimbal pitch",
+    #       gimp, "\n gimbal roll", gimr, "\n gimbal yaw", gimy)
     sw = 8  # Sensor Width
     sh = 5.3  # Sensor Height
     fov_x = 2 * degrees(atan(sw / (2 * fl)))  # Field of View - Width
@@ -347,7 +346,7 @@ def post_quat(cent, crn, alt):
     utmy = -dx * math.sin(math.radians(y)) - dy * math.cos(math.radians(y))
     utmx1 = cent[0] + utmx
     utmy1 = cent[1] + utmy
-    print("UTMS", utmx1, utmy1)
+    # print("UTMS", utmx1, utmy1)
     coords = utm.to_latlon(utmx1, utmy1, cent[2], cent[3])
     return [coords[1], coords[0]]
 
