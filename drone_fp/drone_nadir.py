@@ -9,7 +9,7 @@ import shapely.geometry
 from shapely.geometry import shape, LineString, Point, Polygon
 from shapely.ops import cascaded_union, transform
 import argparse
-from pyexiftool import exiftool
+import exiftool
 import datetime
 from operator import itemgetter
 import geopandas as gp

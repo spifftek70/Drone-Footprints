@@ -16,9 +16,8 @@ from math import *
 import utm
 from geojson_rewind import rewind
 from progress.bar import Bar
-import numpy as np
-import quaternion
 import pyproj
+from drone_fp.quaternion_process import to_quaternions, to_euler, quaternion_multiply
 from functools import partial
 
 
@@ -310,19 +309,19 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     fov_x = 2 * degrees(atan(sw / (2 * fl)))  # Field of View - Width
     fov_y = 2 * degrees(atan(sh / (2 * fl)))  # Field of View - Height
     #  Calculate FOVs corners and transform into Quaternions
-    TR = np.quaternion((fov_x / -2), (fov_y / 2), 0)
-    TL = np.quaternion((fov_x / 2), (fov_y / 2), 0)
-    BR = np.quaternion((fov_x / -2), (fov_y / -2), 0)
-    BL = np.quaternion((fov_x / 2), (fov_y / -2), 0)
+    TR = to_quaternions((fov_x / -2), (fov_y / 2), 0)
+    TL = to_quaternions((fov_x / 2), (fov_y / 2), 0)
+    BR = to_quaternions((fov_x / -2), (fov_y / -2), 0)
+    BL = to_quaternions((fov_x / 2), (fov_y / -2), 0)
     #  Transform gimbal pitch, roll, & yaw into Quaternions
-    gimRot = np.quaternion(gimp, gimr, gimy)
+    gimRot = to_quaternions(gimp, gimr, gimy)
     ##  Transform aircraft pitch, roll, & yaw into Quaternions
     # acRot = np.quaternion(fimx, fimy, fimz)
     # Multiply gimbal Quaternions by corner(FOV) Quaternions
-    TR1 = np.multiply(gimRot, TR)
-    TL1 = np.multiply(gimRot, TL)
-    BR1 = np.multiply(gimRot, BR)
-    BL1 = np.multiply(gimRot, BL)
+    TR1 = quaternion_multiply(gimRot, TR)
+    TL1 = quaternion_multiply(gimRot, TL)
+    BR1 = quaternion_multiply(gimRot, BR)
+    BL1 = quaternion_multiply(gimRot, BL)
     # corner Quaternions products into array and process
     crn = [TR1, TL1, BL1, BR1]
     coords = []
@@ -341,7 +340,7 @@ def gross_crds(lat, lng):
 
 
 def post_quat(cent, crn, alt):
-    crn2 = quaternion.as_float_array(crn)
+    crn2 = to_euler(crn)
     p = crn2[0]  # GimbalPitchDegree
     r = crn2[1]  # GimbalRollDegree
     y = crn2[2]  # GimbalYawDegree
