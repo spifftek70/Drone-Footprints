@@ -351,7 +351,6 @@ def image_poly(imgar):
     poly = union_buffered_poly.simplify(10, preserve_topology=False)
     projected = partial(
         pyproj.transform,
-        # pyproj.Proj(init=darepo),
         pyproj.Proj(init='epsg:3857'),  # source coordinate system
         pyproj.Proj(init='epsg:4326'))  # destination coordinate system
     g3 = transform(projected, poly)

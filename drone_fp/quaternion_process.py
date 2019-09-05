@@ -17,6 +17,7 @@ def to_quaternions(roll, pitch, yaw):
     x = cy * sr * cp - sy * cr * sp
     y = cy * cr * sp + sy * sr * cp
     z = sy * cr * cp - cy * sr * sp
+    return w, x, y, z
 
 
 def to_euler(w, x, y, z):
@@ -38,10 +39,12 @@ def to_euler(w, x, y, z):
     return roll, pitch, yaw
 
 
-def quaternion_multiply(quaternion1, quaternion0):
+def quaternion_multiply(quaternion0, quaternion1):
     w0, x0, y0, z0 = quaternion0
     w1, x1, y1, z1 = quaternion1
-    return np.array([x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
-                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
-                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0
-                     -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,], dtype=np.float64)
+    w = x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0
+    x = -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0
+    y = x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0
+    z = -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0
+    # print("XX", w, x, y, z)
+    return w, x, y, z

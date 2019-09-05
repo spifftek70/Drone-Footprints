@@ -17,7 +17,7 @@ import utm
 from geojson_rewind import rewind
 from progress.bar import Bar
 import pyproj
-from drone_fp.quaternion_process import to_quaternions, to_euler, quaternion_multiply
+from quaternion_process import to_quaternions, to_euler, quaternion_multiply
 from functools import partial
 
 
@@ -273,28 +273,34 @@ def image_poly(imgar):
         gimy = float(prps['GimbalYawDegree'])
         # print(" Pitch", gimp, "\n Roll", gimr, "\n Yaw", gimy)
         img_n = prps['File_Name']
-        print("file name", img_n)
+        # print("file name", img_n)
         focal_lgth = prps['Focal_Length']
         alt = float(prps["Relative_Altitude"])
         cds1 = utm.from_latlon(lat, lng)
-        wow4, wow3 = new_gross(cds1, alt, focal_lgth, gimp, gimr, gimy, fimx, fimy, fimz)
-        wow5 = dict(type="Feature", geometry=wow4, properties=prps)
+        gjson, poly = new_gross(cds1, alt, focal_lgth, gimp, gimr, gimy, fimx, fimy, fimz)
+        wow5 = dict(type="Feature", geometry=gjson, properties=prps)
         project = partial(
             pyproj.transform,
             pyproj.Proj(init='epsg:4326'),  # source coordinate system
             pyproj.Proj(init='epsg:3857'))  # destination coordinate system
-        g2 = transform(project, wow3)
+        g2 = transform(project, poly)
+        # print("G2", g2)
         over_poly.append(g2)
         polys.append(wow5)
         bar.next()
     union_buffered_poly = cascaded_union([l.buffer(.00001) for l in over_poly])
-    poly = union_buffered_poly.simplify(10, preserve_topology=False)
+    print("BUF", union_buffered_poly)
+    # polys = union_buffered_poly.simplify(10, preserve_topology=False)
+    polys = union_buffered_poly.simplify(0.005, preserve_topology=False)
+    print("polys", polys)
     projected = partial(
         pyproj.transform,
         pyproj.Proj(init='epsg:3857'),  # source coordinate system
         pyproj.Proj(init='epsg:4326'))  # destination coordinate system
-    g3 = transform(projected, poly)
+    g3 = transform(projected, polys)
+    print("G3", g3)
     pop3 = geojson.dumps(g3)
+    print("POP3", pop3)
     pop4 = json.loads(pop3)
     pop4 = rewind(pop4)
     bar.finish()
@@ -322,6 +328,7 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     TL1 = quaternion_multiply(gimRot, TL)
     BR1 = quaternion_multiply(gimRot, BR)
     BL1 = quaternion_multiply(gimRot, BL)
+    # print(" TR1", TR1, "\n TL1", TL1, "\n BR1", BR1, "\n BL1", BL1)
     # corner Quaternions products into array and process
     crn = [TR1, TL1, BL1, BR1]
     coords = []
@@ -329,9 +336,11 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
         bod = post_quat(cds1, c, alt)
         coords.append(bod)
     fp = dict(type="Polygon", coordinates=[[coords[0], coords[1], coords[2], coords[3], coords[0]]])
+    fz = geojson.dumps((fp))
     poly = geometry.Polygon([coords[0], coords[1], coords[2], coords[3], coords[0]])
-    fprw = rewind(fp)
-    return fprw, poly
+    # print("Poly", fz)
+    gjson = rewind(fz)
+    return gjson, poly
 
 
 def gross_crds(lat, lng):
@@ -340,11 +349,12 @@ def gross_crds(lat, lng):
 
 
 def post_quat(cent, crn, alt):
-    crn2 = to_euler(crn)
+    # print("CRN", crn[0], crn[1], crn[2])
+    crn2 = to_euler(crn[0], crn[1], crn[2], crn[3])
     p = crn2[0]  # GimbalPitchDegree
     r = crn2[1]  # GimbalRollDegree
     y = crn2[2]  # GimbalYawDegree
-    print(" pitch", p, "\n roll", r, "\n yaw", y)
+    # print(" pitch", p, "\n roll", r, "\n yaw", y)
 
     dx = alt * math.tan(math.radians(r))
     dy = alt * math.tan(math.radians(p))
