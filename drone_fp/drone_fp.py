@@ -4,6 +4,8 @@ import os
 import json
 import geojson
 import fnmatch
+from shapely import geometry
+from shapely.geometry import shape, LineString, Point, Polygon
 from shapely.ops import cascaded_union, transform
 import argparse
 from pyexiftool import exiftool
@@ -16,6 +18,9 @@ from geojson_rewind import rewind
 from progress.bar import Bar
 import numpy as np
 import quaternion
+import pyproj
+from functools import partial
+
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
 parser.add_argument("-i", "--indir", help="Input directory", required=True)
@@ -265,14 +270,24 @@ def image_poly(imgar):
         focal_lgth = prps['Focal_Length']
         alt = float(prps["Relative_Altitude"])
         cds1 = utm.from_latlon(lat, lng)
-        wow4 = new_gross(cds1, alt, focal_lgth, gimp, gimr, gimy, fimx, fimy, fimz)
-        wow5 = gd_feat = dict(type="Feature", geometry=wow4, properties=prps)
+        wow4, wow3 = new_gross(cds1, alt, focal_lgth, gimp, gimr, gimy, fimx, fimy, fimz)
+        wow5 = dict(type="Feature", geometry=wow4, properties=prps)
+        project = partial(
+            pyproj.transform,
+            pyproj.Proj(init='epsg:4326'),  # source coordinate system
+            pyproj.Proj(init='epsg:3857'))  # destination coordinate system
+        g2 = transform(project, wow3)
+        over_poly.append(g2)
         polys.append(wow5)
-        print("\n \n \n \n")
         bar.next()
     union_buffered_poly = cascaded_union([l.buffer(.00001) for l in over_poly])
     poly = union_buffered_poly.simplify(10, preserve_topology=False)
-    pop3 = geojson.dumps(poly)
+    projected = partial(
+        pyproj.transform,
+        pyproj.Proj(init='epsg:3857'),  # source coordinate system
+        pyproj.Proj(init='epsg:4326'))  # destination coordinate system
+    g3 = transform(projected, poly)
+    pop3 = geojson.dumps(g3)
     pop4 = json.loads(pop3)
     pop4 = rewind(pop4)
     bar.finish()
@@ -308,8 +323,9 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
         bod = post_quat(cds1, c, alt)
         coords.append(bod)
     fp = dict(type="Polygon", coordinates=[[coords[0], coords[1], coords[2], coords[3], coords[0]]])
+    poly = geometry.Polygon([coords[0], coords[1], coords[2], coords[3], coords[0]])
     fprw = rewind(fp)
-    return fprw
+    return fprw, poly
 
 
 def gross_crds(lat, lng):
