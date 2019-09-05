@@ -181,18 +181,27 @@ def format_data(exif_array):
     i = 0
     bar = Bar('Creating GeoJSON', max=len(exif_array))
     for tags in iter(exif_array):
+        print("tags", tags)
         i = i + 1
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
                 exif_array.remove(tag)
-        lat = float(tags['XMP:Latitude'])
-        long = float(tags['XMP:Longitude'])
+        try:
+            lat = float(tags['XMP:Latitude'])
+            long = float(tags['XMP:Longitude'])
+            imgwidth = tags['EXIF:ImageWidth']
+            imghite = tags['EXIF:ImageHeight']
+        except KeyError as e:
+            lat = float(tags['Composite:GPSLatitude'])
+            long = float(tags['Composite:GPSLongitude'])
+            imgwidth = tags['EXIF:ExifImageWidth']
+            imghite = tags['EXIF:ExifImageHeight']
         alt = float(tags['XMP:RelativeAltitude'])
         coords = [long, lat, alt]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
-                   "Image_Width": tags['EXIF:ImageWidth'], "Image_Height": tags['EXIF:ImageHeight'],
+                   "Image_Width": imgwidth, "Image_Height": imghite,
                    "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
                    "Relative_Altitude": tags['XMP:RelativeAltitude'],
                    "FlightRollDegree": tags['XMP:FlightRollDegree'], "FlightYawDegree": tags['XMP:FlightYawDegree'],

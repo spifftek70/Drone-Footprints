@@ -191,17 +191,29 @@ def format_data(exif_array):
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
                 exif_array.remove(tag)
-        lat = float(tags['XMP:Latitude'])
-        long = float(tags['XMP:Longitude'])
+        try:
+            lat = float(tags['XMP:Latitude'])
+            long = float(tags['XMP:Longitude'])
+            imgwidth = tags['EXIF:ImageWidth']
+            imghite = tags['EXIF:ImageHeight']
+        except KeyError as e:
+            lat = float(tags['Composite:GPSLatitude'])
+            long = float(tags['Composite:GPSLongitude'])
+            imgwidth = tags['EXIF:ExifImageWidth']
+            imghite = tags['EXIF:ExifImageHeight']
         alt = float(tags['XMP:RelativeAltitude'])
         coords = [long, lat, alt]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
-                   "Image_Width": tags['EXIF:ImageWidth'], "Image_Height": tags['EXIF:ImageHeight'],
-                   "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt, "Relative_Altitude": tags['XMP:RelativeAltitude'],
+                   "Image_Width": imgwidth, "Image_Height": imghite,
+                   "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
+                   "Relative_Altitude": tags['XMP:RelativeAltitude'],
+                   "FlightRollDegree": tags['XMP:FlightRollDegree'], "FlightYawDegree": tags['XMP:FlightYawDegree'],
+                   "FlightPitchDegree": tags['XMP:FlightPitchDegree'],
                    "GimbalRollDegree": tags['XMP:GimbalRollDegree'], "GimbalYawDegree": tags['XMP:GimbalYawDegree'],
-                   "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'], "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
+                   "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
+                   "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         if i == 1:
             datetime = tags['EXIF:DateTimeOriginal']
             sensor = tags['EXIF:Model']
@@ -316,7 +328,6 @@ def image_poly(imgar):
             header = 360 - (gimz)
         # print(header)
         ngf = affinity.rotate(g2, header, origin='centroid')
-        print("NGF", ngf)
         over_poly.append(ngf)
         # therepo = 'epsg:' + repo
         # darepo = therepo
