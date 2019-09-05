@@ -319,7 +319,6 @@ def image_poly(imgar):
         g1 = geojson.loads(geopoly)
         gh = g1[0].geometry
         g2 = shape(gh)
-
         # Change Heading / orientation
         head_ck = 0
         if gimz > head_ck:

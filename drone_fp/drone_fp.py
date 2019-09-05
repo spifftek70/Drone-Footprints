@@ -205,9 +205,8 @@ def format_data(exif_array):
                    "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
                    "Relative_Altitude": tags['XMP:RelativeAltitude'],
                    "FlightRollDegree": tags['XMP:FlightRollDegree'], "FlightYawDegree": tags['XMP:FlightYawDegree'],
-                   "FlightPitchDegree": tags['XMP:FlightPitchDegree'],
-                   "GimbalRollDegree": tags['XMP:GimbalRollDegree'], "GimbalYawDegree": tags['XMP:GimbalYawDegree'],
-                   "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
+                   "FlightPitchDegree": tags['XMP:FlightPitchDegree'], "GimbalRollDegree": tags['XMP:GimbalRollDegree'],
+                   "GimbalYawDegree": tags['XMP:GimbalYawDegree'], "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
                    "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         if i == 1:
             datetime = tags['EXIF:DateTimeOriginal']
