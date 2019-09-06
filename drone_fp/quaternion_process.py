@@ -46,7 +46,6 @@ def quaternion_multiply(quaternion0, quaternion1):
     x = -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0
     y = x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0
     z = -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0
-    # print("XX", w, x, y, z)
     return w, x, y, z
 
 
