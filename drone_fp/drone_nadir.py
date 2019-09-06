@@ -327,6 +327,7 @@ def image_poly(imgar):
             header = 360 - (gimz)
         # print(header)
         ngf = affinity.rotate(g2, header, origin='centroid')
+        print("NGF", ngf)
         over_poly.append(ngf)
         # therepo = 'epsg:' + repo
         # darepo = therepo
