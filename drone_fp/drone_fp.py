@@ -8,7 +8,7 @@ from shapely import geometry
 from shapely.geometry import shape, LineString, Point, Polygon
 from shapely.ops import cascaded_union, transform
 import argparse
-from pyexiftool import exiftool
+import exiftool
 import datetime
 from operator import itemgetter
 import math
@@ -277,7 +277,7 @@ def image_poly(imgar):
         focal_lgth = prps['Focal_Length']
         alt = float(prps["Relative_Altitude"])
         cds1 = utm.from_latlon(lat, lng)
-        poly = new_gross(cds1, alt, focal_lgth, gimp, gimr, gimy, fimx, fimy, fimz)
+        poly = new_gross(cds1, alt, focal_lgth, gimy, gimr, 90+gimp, fimx, fimy, fimz)
         project = partial(
             pyproj.transform,
             # pyproj.Proj(init=darepo),
@@ -320,8 +320,8 @@ def image_poly(imgar):
 def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     # print(" coords", cds1, "\n Alt", alt, "\n focal length", fl, "\n gimbal pitch",
     #       gimp, "\n gimbal roll", gimr, "\n gimbal yaw", gimy)
-    sw = 8  # Sensor Width
-    sh = 5.3  # Sensor Height
+    sw = 13.2  # Sensor Width Mavic 2 Pro
+    sh = 8.8  # Sensor Height Mavid 2 Pro
     print("**Relative Altitude**", alt, "**Focal, length**", fl)
     print("**Sensor Width**", sw, "\n **Sensor Height**", sh)
     print("**Drone Coordinates**", cds1)
@@ -346,7 +346,7 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     BL1 = quaternion_multiply(gimRot, BL)
     print("**TR1**", TR1, "\n **TL1**", TL1, "\n **BR1**", BR1, "\n **BL1**", BL1)
     # corner Quaternions products into array and process
-    crn = [TR1, TL1, BL1, BR1]
+    crn = [TR1, TL1, BR1, BL1]
     coords = []
     for c in crn:
         bod = post_quat(cds1, c, alt)
