@@ -278,7 +278,13 @@ def image_poly(imgar):
         alt = float(prps["Relative_Altitude"])
         cds1 = utm.from_latlon(lat, lng)
         poly = new_gross(cds1, alt, focal_lgth, gimp, gimr, gimy, fimx, fimy, fimz)
-        over_poly.append(poly)
+        project = partial(
+            pyproj.transform,
+            # pyproj.Proj(init=darepo),
+            pyproj.Proj(init='epsg:4326'),  # source coordinate system
+            pyproj.Proj(init='epsg:3857'))  # destination coordinate system
+        g2 = transform(project, poly)
+        over_poly.append(g2)
 
         # Create GeoJSON
         wow3 = geojson.dumps(poly)
@@ -301,12 +307,12 @@ def image_poly(imgar):
     g3 = transform(projected, polyz)
     print("G3", g3)
     pop3 = geojson.dumps(g3)
-    print("POP3", pop3)
+    # print("POP3", pop3)
     pop4 = json.loads(pop3)
     pop4 = rewind(pop4)
-    print("pops4", pop4, "\npolys", polys)
+    # print("pops4", pop4, "\npolys", polys)
     ssx = json.dumps(polys)
-    print("SSX", ssx)
+    # print("SSX", ssx)
     bar.finish()
     return polys, pop4
 
