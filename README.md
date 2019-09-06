@@ -18,3 +18,9 @@ Date Created: 09/07/2019<br>
 
 ## Output<br/>
 `-o` - The output directory for the GeoJSON file. Not Required
+
+## Sample Dataset
+A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/1Hwrhi-eK_-i8R2NQ3churBls-i4aAXg9)
+
+## Sample JSON Output 
+A sample of the json output can be found [here](https://drive.google.com/open?id=1RhSlY9KL2NYpnnVyNqI5c6cLzC0YWMTj)

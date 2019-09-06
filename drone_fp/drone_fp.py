@@ -352,7 +352,7 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
         bod = post_quat(cds1, c, alt)
         coords.append(bod)
     poly = geometry.Polygon([coords[0], coords[1], coords[2], coords[3], coords[0]])
-
+    print("POLY", poly)
     return poly
 
 
