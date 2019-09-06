@@ -264,6 +264,7 @@ def image_poly(imgar):
     for cent in iter(imgar):
         lat = float(cent['coords'][1])
         lng = float(cent['coords'][0])
+        print("Drones Lng, Lats", lng, lat)
         prps = cent['props']
         fimy = float(prps['FlightRollDegree'])
         fimx = float(prps['FlightPitchDegree'])
@@ -271,7 +272,7 @@ def image_poly(imgar):
         gimr = float(prps['GimbalRollDegree'])
         gimp = float(prps['GimbalPitchDegree'])
         gimy = float(prps['GimbalYawDegree'])
-        # print(" Pitch", gimp, "\n Roll", gimr, "\n Yaw", gimy)
+        print("Gimbal Pitch", gimp, "\n Gimbal Roll", gimr, "\n Gimbal Yaw", gimy)
         img_n = prps['File_Name']
         # print("file name", img_n)
         focal_lgth = prps['Focal_Length']
@@ -286,11 +287,10 @@ def image_poly(imgar):
         g2 = transform(project, poly)
         # print("G2", g2)
         over_poly.append(g2)
+        print("The New Polygon", poly)
         polys.append(wow5)
         bar.next()
     union_buffered_poly = cascaded_union([l.buffer(.00001) for l in over_poly])
-    print("BUF", union_buffered_poly)
-    # polys = union_buffered_poly.simplify(10, preserve_topology=False)
     polys = union_buffered_poly.simplify(0.005, preserve_topology=False)
     print("polys", polys)
     projected = partial(
@@ -312,15 +312,21 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     #       gimp, "\n gimbal roll", gimr, "\n gimbal yaw", gimy)
     sw = 8  # Sensor Width
     sh = 5.3  # Sensor Height
+    print("Relative Altitude", alt, "Focal, length", fl)
+    print(" Sensor Width", sw, "\n Sensor Height", sh)
+    print(" Drone Coordinates", cds1)
     fov_x = 2 * degrees(atan(sw / (2 * fl)))  # Field of View - Width
     fov_y = 2 * degrees(atan(sh / (2 * fl)))  # Field of View - Height
+    print(" HFoV", fov_x, "\n VFoV", fov_y)
     #  Calculate FOVs corners and transform into Quaternions
     TR = to_quaternions((fov_x / -2), (fov_y / 2), 0)
     TL = to_quaternions((fov_x / 2), (fov_y / 2), 0)
     BR = to_quaternions((fov_x / -2), (fov_y / -2), 0)
     BL = to_quaternions((fov_x / 2), (fov_y / -2), 0)
+    print(" TR", TR, "\n TL", TL, "\n BR", BR, "\n BL", BL)
     #  Transform gimbal pitch, roll, & yaw into Quaternions
     gimRot = to_quaternions(gimp, gimr, gimy)
+    print("gimRoT", gimRot)
     ##  Transform aircraft pitch, roll, & yaw into Quaternions
     # acRot = np.quaternion(fimx, fimy, fimz)
     # Multiply gimbal Quaternions by corner(FOV) Quaternions
@@ -328,7 +334,7 @@ def new_gross(cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     TL1 = quaternion_multiply(gimRot, TL)
     BR1 = quaternion_multiply(gimRot, BR)
     BL1 = quaternion_multiply(gimRot, BL)
-    # print(" TR1", TR1, "\n TL1", TL1, "\n BR1", BR1, "\n BL1", BL1)
+    print(" TR1", TR1, "\n TL1", TL1, "\n BR1", BR1, "\n BL1", BL1)
     # corner Quaternions products into array and process
     crn = [TR1, TL1, BL1, BR1]
     coords = []
@@ -351,6 +357,7 @@ def gross_crds(lat, lng):
 def post_quat(cent, crn, alt):
     # print("CRN", crn[0], crn[1], crn[2])
     crn2 = to_euler(crn[0], crn[1], crn[2], crn[3])
+    print("to_euler return", crn2)
     p = crn2[0]  # GimbalPitchDegree
     r = crn2[1]  # GimbalRollDegree
     y = crn2[2]  # GimbalYawDegree
@@ -358,13 +365,16 @@ def post_quat(cent, crn, alt):
 
     dx = alt * math.tan(math.radians(r))
     dy = alt * math.tan(math.radians(p))
-
+    print(" dx", dx, "dy", dy)
     utmx = dx * math.cos(math.radians(y)) - dy * math.sin(math.radians(y))
     utmy = -dx * math.sin(math.radians(y)) - dy * math.cos(math.radians(y))
+    print(" utmx", utmx, "\n utmy", utmy)
     utmx1 = cent[0] + utmx
     utmy1 = cent[1] + utmy
+    print(" utmx1", utmx1, "\n utmy1", utmy1)
     # print("UTMS", utmx1, utmy1)
     coords = utm.to_latlon(utmx1, utmy1, cent[2], cent[3])
+    print("converted to latlong", coords)
     return [coords[1], coords[0]]
 
 
