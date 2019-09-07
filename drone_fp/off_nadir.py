@@ -1,4 +1,14 @@
 from __future__ import division
+import os
+import sys
+import tkinter as tk
+from tkinter import filedialog as fd
+import numpy as np
+import pandas as pd
+import sympy.geometry as spg
+import matplotlib.path as mplPath
+import matplotlib.patches as mpatches
+from matplotlib import pyplot as plt
 from osgeo import gdal, osr
 import os
 import json
@@ -46,11 +56,151 @@ class color:
     END = '\033[0m'
 
 
+def footprint(sensor):
+    '''
+    Caculates the foot print of the off nadir camera by projecting rays from
+    the sensor corners through the "lens" (focal length) out onto the ground.
+    It's a lot of fun linear algebra that the SYMPY library handles.
+    '''
+
+    # Setup DF to house camera footprint polygons
+    footprint = pd.DataFrame(np.zeros((1, 5)),
+                             columns=['fov_h', 'fov_v', 'path', 'pp_x', 'pp_y'])
+
+    # convert sensor dimensions to meters, divide x/y for corner coord calc
+    print("SENSOR", sensor)
+    f = sensor['focal'] * 0.001
+    sx = sensor['sensor_x'] / 2 * 0.001
+    sy = sensor['sensor_y'] / 2 * 0.001
+
+    # calculate the critical pitch (in degrees) where the horizon will be
+    #   visible with the horizon viable, the ray projections go backward
+    #   and produce erroneous IFOV polygons (90 - 0.5*vert_fov)
+    #   exit with error message if critical pitch is exceeded
+
+    crit_pitch = 90 - np.rad2deg(np.arctan(sy / f))
+
+    if sensor['gimy'] >= crit_pitch:
+        print('!!! The provided parameters indicate that the vertical field')
+        print('\t of view extends above the horizon. Please start over and')
+        print('\t try a shallower camera angle. The maximum angle for this')
+        print('\t camera is %0.2f' % (crit_pitch))
+        sys.exit()
+
+    # calculate horz and vert field of view angles
+    footprint.fov_h = 2 * np.rad2deg(np.arctan(sx / f))
+    footprint.fov_v = 2 * np.rad2deg(np.arctan(sy / f))
+
+    # sensor corners (UR,LR,LL,UL), north-oriented and zero pitch
+    corners = np.array([[0 + sx, 0 - f, sensor['alt'] + sy],
+                        [0 + sx, 0 - f, sensor['alt'] - sy],
+                        [0 - sx, 0 - f, sensor['alt'] - sy],
+                        [0 - sx, 0 - f, sensor['alt'] + sy]])
+
+    # offset corner points by cam x,y,z for rotation
+    cam_pt = np.atleast_2d(np.array([0, 0, sensor['alt']]))
+    corner_p = corners - cam_pt
+
+    # convert off nadir angle to radians
+    pitch = np.deg2rad(90.0 - sensor['gimy'])
+
+    # setup pitch rotation matrix (r_x)
+    r_x = np.matrix([[1.0, 0.0, 0.0],
+                     [0.0, np.cos(pitch), -1 * np.sin(pitch)],
+                     [0.0, np.sin(pitch), np.cos(pitch)]])
+
+    # rotate corner_p by r_x, add back cam x,y,z offsets
+    p_out = np.matmul(corner_p, r_x) + cam_pt
+
+    # GEOMETRY
+    # Set Sympy 3D point for the camera and a 3D plane for intersection
+    cam_sp = spg.Point3D(0, 0, sensor['alt'])
+    plane = spg.Plane(spg.Point3D(0, 0, 0),
+                      normal_vector=(0, 0, 1))
+
+    # blank array for footprint intersection coords
+    inter_points = np.zeros((corners.shape[0], 2))
+
+    # for each sensor corner point
+    idx_b = 0
+    for pt in np.asarray(p_out):
+        # create a Sympy 3D point and create a Sympy 3D ray from
+        #   corner point through camera point
+        pt_sp = spg.Point3D(pt[0], pt[1], pt[2])
+        ray = spg.Ray3D(pt_sp, cam_sp)
+
+        # calculate the intersection of the ray with the plane
+        inter_pt = plane.intersection(ray)
+
+        # Extract out the X,Y coords fot eh intersection point
+        #   ground intersect points will be in this order (LL,UL,UR,LR)
+        inter_points[idx_b, 0] = inter_pt[0].x.evalf()
+        inter_points[idx_b, 1] = inter_pt[0].y.evalf()
+
+        idx_b += 1
+
+        # append inter_points to footprints as a matplotlib path object
+        footprint.path[0] = mplPath.Path(inter_points)
+
+    # calculate the principle point by intersecting the corners of the ifov path
+    ll_pt = spg.Point(inter_points[0, 0], inter_points[0, 1])
+    ul_pt = spg.Point(inter_points[1, 0], inter_points[1, 1])
+    ur_pt = spg.Point(inter_points[2, 0], inter_points[2, 1])
+    lr_pt = spg.Point(inter_points[3, 0], inter_points[3, 1])
+    line_ll_ur = spg.Line(ll_pt, ur_pt)
+    line_lr_ul = spg.Line(lr_pt, ul_pt)
+    pp_inter = line_ll_ur.intersection(line_lr_ul)
+    footprint.pp_x = pp_inter[0].x.evalf()
+    footprint.pp_y = pp_inter[0].y.evalf()
+    print("LL", ll_pt, "UL", ul_pt, "UR", ur_pt, "LR", lr_pt)
+    return footprint
+
+
+def resolution(sensor, ifov):
+    # create blank data frame for resolutions and break out ifov points
+    res = pd.DataFrame(np.zeros((2, 4)), columns=['near', 'mid', 'far', 'area'])
+    ifov_path = ifov.path[0]
+
+    # far field resolution, calc ground distance between far IFOV points
+    #   divided by x pixel count
+    res.far[0] = euclid_dist(ifov_path.vertices[1][0], ifov_path.vertices[1][1],
+                             ifov_path.vertices[2][0], ifov_path.vertices[2][1])
+
+    res.far[1] = res.far[0] / sensor['pixel_x']
+
+    # near field resolution
+    res.near[0] = euclid_dist(ifov_path.vertices[0][0], ifov_path.vertices[0][1],
+                              ifov_path.vertices[3][0], ifov_path.vertices[3][1])
+
+    res.near[1] = res.near[0] / sensor['pixel_x']
+
+    # mid-field (principle point) resolution
+    #   trig to calculate width of the ifov at the principle point
+    pp_slantdist = euclid_dist(0.0, float(sensor['alt']), float(ifov.pp_y[0]), 0.0)
+
+    res.mid[0] = 2 * (pp_slantdist * np.tan(0.5 * np.radians(ifov.fov_h[0])))
+
+    res.mid[1] = res.mid[0] / sensor['pixel_x']
+
+    # calculate area covered by the fov
+    h = ifov_path.vertices[2][1] - ifov_path.vertices[0][1]
+    res.area[0] = ((res.near[0] + res.far[0]) / 2) * h
+
+    return res
+
+
+# END - resolution
+
+def euclid_dist(x1, y1, x2, y2):
+    # Simple euclidean distance calculator
+    return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
 def main():
     files = find_file(indir)
     read_exif(files)
 
-#
+
 def create_georaster(tags):
     # print(tags)
     """
@@ -282,6 +432,12 @@ def image_poly(imgar):
         cds1 = utm.from_latlon(lat, lng)
         # poly = new_gross(wid, hite, cds1, alt, focal_lgth, 90 + gimp, gimr, gimy, fimr, fimp, fimy)
         poly = new_gross(wid, hite, cds1, alt, focal_lgth, gimy, gimr, 90 + gimp, fimr, fimp, fimy)
+
+        sensor = dict(name="name", focal=focal_lgth, sensor_x=13.2, sensor_y=8.8, pixel_x=wid, pixel_y=hite, alt=alt, gimy=gimy)
+        ifov = footprint(sensor)
+        print("IFOV MF", ifov)
+        res = resolution(sensor, ifov)
+        print("RES MF", res)
         p2 = convert_wgs_to_utm(lng, lat)
         print("P2", p2)
         project = partial(

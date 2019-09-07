@@ -63,7 +63,7 @@ def create_georaster(tags):
     :param tags:
     :return:
     """
-    out_out = ntpath.dirname(indir + "/output/")
+    out_out = ntpath.dirname(indir + "/outputs/")
     print("out dir", out_out)
     if not os.path.exists(out_out):
         os.makedirs(out_out)
@@ -298,7 +298,7 @@ def image_poly(imgar):
         focal_lgth = prps['Focal_Length']
         alt = float(prps["Relative_Altitude"])
         # print(wid, hite, alt, focal_lgth, gimx, gimy, gimz, head)
-        calc1, calc2 = get_area(wid, hite, alt, focal_lgth, gimx, gimy, gimz, head)
+        calc1, calc2 = get_area(wid, hite, alt, focal_lgth)
         # create geodataframe with some variables
         gf = gp.GeoDataFrame({'lat': lat, 'lon': lng, 'width': calc1, 'height': calc2}, index=[1])
         repo = convert_wgs_to_utm(lng, lat)
@@ -362,7 +362,7 @@ def image_poly(imgar):
     return polys, pop4
 
 
-def get_area(wd, ht, alt, fl, gimx, gimy, gimz, head):
+def get_area(wd, ht, alt, fl):
     """
     :param wd:
     :param ht:
@@ -379,7 +379,7 @@ def get_area(wd, ht, alt, fl, gimx, gimy, gimz, head):
 
     xview = 2 * degrees(atan(sw / (2 * fl)))
     yview = 2 * degrees(atan(sh / (2 * fl)))
-    newcl = calc_res(wd, ht, xview, yview, alt, head, gimz)
+    newcl = calc_res(wd, ht, xview, yview, alt)
 
     # xground = alt * (tan(90 - gimx + 0.5 * xview)) - alt * (tan(90 - gimx - 0.5 * xview))
     # print(xground)
@@ -392,7 +392,7 @@ def get_area(wd, ht, alt, fl, gimx, gimy, gimz, head):
     return newcl[1], newcl[2]
 
 
-def calc_res(pixel_x, pixel_y, x_angle, y_angle, alt, head, gimz):
+def calc_res(pixel_x, pixel_y, x_angle, y_angle, alt):
     """
     :param pixel_x:
     :param pixel_y:
