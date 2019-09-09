@@ -1,5 +1,4 @@
 import math
-import numpy as np
 
 
 def to_quaternions(roll, pitch, yaw):
@@ -29,7 +28,6 @@ def to_euler(w, x, y, z):
     # pitch (y-axis rotation)
     sinp = +2.0 * (w * y - z * x)
     if abs(sinp) >= 1:
-        # pitch = f_copysign(math.pi / 2, sinp)  # use 90 degrees if out of range
         pitch = math.copysign(math.pi / 2, sinp)  # use 90 degrees if out of range
 
     else:

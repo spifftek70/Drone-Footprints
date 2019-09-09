@@ -50,7 +50,7 @@ def main():
     files = find_file(indir)
     read_exif(files)
 
-#
+
 def create_georaster(tags):
     # print(tags)
     """
@@ -89,7 +89,6 @@ def create_georaster(tags):
         ext1 = ext[1][0], ext[1][1]
         ext2 = ext[2][0], ext[2][1]
         ext3 = ext[3][0], ext[3][1]
-
         gcp_string = '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
@@ -194,13 +193,14 @@ def format_data(exif_array):
             long = float(tags['Composite:GPSLongitude'])
             imgwidth = tags['EXIF:ExifImageWidth']
             imghite = tags['EXIF:ExifImageHeight']
-        alt = float(tags['XMP:RelativeAltitude'])
-        coords = [long, lat, alt]
+        r_alt = float(tags['XMP:RelativeAltitude'])
+        a_alt = float(tags['XMP:AbsoluteAltitude'])
+        coords = [long, lat, r_alt]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
                    "Image_Width": imgwidth, "Image_Height": imghite,
-                   "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
+                   "Heading": tags['XMP:FlightYawDegree'], "RelativeAltitude": r_alt, "AbsoluteAltitude": a_alt,
                    "Relative_Altitude": tags['XMP:RelativeAltitude'],
                    "FlightRollDegree": tags['XMP:FlightRollDegree'], "FlightYawDegree": tags['XMP:FlightYawDegree'],
                    "FlightPitchDegree": tags['XMP:FlightPitchDegree'], "GimbalRollDegree": tags['XMP:GimbalRollDegree'],
@@ -278,12 +278,13 @@ def image_poly(imgar):
         img_n = prps['File_Name']
         print("**file name**", img_n)
         focal_lgth = prps['Focal_Length']
-        alt = float(prps["Relative_Altitude"])
+        r_alt = float(prps["RelativeAltitude"])
+        a_alt = float(prps["AbsoluteAltitude"])
+        # (print("REL", r_alt, "AB", a_alt))
         cds1 = utm.from_latlon(lat, lng)
-        # poly = new_gross(wid, hite, cds1, alt, focal_lgth, 90 + gimp, gimr, gimy, fimr, fimp, fimy)
-        poly = new_gross(wid, hite, cds1, alt, focal_lgth, gimy, gimr, 90 + gimp, fimr, fimp, fimy)
+        poly = new_gross(wid, hite, cds1, r_alt, focal_lgth, gimr, 90+gimp, gimy, fimr, fimp, fimy)
+        # poly = new_gross(wid, hite, cds1, a_alt, focal_lgth, 90 - gimy, 90 + gimp, gimr, fimr, fimp, fimy)
         p2 = convert_wgs_to_utm(lng, lat)
-        print("P2", p2)
         project = partial(
             pyproj.transform,
             pyproj.Proj(init='epsg:4326'),  # source coordinate system
@@ -293,37 +294,28 @@ def image_poly(imgar):
 
         # Create GeoJSON
         wow3 = geojson.dumps(poly)
-        print("WOWOW3", wow3)
         wow4 = json.loads(wow3)
         wow4 = rewind(wow4)
-
         gd_feat = dict(type="Feature", geometry=wow4, properties=prps)
         # gs1 = json.dumps(gd_feat)
         # print("gs1", gs1)
         polys.append(gd_feat)
         bar.next()
     union_buffered_poly = cascaded_union([l.buffer(.001) for l in over_poly])
-    # print("UNION", union_buffered_poly)
     polyz = union_buffered_poly.simplify(0.005, preserve_topology=False)
-    # print("polyz", polyz)
     projected = partial(
         pyproj.transform,
         pyproj.Proj(init='epsg:%s' % p2),  # source coordinate system
         pyproj.Proj(init='epsg:4326'))  # destination coordinate system
     g3 = transform(projected, polyz)
-    # print("G3", g3)
     pop3 = geojson.dumps(g3)
-    # print("POP3", pop3)
     pop4 = json.loads(pop3)
     pop4 = rewind(pop4)
-    # print("pops4", pop4, "\npolys", polys)
-    ssx = json.dumps(polys)
-    # print("SSX", ssx)
     bar.finish()
     return polys, pop4
 
 
-def new_gross(wd, ht, cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
+def new_gross(wd, ht, cds1, alt, fl, gimr, gimp, gimy, fimr, fimp, fimy):
     # sw = 8  # Sensor Width
     # sh = 5.3  # Sensor Height
     sw = 13.2  # Sensor Width
@@ -336,10 +328,10 @@ def new_gross(wd, ht, cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     res, fov_x, fov_y = calc_res(wd, ht, xview, yview, alt)
     print("\n**HFoV**", fov_x, "\n**VFoV**", fov_y)
     #  Calculate FOVs corners and transform into Quaternions
-    TR = to_quaternions((fov_x / -2), (fov_y / 2), 0)
-    TL = to_quaternions((fov_x / 2), (fov_y / 2), 0)
-    BR = to_quaternions((fov_x / -2), (fov_y / -2), 0)
-    BL = to_quaternions((fov_x / 2), (fov_y / -2), 0)
+    TR = to_quaternions(-fov_x / 2, fov_y / 2, 0)
+    TL = to_quaternions(fov_x / 2, fov_y / 2, 0)
+    BR = to_quaternions(-fov_x / 2, -fov_y / 2, 0)
+    BL = to_quaternions(fov_x / 2, -fov_y / 2, 0)
     print("\n**TR**", TR, "\n**TL**", TL, "\n**BR**", BR, "\n**BL**", BL)
     #  Transform gimbal pitch, roll, & yaw into Quaternions
 
@@ -347,7 +339,7 @@ def new_gross(wd, ht, cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     print("\n**gimRoT**", gimRot)
 
     ##  Transform aircraft pitch, roll, & yaw into Quaternions
-    # acRot = to_quaternions(fimx, fimy, fimz)
+    # acRot = to_quaternions(fimr, fimp, fimy)
     # Multiply gimbal Quaternions by corner(FOV) Quaternions
     TR1 = quaternion_multiply(gimRot, TR)
     TL1 = quaternion_multiply(gimRot, TL)
@@ -359,15 +351,13 @@ def new_gross(wd, ht, cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     # BL2 = quaternion_multiply(acRot, BL1)
 
     print("\n**TR1**", TR1, "\n**TL1**", TL1, "\n**BR1**", BR1, "\n**BL1**", BL1)
-    # corner Quaternions products into array and process
-    # crn = [TR1, TL1, BL1, BR1]
     crn = [TR1, TL1, BR1, BL1]
     coords = []
     for c in crn:
         bod = post_quat(cds1, c, alt)
         coords.append(bod)
-    poly = geometry.Polygon([coords[1], coords[2], coords[3], coords[0], coords[1]])
-    print("\nPOLY", poly, "\n\n")
+    poly = geometry.Polygon([coords[0], coords[1], coords[2], coords[3], coords[0]])
+    print("\n**POLY**", poly, "\n\n")
     return poly
 
 
@@ -377,11 +367,8 @@ def gross_crds(lat, lng):
 
 
 def post_quat(cent, crn, alt):
-    crn2 = to_euler(crn[0], crn[1], crn[2], crn[3])
-    print("\n**to_euler return**", crn2)
-    r = crn2[0]  # GimbalPitchDegree
-    p = crn2[1]  # GimbalRollDegree
-    y = crn2[2]  # GimbalYawDegree
+    r, p, y = to_euler(crn[0], crn[1], crn[2], crn[3])
+    print("\n**to_euler return**", r, p, y)
     dx = alt * math.tan(math.radians(r))
     dy = alt * math.tan(math.radians(p))
     print("\n**dx**", dx, "\n**dy**", dy)
@@ -403,8 +390,6 @@ def calc_res(pixel_x, pixel_y, x_angle, y_angle, alt):
     :param x_angle:
     :param y_angle:
     :param alt:
-    :param head:
-    :param gimz:
     :return:
     """
     # Calc IFOV, based on right angle trig of one-half the lens angles
