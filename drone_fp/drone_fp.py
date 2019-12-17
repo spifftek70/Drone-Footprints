@@ -7,7 +7,7 @@ import fnmatch
 from shapely import geometry
 from shapely.ops import cascaded_union, transform
 import argparse
-from pyexiftool import exiftool
+import exiftool
 import datetime
 from operator import itemgetter
 import math
@@ -165,6 +165,7 @@ def read_exif(files):
 
 
 def format_data(exif_array):
+    print("ExIF ARRAY", exif_array)
     """
     :param exif_array:
     :return:
@@ -188,13 +189,15 @@ def format_data(exif_array):
             long = float(tags['XMP:Longitude'])
             imgwidth = tags['EXIF:ImageWidth']
             imghite = tags['EXIF:ImageHeight']
+            r_alt = float(tags['XMP:RelativeAltitude'])
+            a_alt = float(tags['XMP:AbsoluteAltitude'])
         except KeyError as e:
             lat = float(tags['Composite:GPSLatitude'])
             long = float(tags['Composite:GPSLongitude'])
             imgwidth = tags['EXIF:ExifImageWidth']
             imghite = tags['EXIF:ExifImageHeight']
-        r_alt = float(tags['XMP:RelativeAltitude'])
-        a_alt = float(tags['XMP:AbsoluteAltitude'])
+            r_alt = float(tags['XMP:Altitude'])
+            a_alt = float(tags['XMP:Altitude'])
         coords = [long, lat, r_alt]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
