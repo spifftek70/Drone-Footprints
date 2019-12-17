@@ -177,7 +177,8 @@ def format_data(exif_array):
     :param exif_array:
     :return:
     """
-    print(exif_array)
+    sls = json.dump(exif_array)
+    print(sls)
     try:
         exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
     except KeyError as e:
