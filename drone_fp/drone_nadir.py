@@ -191,6 +191,7 @@ def format_data(exif_array):
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
                 exif_array.remove(tag)
+        print(tags)
         try:
             lat = float(tags['XMP:Latitude'])
             long = float(tags['XMP:Longitude'])
