@@ -180,8 +180,8 @@ def format_data(exif_array):
     print(exif_array)
     try:
         exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
-    except:
-        exif_array.sort(key=itemgetter('EXIF:CreateDate'))
+    except KeyError as e:
+        pass
     feature_coll = dict(type="FeatureCollection", features=[])
     linecoords = []
     img_stuff = []
