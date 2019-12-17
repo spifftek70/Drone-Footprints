@@ -152,6 +152,7 @@ def GetExtent(gt,cols,rows):
 
 
 def read_exif(files):
+    print("How many files?", len(files))
     """
     :param files:
     :return:
