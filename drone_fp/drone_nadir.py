@@ -262,6 +262,9 @@ def writeOutputtoText(filename, file_list):
     :return:
     """
     dst_n = outdir + '/' + filename
+    if not os.path.exists(dst_n):
+        os.makedirs(dst_n)
+        os.chmod(dst_n, 0o777)
     with open(dst_n, 'w') as outfile:
         geojson.dump(file_list, outfile, indent=4, sort_keys=False)
     print(color.GREEN + "GeoJSON Produced." + color.END)
