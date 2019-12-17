@@ -196,12 +196,13 @@ def format_data(exif_array):
             long = float(tags['XMP:Longitude'])
             imgwidth = tags['EXIF:ImageWidth']
             imghite = tags['EXIF:ImageHeight']
+            alt = float(tags['XMP:RelativeAltitude'])
         except KeyError as e:
             lat = float(tags['Composite:GPSLatitude'])
             long = float(tags['Composite:GPSLongitude'])
             imgwidth = tags['EXIF:ExifImageWidth']
             imghite = tags['EXIF:ExifImageHeight']
-        alt = float(tags['XMP:RelativeAltitude'])
+            alt = float(tags['XMP:GPSAltitude'])
         coords = [long, lat, alt]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
