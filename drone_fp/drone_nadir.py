@@ -191,7 +191,7 @@ def format_data(exif_array):
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
                 exif_array.remove(tag)
-        print(tags)
+        # print(tags)
         try:
             lat = float(tags['XMP:Latitude'])
             long = float(tags['XMP:Longitude'])
@@ -203,7 +203,7 @@ def format_data(exif_array):
             long = float(tags['Composite:GPSLongitude'])
             imgwidth = tags['EXIF:ExifImageWidth']
             imghite = tags['EXIF:ExifImageHeight']
-            alt = float(tags['XMP:GPSAltitude'])
+            alt = float(tags['EXIF:GPSAltitude'])
         coords = [long, lat, alt]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
