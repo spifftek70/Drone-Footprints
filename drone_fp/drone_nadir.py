@@ -220,7 +220,7 @@ def format_data(exif_array):
         except KeyError as ke:
             ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                        "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
-                       "Image_Width": imgwidth, "Image_Height": imghite,
+                       "Image_Width": imgwidth, "Image_Height": imghite, "Heading": tags['EXIF:GPSImgDirection'],
                        "AbsoluteAltitude": alt,
                        "Relative_Altitude": alt,
                        "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
