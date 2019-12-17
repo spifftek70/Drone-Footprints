@@ -221,7 +221,7 @@ def format_data(exif_array):
             ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                        "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
                        "Image_Width": imgwidth, "Image_Height": imghite,
-                       "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
+                       "AbsoluteAltitude": alt,
                        "Relative_Altitude": tags['XMP:RelativeAltitude'],
                        "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         if i == 1:
@@ -301,9 +301,12 @@ def image_poly(imgar):
         wid= prps['Image_Width']
         hite = prps['Image_Height']
         head = float(prps['Heading'])
-        gimy = float(prps['GimbalRollDegree'])
-        gimx = float(prps['GimbalPitchDegree'])
-        gimz = float(prps['GimbalYawDegree'])
+        try:
+            gimy = float(prps['GimbalRollDegree'])
+            gimx = float(prps['GimbalPitchDegree'])
+            gimz = float(prps['GimbalYawDegree'])
+        except:
+            gimz = 0
         img_n = prps['File_Name']
         focal_lgth = prps['Focal_Length']
         alt = float(prps["Relative_Altitude"])
