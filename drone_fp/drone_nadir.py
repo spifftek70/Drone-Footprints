@@ -179,7 +179,7 @@ def format_data(exif_array):
     """
     sls = json.dumps(exif_array)
     print(sls)
-    print(len(sls))
+    print("How many records?", len(sls))
     try:
         exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
     except KeyError as e:
