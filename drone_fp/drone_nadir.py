@@ -177,6 +177,7 @@ def format_data(exif_array):
     :param exif_array:
     :return:
     """
+    print(exif_array)
     exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
     feature_coll = dict(type="FeatureCollection", features=[])
     linecoords = []
