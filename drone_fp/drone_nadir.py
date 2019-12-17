@@ -178,7 +178,10 @@ def format_data(exif_array):
     :return:
     """
     print(exif_array)
-    exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
+    try:
+        exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
+    except:
+        exif_array.sort(key=itemgetter('EXIF:CreateDate'))
     feature_coll = dict(type="FeatureCollection", features=[])
     linecoords = []
     img_stuff = []
@@ -192,24 +195,26 @@ def format_data(exif_array):
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
                 exif_array.remove(tag)
-        print(tags)
+        # print(tags)
         try:
             lat = float(tags['XMP:Latitude'])
             long = float(tags['XMP:Longitude'])
             imgwidth = tags['EXIF:ImageWidth']
             imghite = tags['EXIF:ImageHeight']
             alt = float(tags['XMP:RelativeAltitude'])
+            dtgi = tags['EXIF:DateTimeOriginal']
         except KeyError as e:
             lat = float(tags['Composite:GPSLatitude'])
             long = float(tags['Composite:GPSLongitude'])
             imgwidth = tags['EXIF:ExifImageWidth']
             imghite = tags['EXIF:ExifImageHeight']
             alt = float(tags['EXIF:GPSAltitude'])
+            dtgi = tags['EXIF:CreateDate']
         coords = [long, lat, alt]
         linecoords.append(coords)
         try:
             ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
-                       "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
+                       "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": dtgi,
                        "Image_Width": imgwidth, "Image_Height": imghite,
                        "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
                        "Relative_Altitude": tags['XMP:RelativeAltitude'],
@@ -220,13 +225,13 @@ def format_data(exif_array):
                        "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         except KeyError as ke:
             ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
-                       "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
+                       "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": dtgi,
                        "Image_Width": imgwidth, "Image_Height": imghite, "Heading": tags['EXIF:GPSImgDirection'],
                        "AbsoluteAltitude": alt,
                        "Relative_Altitude": alt,
                        "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         if i == 1:
-            datetime = tags['EXIF:DateTimeOriginal']
+            datetime = dtgi
             sensor = tags['EXIF:Model']
             sensor_make = tags['EXIF:Make']
         img_over = dict(coords=coords, props=ptProps)
