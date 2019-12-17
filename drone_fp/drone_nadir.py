@@ -222,7 +222,7 @@ def format_data(exif_array):
                        "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
                        "Image_Width": imgwidth, "Image_Height": imghite,
                        "AbsoluteAltitude": alt,
-                       "Relative_Altitude": tags['XMP:RelativeAltitude'],
+                       "Relative_Altitude": alt,
                        "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         if i == 1:
             datetime = tags['EXIF:DateTimeOriginal']
