@@ -177,7 +177,7 @@ def format_data(exif_array):
     :param exif_array:
     :return:
     """
-    sls = json.dump(exif_array)
+    sls = json.dumps(exif_array)
     print(sls)
     try:
         exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
