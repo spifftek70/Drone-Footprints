@@ -206,16 +206,24 @@ def format_data(exif_array):
             alt = float(tags['EXIF:GPSAltitude'])
         coords = [long, lat, alt]
         linecoords.append(coords)
-        ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
-                   "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
-                   "Image_Width": imgwidth, "Image_Height": imghite,
-                   "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
-                   "Relative_Altitude": tags['XMP:RelativeAltitude'],
-                   "FlightRollDegree": tags['XMP:FlightRollDegree'], "FlightYawDegree": tags['XMP:FlightYawDegree'],
-                   "FlightPitchDegree": tags['XMP:FlightPitchDegree'],
-                   "GimbalRollDegree": tags['XMP:GimbalRollDegree'], "GimbalYawDegree": tags['XMP:GimbalYawDegree'],
-                   "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
-                   "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
+        try:
+            ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
+                       "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
+                       "Image_Width": imgwidth, "Image_Height": imghite,
+                       "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
+                       "Relative_Altitude": tags['XMP:RelativeAltitude'],
+                       "FlightRollDegree": tags['XMP:FlightRollDegree'], "FlightYawDegree": tags['XMP:FlightYawDegree'],
+                       "FlightPitchDegree": tags['XMP:FlightPitchDegree'],
+                       "GimbalRollDegree": tags['XMP:GimbalRollDegree'], "GimbalYawDegree": tags['XMP:GimbalYawDegree'],
+                       "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
+                       "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
+        except KeyError as ke:
+            ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
+                       "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
+                       "Image_Width": imgwidth, "Image_Height": imghite,
+                       "Heading": tags['XMP:FlightYawDegree'], "AbsoluteAltitude": alt,
+                       "Relative_Altitude": tags['XMP:RelativeAltitude'],
+                       "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         if i == 1:
             datetime = tags['EXIF:DateTimeOriginal']
             sensor = tags['EXIF:Model']
