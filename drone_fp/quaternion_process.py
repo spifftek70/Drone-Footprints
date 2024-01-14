@@ -1,10 +1,12 @@
 import math
 
 
-def to_quaternions(roll, pitch, yaw):
-    roll = math.radians(roll)
-    pitch = math.radians(pitch)
-    yaw = math.radians(yaw)
+def to_quaternions(roll, pitch, yaw, is_degrees=False):
+    if is_degrees:
+        roll = math.radians(roll)
+        pitch = math.radians(pitch)
+        yaw = math.radians(yaw)
+
     cy = math.cos(-yaw * 0.5)
     sy = math.sin(-yaw * 0.5)
     cr = math.cos(-roll * 0.5)
@@ -49,7 +51,7 @@ def quaternion_multiply(quaternion0, quaternion1):
     x = -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0
     y = x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0
     z = -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0
-    return w, x, y, z
-
+    w2, x2, y2, z2 = to_quaternions(w, x, y, z)
+    return w2, x2, y2, z2
 
 def sign(x): return 1 if x >= 0 else -1

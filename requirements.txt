@@ -13,3 +13,5 @@ geometry
 quaternion
 numpy
 progressbar
+pyexiftool
+geopy

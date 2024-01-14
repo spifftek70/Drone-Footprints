@@ -18,6 +18,7 @@ from progress.bar import Bar
 import pyproj
 import ntpath
 from quaternion_process import to_quaternions, to_euler, quaternion_multiply
+from poly_cal import calculate_polygon
 from functools import partial
 
 
@@ -76,10 +77,14 @@ def create_georaster(tags):
         props = tag['properties']
         # print("PROPS", props)
         # print(props)
-        file_in = indir + "/images/" + props['File_Name']
+        # print("LOOKIE" + indir)
+        file_in = indir + "/" + props['File_Name']
         # print("file In", file_in)
         new_name = ntpath.basename(file_in[:-3]) + 'tif'
+        print(" here " + new_name)
         dst_filename = out_out + "/" + new_name
+        print("there " + dst_filename)
+        print(" OVER " + file_in)
         ds = gdal.Open(file_in, 0)
         gt = ds.GetGeoTransform()
         cols = ds.RasterXSize
@@ -152,8 +157,8 @@ def read_exif(files):
     exif_array = []
     filename = file_name
     bar = Bar('Reading EXIF Data', max=len(files))
-    with exiftool.ExifTool() as et:
-        metadata = iter(et.get_metadata_batch(files))
+    with exiftool.ExifToolHelper() as et:
+        metadata = iter(et.get_metadata(files))
     for d in metadata:
         exif_array.append(d)
         bar.next()
@@ -192,13 +197,14 @@ def format_data(exif_array):
             r_alt = float(tags['XMP:RelativeAltitude'])
             a_alt = float(tags['XMP:AbsoluteAltitude'])
         except KeyError as e:
-            lat = float(tags['Composite:GPSLatitude'])
-            long = float(tags['Composite:GPSLongitude'])
+            lat = float(tags['EXIF:GPSLatitude'])
+            long = float(tags['EXIF:GPSLongitude'])
             imgwidth = tags['EXIF:ExifImageWidth']
             imghite = tags['EXIF:ExifImageHeight']
-            r_alt = float(tags['XMP:Altitude'])
-            a_alt = float(tags['XMP:Altitude'])
-        coords = [long, lat, r_alt]
+            r_alt = float(tags['EXIF:GPSAltitudeRef'])
+            a_alt = float(tags['EXIF:GPSAltitude'])
+        coords = [-long, lat, r_alt]
+        print("COORDS AND MORE " + str(coords))
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
@@ -209,6 +215,7 @@ def format_data(exif_array):
                    "FlightPitchDegree": tags['XMP:FlightPitchDegree'], "GimbalRollDegree": tags['XMP:GimbalRollDegree'],
                    "GimbalYawDegree": tags['XMP:GimbalYawDegree'], "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
                    "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
+        print(ptProps)
         if i == 1:
             datetime = tags['EXIF:DateTimeOriginal']
             sensor = tags['EXIF:Model']
@@ -233,7 +240,8 @@ def format_data(exif_array):
     feature_coll['features'].insert(0, lines)
     mission_props = dict(date=datetime, platform="DJI Mavic 2 Pro", sensor_make=sensor_make, sensor=sensor)
     polys = dict(type="Feature", geometry=aoi, properties=mission_props)
-    feature_coll['features'].insert(0, polys)
+    polyfix = rewind(polys)
+    feature_coll['features'].insert(0, polyfix)
     for imps in tiles:
         feature_coll['features'].append(imps)
     bar.finish()
@@ -267,15 +275,15 @@ def image_poly(imgar):
         lat = float(cent['coords'][1])
         lng = float(cent['coords'][0])
         print("**Drones Lng, Lats**", lng, lat)
-        prps = cent['props']
+        prps = float(cent['props'])
         fimr= float(prps['FlightRollDegree'])
         fimp = float(prps['FlightPitchDegree'])
         fimy = float(prps['FlightYawDegree'])
         gimr = float(prps['GimbalRollDegree'])
         gimp = float(prps['GimbalPitchDegree'])
         gimy = float(prps['GimbalYawDegree'])
-        wid = prps['Image_Width']
-        hite = prps['Image_Height']
+        wid = float(prps['Image_Width'])
+        hite = float(prps['Image_Height'])
         print("**Gimbal Pitch**", gimp, "\n**Gimbal Roll**", gimr, "\n**Gimbal Yaw**", gimy)
         # print("**ACFT Pitch**", fimp, "\n**ACFT Roll**", fimr, "\n**ACFT Yaw**", fimy)
         img_n = prps['File_Name']
@@ -285,9 +293,12 @@ def image_poly(imgar):
         a_alt = float(prps["AbsoluteAltitude"])
         # (print("REL", r_alt, "AB", a_alt))
         cds1 = utm.from_latlon(lat, lng)
+        print("\n  OOOOOOO  MY FUCK   \n ", cds1)
         poly = new_gross(wid, hite, cds1, r_alt, focal_lgth, gimr, 90+gimp, gimy, fimr, fimp, fimy)
         # poly = new_gross(wid, hite, cds1, a_alt, focal_lgth, 90 - gimy, 90 + gimp, gimr, fimr, fimp, fimy)
-        p2 = convert_wgs_to_utm(lng, lat)
+        # print("LNG is " + str(lng) + " LAT is " + str(lat))
+        # p2 = convert_wgs_to_utm(lng, lat)
+        # print("UTM IS " + p2)
         project = partial(
             pyproj.transform,
             pyproj.Proj(init='epsg:4326'),  # source coordinate system
@@ -298,11 +309,12 @@ def image_poly(imgar):
         # Create GeoJSON
         wow3 = geojson.dumps(poly)
         wow4 = json.loads(wow3)
-        wow4 = rewind(wow4)
+        # wow4 = rewind(wow4)
         gd_feat = dict(type="Feature", geometry=wow4, properties=prps)
+        wow4 = rewind(gd_feat)
         # gs1 = json.dumps(gd_feat)
         # print("gs1", gs1)
-        polys.append(gd_feat)
+        polys.append(wow4)
         bar.next()
     union_buffered_poly = cascaded_union([l.buffer(.001) for l in over_poly])
     polyz = union_buffered_poly.simplify(0.005, preserve_topology=False)
@@ -342,24 +354,23 @@ def new_gross(wd, ht, cds1, alt, fl, gimr, gimp, gimy, fimr, fimp, fimy):
     print("\n**gimRoT**", gimRot)
 
     ##  Transform aircraft pitch, roll, & yaw into Quaternions
-    # acRot = to_quaternions(fimr, fimp, fimy)
+    acRot = to_quaternions(fimr, fimp, fimy)
+    print("\n**acRot**", acRot)
     # Multiply gimbal Quaternions by corner(FOV) Quaternions
-    TR1 = quaternion_multiply(gimRot, TR)
-    TL1 = quaternion_multiply(gimRot, TL)
-    BR1 = quaternion_multiply(gimRot, BR)
-    BL1 = quaternion_multiply(gimRot, BL)
-    # TR2 = quaternion_multiply(acRot, TR1)
-    # TL2 = quaternion_multiply(acRot, TL1)
-    # BR2 = quaternion_multiply(acRot, BR1)
-    # BL2 = quaternion_multiply(acRot, BL1)
+    TR1 = quaternion_multiply(acRot, quaternion_multiply(gimRot, TR))
+    TL1 = quaternion_multiply(acRot, quaternion_multiply(gimRot, TL))
+    BR1 = quaternion_multiply(acRot, quaternion_multiply(gimRot, BR))
+    BL1 = quaternion_multiply(acRot, quaternion_multiply(gimRot, BL))
 
     print("\n**TR1**", TR1, "\n**TL1**", TL1, "\n**BR1**", BR1, "\n**BL1**", BL1)
     crn = [TR1, TL1, BR1, BL1]
+    print("OMG OMEGG " + str(crn))
     coords = []
     for c in crn:
         bod = post_quat(cds1, c, alt)
         coords.append(bod)
     poly = geometry.Polygon([coords[0], coords[1], coords[2], coords[3], coords[0]])
+    # polyfix = rewind(poly)
     print("\n**POLY**", poly, "\n\n")
     return poly
 
@@ -409,7 +420,7 @@ def calc_res(pixel_x, pixel_y, x_angle, y_angle, alt):
     return pix_resolution_out, fov_x, fov_y
 
 
-def convert_wgs_to_utm(lon, lat):
+def convert_wgs_to_utm(lat, lon):
     """
     :param lon:
     :param lat:
