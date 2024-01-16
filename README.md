@@ -14,11 +14,16 @@ Date Created: 09/07/2019<br>
 
 ----------------------------------------------------------------------------------------------------------------
 ## Input<br/>
-`-i` - The Default root folder for the mission you wish to processes.  Required
+`-i` - The Default root folder for the mission you wish to process.  Required
 
 ## Output<br/>
-`-o` - The output directory for the GeoJSON file. Not Required
+`-o` - The output directory for the GeoJSON file. Required
 
+`-g` - Do you want GeoTIFFs created.  Sometimes you only want the polygons. Answer "y" for GeoTiffs or "n" if not.
+
+
+## Example Command
+`python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output' -g y`
 ## Sample Dataset
 A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/1Hwrhi-eK_-i8R2NQ3churBls-i4aAXg9)
 
