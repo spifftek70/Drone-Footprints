@@ -9,6 +9,8 @@ from operator import itemgetter
 from progress.bar import Bar
 from Create_GeoTiffs import create_georaster
 from Create_Polygons import image_poly
+from Color_Class import Color
+
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
 parser.add_argument("-i", "--indir", help="Input directory", required=True)
@@ -22,29 +24,12 @@ now = datetime.datetime.now()
 file_name = "M_" + now.strftime("%Y-%m-%d_%H-%M") + ".json"
 
 
-class color:
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-
-
 def main():
     files = find_file(indir)
     read_exif(files)
 
 
 def read_exif(files):
-    """
-    :param files:
-    :return:
-    """
     exif_array = []
     filename = file_name
     bar = Bar('Reading EXIF Data', max=len(files))
@@ -54,17 +39,14 @@ def read_exif(files):
         exif_array.append(d)
         bar.next()
     bar.finish()
-    print(color.BLUE + "Scanning images complete " + color.END)
+    print(Color.BLUE + "Scanning images complete " + Color.END)
     formatted = format_data(exif_array)
     writeOutputtoText(filename, formatted)
-    print(color.GREEN + "Process Complete." + color.END)
+    print(Color.GREEN + "Process Complete." + Color.END)
 
 
 def format_data(exif_array):
-    """
-    :param exif_array:
-    :return:
-    """
+    print(Color.PURPLE + "Formatting Data For Calculations and GeoJSON." + Color.END)
     exif_array.sort(key=itemgetter('EXIF:DateTimeOriginal'))
     feature_coll = dict(type="FeatureCollection", features=[])
     linecoords = []
@@ -75,8 +57,6 @@ def format_data(exif_array):
     i = 0
     bar = Bar('Creating GeoJSON', max=len(exif_array))
     for tags in iter(exif_array):
-        # print(tags)
-        # exit()
         i = i + 1
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
@@ -113,8 +93,6 @@ def format_data(exif_array):
         r_alt = float(tags['XMP:RelativeAltitude'])
         a_alt = float(tags['XMP:AbsoluteAltitude'])
         coords = [float(long), float(lat), r_alt]
-        # print(long, lat)
-        # exit()
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
@@ -140,7 +118,7 @@ def format_data(exif_array):
     if geo_tiff == 'y':
         create_georaster(tiles, indir)
     else:
-        print("no georasters.")
+        print(Color.RED + "Georasters Not Requested" + Color.END)
     lineGeom = dict(type="LineString", coordinates=linecoords)
     mission_props = dict(date=datetime, platform="DJI Mavic 2 Pro", sensor_make=sensor_make, sensor=sensor)
     lines = dict(type="Feature", geometry=lineGeom, properties=mission_props)
@@ -149,27 +127,19 @@ def format_data(exif_array):
     for imps in tiles:
         feature_coll['features'].append(imps)
     bar.finish()
+    print(Color.PURPLE + "Full GeoJSON Formatted." + Color.END)
     return feature_coll
 
 
 def writeOutputtoText(filename, file_list):
-    """
-    :param filename:
-    :param file_list:
-    :return:
-    """
     dst_n = outdir + '/' + filename
     with open(dst_n, 'w') as outfile:
         geojson.dump(file_list, outfile, indent=4, sort_keys=False)
-    print(color.GREEN + "GeoJSON Produced." + color.END)
+    print(Color.YELLOW + "GeoJSON File Created." + Color.END)
     return
 
 
 def find_file(some_dir):
-    """
-    :param some_dir:
-    :return:
-    """
     matches = []
     for root, dirnames, filenames in os.walk(some_dir):
         for filename in fnmatch.filter(filenames, '*.JPG'):

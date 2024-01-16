@@ -2,34 +2,27 @@ import ntpath
 import os
 from osgeo import gdal, ogr, osr
 from progress.bar import Bar
+# from Drone_Footprints import Color
+from Color_Class import Color
 
 
 def create_georaster(tags, indir):
-    # print(tags)
-    """
-    :param tags:
-    :return:
-    """
+    print(Color.DARKCYAN + "Creating GeoTIFFs Files." + Color.END)
     out_out = ntpath.dirname(indir + "/output/")
-    # print("out dir", out_out)
     if not os.path.exists(out_out):
         os.makedirs(out_out)
     bar = Bar('Creating GeoTIFFs', max=len(tags))
-    # print("\n \n TAGS", tags, "\n \n")
     for tag in iter(tags):
-        # print("\n \n TAG", tag, "\n \n")
         coords = tag['geometry']['coordinates'][0]
-        # print("\n \n", coords, "\n \n")
-        # exit()
         pt0 = coords[3][0], coords[3][1]
         pt1 = coords[2][0], coords[2][1]
         pt2 = coords[1][0], coords[1][1]
         pt3 = coords[0][0], coords[0][1]
         props = tag['properties']
-
         file_in = indir + "/" + props['File_Name']
         new_name = ntpath.basename(file_in[:-3]) + 'tif'
         dst_filename = out_out + "/" + new_name
+        gdal.UseExceptions()
         ds = gdal.Open(file_in, 0)
         gt = ds.GetGeoTransform()
         cols = ds.RasterXSize
@@ -64,6 +57,7 @@ def create_georaster(tags, indir):
         ds = None
         bar.next()
     bar.finish()
+    print(Color.DARKCYAN + "All GeoTIFFs Created." + Color.END)
     return
 
 

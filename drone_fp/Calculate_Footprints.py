@@ -1,4 +1,5 @@
 import math
+from Color_Class import Color
 
 
 def calculate_drone_imagery_footprint_corners(Focal_Length, Image_Width, Image_Height, RelativeAltitude,

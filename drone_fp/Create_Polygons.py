@@ -8,20 +8,17 @@ from Calculate_Footprints import calculate_drone_imagery_footprint_corners
 import utm
 import json
 import math
+from Color_Class import Color
 
 
 def image_poly(imgar):
-    """
-    :param imgar:
-    :return:
-    """
+    print(Color.CYAN + "\nPlotting Imagery Footprints" + Color.END)
     polys = []
     over_poly = []
     bar = Bar('Plotting Image Bounds', max=len(imgar))
     for cent in iter(imgar):
         lat = cent['coords'][1]
         lng = cent['coords'][0]
-        # print("**Drones Lng, Lats**", lng, lat)
         prps = cent['props']
         fimr= float(prps['FlightRollDegree'])
         fimp = float(prps['FlightPitchDegree'])
@@ -32,7 +29,6 @@ def image_poly(imgar):
         wid = float(prps['Image_Width'])
         hite = float(prps['Image_Height'])
         abso_yaw = ((gimy + fimy) / 2) + 180
-        print("\n\n Dang yaws\n ", abso_yaw, fimy, gimy)
         img_n = prps['File_Name']
         focal_lgth = float(prps['Focal_Length'])
         r_alt = float(prps["RelativeAltitude"])
@@ -57,12 +53,12 @@ def image_poly(imgar):
         wow3 = geojson.dumps(g4)
         wow4 = json.loads(wow3)
         gd_feat = dict(type="Feature", geometry=wow4, properties=prps)
-        print(lat, lng, "\n", gd_feat)
         polys.append(gd_feat)
         bar.next()
     pop3 = geojson.dumps(over_poly)
     pop4 = json.loads(pop3)
     bar.finish()
+    print(Color.CYAN + "All Imagery Footprints Plotted" + Color.END)
     return polys, pop4
 
 
@@ -78,17 +74,9 @@ def decimal_degrees_to_utm(latitude, longitude):
 
 
 def convert_wgs_to_utm(poly, zone, hemisphere):
-    """
-    :param lon:
-    :param lat:
-    :return:
-    """
     latlon_coords = []
     for utm_point_array in poly:
-        print(" 1", utm_point_array)
         utm_x_str, utm_y_str = utm_point_array
-        # print(utm_x, utm_y, utm_zone, utm_nth)
-        # exit()
         utm_band = str((math.floor((utm_y_str + 180) / 6) % 60) + 1)
         if len(utm_band) == 1:
             utm_band = '0'+utm_band
@@ -100,20 +88,8 @@ def convert_wgs_to_utm(poly, zone, hemisphere):
 
 
 def utm_polygon_to_latlon(utm_coords_strings, utm_zone, utm_nth):
-    """
-    Convert a list of UTM coordinates in string format to decimal degree latitude and longitude coordinates.
-
-    Args:
-    utm_coords_strings (list): A list of UTM coordinates as strings.
-    utm_zone (int): The UTM zone of the UTM coordinates.
-    utm_nth (str): UTM hemisphere (N or S).
-
-    Returns:
-    Polygon: A Shapely Polygon in decimal degree latitude and longitude coordinates.
-    """
     latlon_coords = []
     for utm_point_array in utm_coords_strings:
-        print(" 1", utm_point_array)
         utm_x_str, utm_y_str = utm_point_array
         utm_x = utm_x_str
         utm_y = utm_y_str
@@ -124,9 +100,5 @@ def utm_polygon_to_latlon(utm_coords_strings, utm_zone, utm_nth):
 
 
 def convert_utm_to_decimal(z, y, a, b):
-    print("easting: ", type(z))
-    print("northing: ", type(y))
-    print("a: ", type(a))
-    print("b: ", type(b))
     lat, lng = utm.to_latlon(z, y, a, b)
     return lng, lat  # Swap longitude and latitude here
