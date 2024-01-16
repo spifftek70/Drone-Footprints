@@ -1,8 +1,10 @@
 import math
 
 
-def calculate_drone_imagery_footprint_corners(Focal_Length, Image_Width, Image_Height, RelativeAltitude, DroneRollDegree, DroneYawDegree,
-                                              DronePitchDegree, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree, Zone, Hemisphere,
+def calculate_drone_imagery_footprint_corners(Focal_Length, Image_Width, Image_Height, RelativeAltitude,
+                                              DroneRollDegree, DroneYawDegree,
+                                              DronePitchDegree, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
+                                              Zone, Hemisphere,
                                               lats, lngs, Easting, Northing, sensor_width, sensor_height):
     # Constants
     # earth_radius = 6378137  # Earth radius in meters
@@ -40,10 +42,8 @@ def calculate_drone_imagery_footprint_corners(Focal_Length, Image_Width, Image_H
     offset_bottom_left = (-half_FOV_horizontal_rad, -half_FOV_vertical_rad)
     offset_bottom_right = (half_FOV_horizontal_rad, -half_FOV_vertical_rad)
 
-
     # Calculate the UTM coordinates for each corner, considering DroneRollRelativeRad and northing_offset
     def calculate_corner_coordinates(offset):
-
         northing_offset = (math.cos(DroneYawRelativeRad) * math.cos(GimbalPitchRad) * RelativeAltitude)
         easting_offset = (math.sin(DroneYawRelativeRad) * math.cos(GimbalPitchRad) * RelativeAltitude)
 
@@ -60,10 +60,7 @@ def calculate_drone_imagery_footprint_corners(Focal_Length, Image_Width, Image_H
     top_right = calculate_corner_coordinates(offset_top_right)
     bottom_left = calculate_corner_coordinates(offset_bottom_left)
     bottom_right = calculate_corner_coordinates(offset_bottom_right)
-   
+
     back_array = [top_right, top_left, bottom_left, bottom_right]
 
     return back_array
-
-
-
