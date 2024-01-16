@@ -16,3 +16,5 @@ progressbar
 pyexiftool
 geopy
 GDAL
+gps-time
+datetime

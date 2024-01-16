@@ -10,6 +10,7 @@ from progress.bar import Bar
 from Create_GeoTiffs import create_georaster
 from Create_Polygons import image_poly
 from Color_Class import Color
+from rtk_process import find_MTK
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
@@ -56,7 +57,8 @@ def format_data(exif_array):
     sensor_make = ''
     i = 0
     bar = Bar('Creating GeoJSON', max=len(exif_array))
-    for tags in iter(exif_array):
+    for tagged in iter(exif_array):
+        tags = find_MTK(indir, tagged)
         i = i + 1
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):

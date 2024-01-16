@@ -34,7 +34,7 @@ def image_poly(imgar):
         r_alt = float(prps["RelativeAltitude"])
         a_alt = float(prps["AbsoluteAltitude"])
         zone, hemisphere, easting, northing = decimal_degrees_to_utm(lat, lng)
-        sensor_width = 13.2
+        sensor_width = 13.1
         sensor_height = 8.8
         poly = calculate_drone_imagery_footprint_corners(focal_lgth, wid, hite, r_alt, fimr,
                                                          fimy, fimp, gimr, gimy, gimp, zone, hemisphere,
