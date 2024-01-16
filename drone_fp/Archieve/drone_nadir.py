@@ -349,7 +349,7 @@ def image_poly(imgar):
         if gimz > head_ck:
             header = 360 - gimz
         else:
-            header = 360 - (gimz)
+            header = 360 - gimz
         # print(header)
         ngf = affinity.rotate(g2, header, origin='centroid')
         print("NGF", ngf)
@@ -450,7 +450,7 @@ def convert_wgs_to_utm(lon, lat):
     :param lat:
     :return:
     """
-    utm_band = str((math.floor((lon + 180) / 6) % 60) + 1)
+    utm_band = str((math.floor((lon) / 6) % 60) + 1)
     if len(utm_band) == 1:
         utm_band = '0'+utm_band
     if lat >= 0:

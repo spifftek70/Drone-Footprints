@@ -66,19 +66,24 @@ class Quaternion:
         return rad * 180.0 / math.pi
 
 
-def generate_geojson_footprint(hfv, vfv, gimRoll, gimPitch, gimYaw, acRoll, acPitch, acYaw, ac_height, angle_limit, utm_zone):
-    TR = Quaternion(-hfv / 2, vfv / 2, 0, True)
+def generate_geojson_footprint(hfv, vfv, gimRoll, gimYaw, gimPitch, ac_height, angle_limit, utm_zone1, utm_zont2):
+    TR = Quaternion(hfv / -2, vfv / 2, 0, True)
     TL = Quaternion(hfv / 2, vfv / 2, 0, True)
-    BR = Quaternion(-hfv / 2, -vfv / 2, 0, True)
-    BL = Quaternion(hfv / 2, -vfv / 2, 0, True)
+    BR = Quaternion(hfv / -2, vfv / -2, 0, True)
+    BL = Quaternion(hfv / 2, vfv / -2, 0, True)
 
     gimRot = Quaternion(gimRoll, gimPitch, gimYaw, True)
-    acRot = Quaternion(acRoll, acPitch, acYaw, True)
+    # acRot = Quaternion(acRoll, acPitch, acYaw, True)
 
-    TR1 = acRot.multiply(gimRot.multiply(TR))
-    TL1 = acRot.multiply(gimRot.multiply(TL))
-    BR1 = acRot.multiply(gimRot.multiply(BR))
-    BL1 = acRot.multiply(gimRot.multiply(BL))
+    # TR1 = acRot.multiply(gimRot.multiply(TR))
+    # TL1 = acRot.multiply(gimRot.multiply(TL))
+    # BR1 = acRot.multiply(gimRot.multiply(BR))
+    # BL1 = acRot.multiply(gimRot.multiply(BL))
+
+    TR1 = gimRot.multiply(TR)
+    TL1 = gimRot.multiply(TL)
+    BR1 = gimRot.multiply(BR)
+    BL1 = gimRot.multiply(BL)
 
     points = [
         get_point_on_ground(TR1, ac_height, angle_limit),
@@ -87,24 +92,25 @@ def generate_geojson_footprint(hfv, vfv, gimRoll, gimPitch, gimYaw, acRoll, acPi
         get_point_on_ground(BR1, ac_height, angle_limit),
     ]
 
-    # Convert UTM coordinates to meters
-    utm_coords_meters = []
-    for point in points:
-        utm_x, utm_y, _, _ = utm.from_latlon(point[0], point[1], force_zone_number=utm_zone)
-        utm_coords_meters.append((utm_x, utm_y))
+    # # Convert UTM coordinates to meters
+    # utm_coords_meters = []
+    # for point in points:
+    #     utm_x, utm_y, _, _ = utm.to_latlon(point[0], point[1], utm_zone1, utm_zont2)
+    #     utm_coords_meters.append((utm_x, utm_y))
+    # #
+    return points
 
-    return utm_coords_meters
+def get_point_on_ground(q, anglelimit, acHeight):
+    r, p, y = q.convert_to_euler(True)
 
+    r = limit(r, -anglelimit, anglelimit)
+    p = limit(p, -anglelimit, anglelimit)
 
-def get_point_on_ground(q, ac_height, angle_limit):
-    r, _, y = q.convert_to_euler()
+    dx = acHeight * math.tan(math.radians(r))
+    dy = acHeight * math.tan(math.radians(p))
 
-    r = limit(r, -angle_limit, angle_limit)
-
-    dx = ac_height * math.tan(math.radians(r))
-
-    utmx = dx * math.cos(math.radians(y))
-    utmy = -dx * math.sin(math.radians(y))
+    utmx =  dx * math.cos(math.radians(y)) - dy * math.sin(math.radians(y)) + 150
+    utmy = -dx * math.sin(math.radians(y)) - dy * math.cos(math.radians(y)) + 150
 
     return utmx, utmy
 

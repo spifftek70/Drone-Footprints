@@ -17,7 +17,7 @@ import fnmatch
 from shapely import geometry
 from shapely.ops import cascaded_union, transform
 import argparse
-from pyexiftool import exiftool
+import exiftool
 import datetime
 from operator import itemgetter
 import math
@@ -212,11 +212,11 @@ def create_georaster(tags):
     if not os.path.exists(out_out):
         os.makedirs(out_out)
     bar = Bar('Creating GeoTIFFs', max=len(tags))
-
+    print("\n \n TAGS", tags, "\n \n")
     for tag in iter(tags):
-
+        print("\n \n TAG", tag, "\n \n")
         coords = tag['geometry']['coordinates'][0]
-        # lonlat = coords[0]
+        print("\n \n coords", coords, "\n \n")
         pt0 = coords[0][0], coords[0][1]
         pt1 = coords[1][0], coords[1][1]
         pt2 = coords[2][0], coords[2][1]
@@ -226,10 +226,14 @@ def create_georaster(tags):
         props = tag['properties']
         # print("PROPS", props)
         # print(props)
-        file_in = indir + "/images/" + props['File_Name']
+        # print("LOOKIE" + indir)
+        file_in = indir + "/" + props['File_Name']
         # print("file In", file_in)
         new_name = ntpath.basename(file_in[:-3]) + 'tif'
+        # print(" here " + new_name)
         dst_filename = out_out + "/" + new_name
+        # print("there " + dst_filename)
+        # print(" OVER " + file_in)
         ds = gdal.Open(file_in, 0)
         gt = ds.GetGeoTransform()
         cols = ds.RasterXSize
@@ -303,8 +307,8 @@ def read_exif(files):
     exif_array = []
     filename = file_name
     bar = Bar('Reading EXIF Data', max=len(files))
-    with exiftool.ExifTool() as et:
-        metadata = iter(et.get_metadata_batch(files))
+    with exiftool.ExifToolHelper() as et:
+        metadata = iter(et.get_metadata(files))
     for d in metadata:
         exif_array.append(d)
         bar.next()
@@ -503,16 +507,22 @@ def new_gross(wd, ht, cds1, alt, fl, gimp, gimr, gimy, fimx, fimy, fimz):
     print("\n**gimRoT**", gimRot)
 
     ##  Transform aircraft pitch, roll, & yaw into Quaternions
-    # acRot = to_quaternions(fimx, fimy, fimz)
+    acRot = to_quaternions(fimx, fimy, fimz)
     # Multiply gimbal Quaternions by corner(FOV) Quaternions
-    TR1 = quaternion_multiply(gimRot, TR)
-    TL1 = quaternion_multiply(gimRot, TL)
-    BR1 = quaternion_multiply(gimRot, BR)
-    BL1 = quaternion_multiply(gimRot, BL)
-    # TR2 = quaternion_multiply(acRot, TR1)
-    # TL2 = quaternion_multiply(acRot, TL1)
-    # BR2 = quaternion_multiply(acRot, BR1)
-    # BL2 = quaternion_multiply(acRot, BL1)
+
+    TR1 = acRot.multiply(gimRot.multiply(TR))
+    TL1 = acRot.multiply(gimRot.multiply(TL))
+    BR1 = acRot.multiply(gimRot.multiply(BR))
+    BL1 = acRot.multiply(gimRot.multiply(BL))
+
+    # TR1 = quaternion_multiply(gimRot, TR)
+    # TL1 = quaternion_multiply(gimRot, TL)
+    # BR1 = quaternion_multiply(gimRot, BR)
+    # BL1 = quaternion_multiply(gimRot, BL)
+    # # TR2 = quaternion_multiply(acRot, TR1)
+    # # TL2 = quaternion_multiply(acRot, TL1)
+    # # BR2 = quaternion_multiply(acRot, BR1)
+    # # BL2 = quaternion_multiply(acRot, BL1)
 
     print("\n**TR1**", TR1, "\n**TL1**", TL1, "\n**BR1**", BR1, "\n**BL1**", BL1)
     # corner Quaternions products into array and process
