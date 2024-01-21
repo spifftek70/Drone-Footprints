@@ -57,8 +57,6 @@ def format_data(exif_array):
     sensor_make = ''
     i = 0
     bar = Bar('Creating GeoJSON', max=len(exif_array))
-    # tags = find_MTK(indir, exif_array)
-    # xmpStuff = list(map(exif_array.get, filter(lambda x: x in "XMP:", exif_array)))
     rtkMod = find_MTK(indir, exif_array)
     if rtkMod is None:
         tagz = rtkMod
