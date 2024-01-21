@@ -1,16 +1,12 @@
 from progress.bar import Bar
 import geojson
 from geojson_rewind import rewind
-import pyproj
 from Drone_Footprint_Calculator import DroneFootprintCalculator
 import utm
 import json
 import math
 from Color_Class import Color
-from shapely.geometry import shape, LineString, Point, Polygon
-from shapely.ops import transform
-import geopandas as gpd
-from shapely import affinity
+from shapely.geometry import Polygon
 
 
 def image_poly(imgar):
