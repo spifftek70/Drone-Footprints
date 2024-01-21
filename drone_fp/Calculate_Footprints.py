@@ -2,7 +2,7 @@ from progress.bar import Bar
 import geojson
 from geojson_rewind import rewind
 import pyproj
-from drone_footprint_calculator import DroneFootprintCalculator
+from Drone_Footprint_Calculator import DroneFootprintCalculator
 import utm
 import json
 import math
