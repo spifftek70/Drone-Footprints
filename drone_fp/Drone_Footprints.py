@@ -8,11 +8,9 @@ import datetime
 from operator import itemgetter
 from progress.bar import Bar
 from Create_GeoTiffs import create_georaster
-# from Create_Polygons import image_poly
 from Color_Class import Color
 from rtk_process import find_MTK
 from Calculate_Footprints import image_poly
-# from tester9 import make_GeoTiFFs
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
@@ -61,15 +59,19 @@ def format_data(exif_array):
     bar = Bar('Creating GeoJSON', max=len(exif_array))
     # tags = find_MTK(indir, exif_array)
     # xmpStuff = list(map(exif_array.get, filter(lambda x: x in "XMP:", exif_array)))
-
-    for tags in iter(exif_array):
+    rtkMod = find_MTK(indir, exif_array)
+    if rtkMod is None:
+        tagz = rtkMod
+    else:
+        tagz = exif_array
+    for tags in iter(tagz):
         # tags = find_MTK(indir, tag)
         # print(tags)
         # exit()
         i = i + 1
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
-                exif_array.pop(tag)
+                tagz.pop(tag)
         # try:
         # print(realstuff)
         # exit()
