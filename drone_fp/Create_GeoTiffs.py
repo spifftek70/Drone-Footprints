@@ -2,7 +2,6 @@ import ntpath
 import os
 from osgeo import gdal, ogr, osr
 from progress.bar import Bar
-# from Drone_Footprints import Color
 from Color_Class import Color
 
 
