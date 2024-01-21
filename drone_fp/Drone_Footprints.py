@@ -96,7 +96,7 @@ def format_data(exif_array):
         GimbalRollDegree = float(tags['XMP:GimbalRollDegree'])
         GimbalYawDegree = float(tags['XMP:GimbalYawDegree'])
         GimbalPitchDegree = float(tags['XMP:GimbalPitchDegree'])
-        coords = [float(lat), float(long)]
+        coords = [float(long), float(lat)]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],

@@ -18,13 +18,11 @@ def image_poly(imgar):
     polys = []
     over_poly = []
     bar = Bar('Plotting Image Bounds', max=len(imgar))
-    # print(imgar)
-    # exit()
     for cent in iter(imgar):
-        lng = cent['coords'][1]
-        lat = cent['coords'][0]
+        drone_longitude = cent['coords'][0]
+        drone_latitude = cent['coords'][1]
         prps = cent['props']
-        zone, hemisphere, easting, northing = decimal_degrees_to_utm(lat, lng)
+        zone, hemisphere, easting, northing = decimal_degrees_to_utm(drone_latitude, drone_longitude)
         utm_zone = int(zone)
         is_northern_hemisphere = True
         calculator = DroneFootprintCalculator(utm_zone, is_northern_hemisphere)
@@ -32,54 +30,31 @@ def image_poly(imgar):
         GimbalRollDegree = prps['GimbalRollDegree']
         GimbalPitchDegree = prps['GimbalPitchDegree']
         GimbalYawDegree = prps['GimbalYawDegree']
-        # utm_zone_number = zone
-        utm_zone_letter = hemisphere
         Image_Width = prps['Image_Width']
         Image_Height = prps['Image_Height']
-        # abso_yaw = gimy
-        # img_n = prps['File_Name']
         Focal_Length = prps['Focal_Length']
         Relative_Altitude = prps["RelativeAltitude"]
         sensor_width = 13.2
         sensor_height = 8.8
-        drone_longitude = cent['coords'][1]
-        drone_latitude = cent['coords'][0]
-        # print(Focal_Length, " - ", type(Focal_Length), "\n", Image_Width, " - ", type(Image_Width), "\n",Image_Height, " - ", type(Image_Height), "\n",
-        #         Relative_Altitude, " - ", type(Relative_Altitude), "\n",GimbalRollDegree, " - ", type(GimbalRollDegree), "\n",
-        #         GimbalYawDegree, " - ", type(GimbalYawDegree), "\n",GimbalPitchDegree, " - ", type(GimbalPitchDegree), "\n",
-        #         drone_longitude, " - ", type(drone_longitude), "\n",drone_latitude, type(drone_latitude), "\n",
-        #         sensor_width, " - ", type(sensor_width), "\n",sensor_height,  type(sensor_height), "\n")
-        # exit()
         poly = calculator.calculate_footprint(
             Focal_Length, Image_Width, Image_Height, Relative_Altitude,
             GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
             drone_longitude, drone_latitude, sensor_width, sensor_height
         )
         g2 = Polygon(poly)
-        # print(geom)
-        # exit()
-        # print(rectangle_polygon_geometry)
-        # exit()
-        # g2 = Polygon(lonlat_coords)
-        # g3 = affinity.rotate(g2, 90, origin='centroid')
-        # ngf = affinity.scale(g2, xfact=-1.0, yfact=-1.0, zfact=-1.0, origin='center')
-        # ngfs =affinity.rotate(g2, 180, origin='center', use_radians=False)
-        # ngfs = affinity.rotate(ngf, 180, origin='centroid', dians=True)  #
         wow3 = geojson.dumps(g2)
         wow4 = json.loads(wow3)
         wow5 = rewind(wow4)
         gd_feat = dict(type="Feature", geometry=wow5, properties=prps)
-        # print(gd_feat)
-        # exit()
         polys.append(gd_feat)
         polyArray = dict(file_name=file_name, polygon=g2)
         over_poly.append(polyArray)
         bar.next()
-    # pop3 = geojson.dumps(over_poly)
-    # pop4 = json.loads(pop3)
+    pop3 = geojson.dumps(polys)
+    pop4 = json.loads(pop3)
     bar.finish()
     print(Color.CYAN + "All Imagery Footprints Plotted" + Color.END)
-    return polys, over_poly
+    return pop4, over_poly
 
 
 def getFOV(sensor_width, sensor_height, Focal_Length):

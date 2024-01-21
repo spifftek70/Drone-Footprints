@@ -62,8 +62,5 @@ class DroneFootprintCalculator:
         lonlat4 = self.utm_proj(easting4, northing4, inverse=True)
 
         return [lonlat1, lonlat3, lonlat2, lonlat4]
-        # return [lonlat4, lonlat2, lonlat3, lonlat1]
-        # return [lonlat3, lonlat2, lonlat4, lonlat1]
-        # return [lonlat2, lonlat4, lonlat1, lonlat3]
-        # return [lonlat1, lonlat4, lonlat2, lonlat3]
+
 
