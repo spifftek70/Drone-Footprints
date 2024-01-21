@@ -43,8 +43,6 @@ setup(
         'geopy',
         'GDAL',
         'gps-time',
-        'datetime',
-        'rioxarray'
-    ],
+        'datetime'    ],
     zip_safe=False
 )
