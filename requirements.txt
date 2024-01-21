@@ -16,5 +16,7 @@ progressbar
 pyexiftool
 geopy
 GDAL
+osgeo
 gps-time
 datetime
+rioxarray

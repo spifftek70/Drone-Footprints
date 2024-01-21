@@ -1,19 +1,15 @@
 from __future__ import division
-import os
 import sys
-import tkinter as tk
-from tkinter import filedialog as fd
 import numpy as np
 import pandas as pd
 import sympy.geometry as spg
 import matplotlib.path as mplPath
-import matplotlib.patches as mpatches
-from matplotlib import pyplot as plt
 from osgeo import gdal, osr
 import os
 import json
 import geojson
 import fnmatch
+from functools import partial
 from shapely import geometry
 from shapely.ops import cascaded_union, transform
 import argparse
@@ -27,7 +23,7 @@ from geojson_rewind import rewind
 from progress.bar import Bar
 import pyproj
 import ntpath
-from quaternion_process import to_quaternions, to_euler, quaternion_multiply
+from drone_fp.Archieve.quaternion_process import to_quaternions, to_euler
 from functools import partial
 
 
@@ -476,9 +472,9 @@ def image_poly(imgar):
     # print("POP3", pop3)
     pop4 = json.loads(pop3)
     pop4 = rewind(pop4)
-    # print("pops4", pop4, "\npolys", polys)
-    ssx = json.dumps(polys)
-    # print("SSX", ssx)
+    # # print("pops4", pop4, "\npolys", polys)
+    # ssx = json.dumps(polys)
+    # # print("SSX", ssx)
     bar.finish()
     return polys, pop4
 

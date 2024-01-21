@@ -39,6 +39,12 @@ setup(
         'quaternion',
         'numpy',
         'progressbar',
+        'pyexiftool',
+        'geopy',
+        'GDAL',
+        'gps-time',
+        'datetime',
+        'rioxarray'
     ],
     zip_safe=False
 )

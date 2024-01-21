@@ -30,7 +30,7 @@ def to_euler(w, x, y, z):
     # pitch (y-axis rotation)
     sinp = +2.0 * (w * y - z * x)
     if abs(sinp) >= 1:
-        pitch = math.copysign(math.pi / 2, sinp)  # use 90 degrees if out of range
+        pitch = sign(math.pi / 2, sinp)  # use 90 degrees if out of range
 
     else:
         pitch = math.asin(sinp)
@@ -54,4 +54,7 @@ def quaternion_multiply(quaternion0, quaternion1):
     w2, x2, y2, z2 = to_quaternions(w, x, y, z)
     return w2, x2, y2, z2
 
-def sign(x): return 1 if x >= 0 else -1
+
+def sign(x, y):
+    return abs(x) * math.copysign(y)
+    # return 1 if x >= 0 else -1

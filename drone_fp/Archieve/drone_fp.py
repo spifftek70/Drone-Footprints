@@ -17,8 +17,7 @@ from geojson_rewind import rewind
 from progress.bar import Bar
 import pyproj
 import ntpath
-from quaternion_process import to_quaternions, to_euler, quaternion_multiply
-from poly_cal import calculate_polygon
+from drone_fp.Archieve.quaternion_process import to_quaternions, to_euler, quaternion_multiply
 from functools import partial
 
 
@@ -216,6 +215,7 @@ def format_data(exif_array):
                    "GimbalYawDegree": tags['XMP:GimbalYawDegree'], "GimbalPitchDegree": tags['XMP:GimbalPitchDegree'],
                    "EXIF:DateTimeOriginal": tags['EXIF:DateTimeOriginal']}
         print(ptProps)
+        exit()
         if i == 1:
             datetime = tags['EXIF:DateTimeOriginal']
             sensor = tags['EXIF:Model']

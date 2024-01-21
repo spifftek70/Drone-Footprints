@@ -53,6 +53,7 @@ class Quaternion:
             -self.x * q2.x - self.y * q2.y - self.z * q2.z + self.w * q2.w
         )
 
+
     @staticmethod
     def copy_sign(x, y):
         return abs(x) * math.copysign(1, y)
@@ -66,7 +67,7 @@ class Quaternion:
         return rad * 180.0 / math.pi
 
 
-def generate_geojson_footprint(hfv, vfv, gimRoll, gimYaw, gimPitch, ac_height, angle_limit, utm_zone1, utm_zont2):
+def generate_geojson_footprint(hfv, vfv, gimRoll, gimYaw, gimPitch, ac_height):
     TR = Quaternion(hfv / -2, vfv / 2, 0, True)
     TL = Quaternion(hfv / 2, vfv / 2, 0, True)
     BR = Quaternion(hfv / -2, vfv / -2, 0, True)
@@ -86,10 +87,10 @@ def generate_geojson_footprint(hfv, vfv, gimRoll, gimYaw, gimPitch, ac_height, a
     BL1 = gimRot.multiply(BL)
 
     points = [
-        get_point_on_ground(TR1, ac_height, angle_limit),
-        get_point_on_ground(TL1, ac_height, angle_limit),
-        get_point_on_ground(BL1, ac_height, angle_limit),
-        get_point_on_ground(BR1, ac_height, angle_limit),
+        get_point_on_ground(TR1, ac_height, gimYaw),
+        get_point_on_ground(TL1, ac_height, gimYaw),
+        get_point_on_ground(BL1, ac_height, gimYaw),
+        get_point_on_ground(BR1, ac_height, gimYaw),
     ]
 
     # # Convert UTM coordinates to meters

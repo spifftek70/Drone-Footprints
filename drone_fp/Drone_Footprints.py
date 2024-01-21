@@ -8,9 +8,11 @@ import datetime
 from operator import itemgetter
 from progress.bar import Bar
 from Create_GeoTiffs import create_georaster
-from Create_Polygons import image_poly
+# from Create_Polygons import image_poly
 from Color_Class import Color
 from rtk_process import find_MTK
+from Calculate_Footprints import image_poly
+# from tester9 import make_GeoTiFFs
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
@@ -57,49 +59,49 @@ def format_data(exif_array):
     sensor_make = ''
     i = 0
     bar = Bar('Creating GeoJSON', max=len(exif_array))
-    for tagged in iter(exif_array):
-        tags = find_MTK(indir, tagged)
+    # tags = find_MTK(indir, exif_array)
+    # xmpStuff = list(map(exif_array.get, filter(lambda x: x in "XMP:", exif_array)))
+
+    for tags in iter(exif_array):
+        # tags = find_MTK(indir, tag)
+        # print(tags)
+        # exit()
         i = i + 1
         for tag, val in tags.items():
-            if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
-                exif_array.remove(tag)
+            if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
+                exif_array.pop(tag)
+        # try:
+        # print(realstuff)
+        # exit()
         try:
             lat = float(tags['XMP:GPSLatitude'])
             long = float(tags['XMP:GPSLongitude'])
-        except KeyError as e:
+        except KeyError:
+            print("Error parsing")
             lat = float(tags['Composite:GPSLatitude'])
             long = float(tags['Composite:GPSLongitude'])
-        except KeyError as b:
-            lat = float(tags['EXIF:GPSLatitude'])
-            long = float(tags['EXIF:GPSLongitude'])
-        try:
-            FlightRollDegree = float(tags['XMP:FlightRollDegree'])
-            FlightYawDegree = float(tags['XMP:FlightYawDegree'])
-            FlightPitchDegree = float(tags['XMP:FlightPitchDegree'])
-            GimbalRollDegree = float(tags['XMP:GimbalRollDegree'])
-            GimbalYawDegree = float(tags['XMP:GimbalYawDegree'])
-            GimbalPitchDegree = float(tags['XMP:GimbalPitchDegree'])
-        except KeyError as f:
-            FlightRollDegree = float(tags['EXIF:FlightRollDegree'])
-            FlightYawDegree = float(tags['EXIF:FlightYawDegree'])
-            FlightPitchDegree = float(tags['EXIF:FlightPitchDegree'])
-            GimbalRollDegree = float(tags['EXIF:GimbalRollDegree'])
-            GimbalYawDegree = float(tags['EXIF:GimbalYawDegree'])
-            GimbalPitchDegree = float(tags['EXIF:GimbalPitchDegree'])
+        # except KeyError:
+        #     lat = float(tags['EXIF:GPSLatitude'])
+        #     long = float(tags['EXIF:GPSLongitude'])
         try:
             imgwidth = tags['EXIF:ImageWidth']
             imghite = tags['EXIF:ImageHeight']
-        except KeyError as g:
-            imgwidth = tags['EXIF:ExifImageWidth']
-            imghite = tags['EXIF:ExifImageHeight']
-        r_alt = float(tags['XMP:RelativeAltitude'])
-        a_alt = float(tags['XMP:AbsoluteAltitude'])
-        coords = [float(long), float(lat), r_alt]
+        except KeyError:
+            imgwidth = int(tags['EXIF:ExifImageWidth'])
+            imghite = int(tags['EXIF:ExifImageHeight'])
+        FlightAltitude = float(tags['XMP:RelativeAltitude'])
+        FlightRollDegree = float(tags['XMP:FlightRollDegree'])
+        FlightYawDegree = float(tags['XMP:FlightYawDegree'])
+        FlightPitchDegree = float(tags['XMP:FlightPitchDegree'])
+        GimbalRollDegree = float(tags['XMP:GimbalRollDegree'])
+        GimbalYawDegree = float(tags['XMP:GimbalYawDegree'])
+        GimbalPitchDegree = float(tags['XMP:GimbalPitchDegree'])
+        coords = [float(lat), float(long)]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
                    "Image_Width": imgwidth, "Image_Height": imghite,
-                   "RelativeAltitude": r_alt, "AbsoluteAltitude": a_alt,
+                   "RelativeAltitude": FlightAltitude,
                    "FlightRollDegree": FlightRollDegree, "FlightYawDegree": FlightYawDegree,
                    "FlightPitchDegree": FlightPitchDegree,
                    "GimbalRollDegree": GimbalRollDegree, "GimbalYawDegree": GimbalYawDegree,
@@ -117,8 +119,10 @@ def format_data(exif_array):
         bar.next()
     img_box = image_poly(img_stuff)
     tiles = img_box[0]
+    polyArray = img_box[1]
     if geo_tiff == 'y':
         create_georaster(tiles, indir)
+        # make_GeoTiFFs(polyArray, indir)
     else:
         print(Color.RED + "Georasters Not Requested" + Color.END)
     lineGeom = dict(type="LineString", coordinates=linecoords)

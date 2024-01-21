@@ -1,5 +1,5 @@
 import math
-from new_quads import generate_geojson_footprint
+from drone_fp.Archieve.new_quads import generate_geojson_footprint
 def calculate_drone_imagery_footprint_corners(Focal_Length, Image_Width, Image_Height, RelativeAltitude, DroneRollDegree,
                                               DroneYawDegree, DronePitchDegree, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
                                               Zone, Hemisphere, Easting, Northing, sensor_width, sensor_height):
