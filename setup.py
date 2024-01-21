@@ -43,6 +43,6 @@ setup(
         'geopy',
         'GDAL',
         'gps-time',
-        'datetime'    ],
+        'datetime'],
     zip_safe=False
 )
