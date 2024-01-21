@@ -65,9 +65,6 @@ def format_data(exif_array):
     else:
         tagz = exif_array
     for tags in iter(tagz):
-        # tags = find_MTK(indir, tag)
-        # print(tags)
-        # exit()
         i = i + 1
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
