@@ -5,7 +5,7 @@ Name: drone_fp.py
 >accomplished by using exiftags from drone images to generate polygons for each image.  The output is 
 >a GeoJSON file with:
 >* Drone Flightpath (LineString)
->* Mission Area (Polygon)
+>* Drone Location at Image Location (Point)
 >* Individual Image Footprints (Polygons)
 ----------------------------------------------------------------------------------------------------------------
 
