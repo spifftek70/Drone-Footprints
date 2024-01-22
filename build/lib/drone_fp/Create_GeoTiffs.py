@@ -1,11 +1,9 @@
 import ntpath
+import os
 from osgeo import gdal, ogr, osr
 from progress.bar import Bar
 from Color_Class import Color
-from tester9 import *
-import os, sys
-import geo_utils.geo_utils as gu
-from shapely import affinity
+
 
 def create_georaster(tags, indir):
     print(Color.DARKCYAN + "Creating GeoTIFFs Files." + Color.END)
@@ -15,7 +13,6 @@ def create_georaster(tags, indir):
     bar = Bar('Creating GeoTIFFs', max=len(tags))
     for tag in iter(tags):
         coords = tag['geometry']['coordinates'][0]
-        degrees = tag['properties']['GimbalYawDegree']
         pt0 = coords[3][0], coords[3][1]
         pt1 = coords[2][0], coords[2][1]
         pt2 = coords[1][0], coords[1][1]
@@ -37,14 +34,14 @@ def create_georaster(tags, indir):
         gcp_string = '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
-                     '-gcp {} {} {} {}'.format(ext0[0], ext0[1],
-                                               pt2[0], pt2[1],
-                                               ext1[0], ext1[1],
+                     '-gcp {} {} {} {}'.format(ext2[0], ext2[1],
                                                pt3[0], pt3[1],
-                                               ext2[0], ext2[1],
-                                               pt0[0], pt0[1],
                                                ext3[0], ext3[1],
-                                               pt1[0], pt1[1])
+                                               pt2[0], pt2[1],
+                                               ext0[0], ext0[1],
+                                               pt1[0], pt1[1],
+                                               ext1[0], ext1[1],
+                                               pt0[0], pt0[1])
         gcp_items = filter(None, gcp_string.split("-gcp"))
         gcp_list = []
         for item in gcp_items:
@@ -57,7 +54,6 @@ def create_georaster(tags, indir):
         wkt = srs.ExportToWkt()
         ds = gdal.Translate(dst_filename, ds, outputSRS=wkt, GCPs=gcp_list, noData=0)
         ds = None
-        rotty = rotty_img(dst_filename, degrees)
         bar.next()
     bar.finish()
     print(Color.DARKCYAN + "All GeoTIFFs Created." + Color.END)
@@ -84,11 +80,5 @@ def GetExtent(gt, cols, rows):
             x = gt[0] + (px * gt[1]) + (py * gt[2])
             y = gt[3] + (px * gt[4]) + (py * gt[5])
             ext.append([x, y])
-        # yarr.reverse()
+        yarr.reverse()
     return ext
-
-
-def rotty_img(dst_filename, degrees):
-    imgF = gu.raster_management(dst_filename)
-    print(imgF)
-    exit()

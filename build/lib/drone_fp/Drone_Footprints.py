@@ -2,27 +2,30 @@ from __future__ import division
 import os
 import geojson
 import fnmatch
+from os.path import splitext
 import argparse
 import exiftool
 import datetime
 from operator import itemgetter
 from progress.bar import Bar
 from Create_GeoTiffs import create_georaster
-# from Create_Polygons import image_poly
 from Color_Class import Color
-from rtk_process import find_MTK
-from Calculate_Footprints import image_poly
-# from tester9 import make_GeoTiFFs
+from RTK_Process import find_MTK
+from Create_Polygons import image_poly
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
 parser.add_argument("-i", "--indir", help="Input directory", required=True)
 parser.add_argument("-o", "--dest", help="Output directory", required=True)
-parser.add_argument("-g", "--nonst", help="geoTIFF output", required=True)
+parser.add_argument("-g", "--geoTIFF", help="geoTIFF output", required=True)
+parser.add_argument("-w", "--sensorWidth", help="Sensor Width", required=False)
+parser.add_argument("-d", "--sensorHeight", help="Sensor Height", required=False)
 args = parser.parse_args()
 indir = args.indir
 outdir = args.dest
-geo_tiff = args.nonst
+geo_tiff = args.geoTIFF
+sensorWidth = args.sensorWidth
+sensorHeight = args.sensorHeight
 now = datetime.datetime.now()
 file_name = "M_" + now.strftime("%Y-%m-%d_%H-%M") + ".json"
 
@@ -59,17 +62,16 @@ def format_data(exif_array):
     sensor_make = ''
     i = 0
     bar = Bar('Creating GeoJSON', max=len(exif_array))
-    # tags = find_MTK(indir, exif_array)
-    # xmpStuff = list(map(exif_array.get, filter(lambda x: x in "XMP:", exif_array)))
-
-    for tags in iter(exif_array):
-        # tags = find_MTK(indir, tag)
-        # print(tags)
-        # exit()
+    rtkMod = find_MTK(indir, exif_array)
+    if rtkMod is None:
+        tagz = rtkMod
+    else:
+        tagz = exif_array
+    for tags in iter(tagz):
         i = i + 1
         for tag, val in tags.items():
             if tag in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
-                exif_array.pop(tag)
+                tagz.pop(tag)
         # try:
         # print(realstuff)
         # exit()
@@ -77,7 +79,6 @@ def format_data(exif_array):
             lat = float(tags['XMP:GPSLatitude'])
             long = float(tags['XMP:GPSLongitude'])
         except KeyError:
-            print("Error parsing")
             lat = float(tags['Composite:GPSLatitude'])
             long = float(tags['Composite:GPSLongitude'])
         # except KeyError:
@@ -96,7 +97,7 @@ def format_data(exif_array):
         GimbalRollDegree = float(tags['XMP:GimbalRollDegree'])
         GimbalYawDegree = float(tags['XMP:GimbalYawDegree'])
         GimbalPitchDegree = float(tags['XMP:GimbalPitchDegree'])
-        coords = [float(lat), float(long)]
+        coords = [float(long), float(lat)]
         linecoords.append(coords)
         ptProps = {"File_Name": tags['File:FileName'], "Exposure Time": tags['EXIF:ExposureTime'],
                    "Focal_Length": tags['EXIF:FocalLength'], "Date_Time": tags['EXIF:DateTimeOriginal'],
@@ -117,7 +118,7 @@ def format_data(exif_array):
         points = dict(type="Feature", geometry=ptGeom, properties=ptProps)
         feature_coll['features'].append(points)
         bar.next()
-    img_box = image_poly(img_stuff)
+    img_box = image_poly(img_stuff, sensorHeight, sensorHeight)
     tiles = img_box[0]
     polyArray = img_box[1]
     if geo_tiff == 'y':
@@ -147,9 +148,10 @@ def writeOutputtoText(filename, file_list):
 
 def find_file(some_dir):
     matches = []
-    for root, dirnames, filenames in os.walk(some_dir):
-        for filename in fnmatch.filter(filenames, '*.JPG'):
-            matches.append(os.path.join(root, filename))
+    for x in os.listdir(some_dir):
+        if splitext(x)[1].lower() in {'.jpg'}:
+            files = os.path.join(some_dir, x)
+            matches.append(files)
     return matches
 
 

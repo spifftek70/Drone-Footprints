@@ -1,4 +1,4 @@
-# UAV Band-to-Band Registration for 4x-band RGBN Imagery
+# Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility. 
 
 Name: drone_fp.py
 >The purpose of this module is to calculate imagery footprints or field of view (FOV).  This is 
