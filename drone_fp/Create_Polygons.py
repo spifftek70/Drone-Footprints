@@ -1,7 +1,7 @@
 from progress.bar import Bar
 import geojson
 from geojson_rewind import rewind
-from Drone_Footprint_Calculator import DroneFootprintCalculator
+from Footprint_Calculator import DroneFootprintCalculator
 import utm
 import json
 import math
@@ -26,8 +26,6 @@ def image_poly(imgar, sensorWidth, sensorHeight):
         GimbalRollDegree = prps['GimbalRollDegree']
         GimbalPitchDegree = prps['GimbalPitchDegree']
         GimbalYawDegree = prps['GimbalYawDegree']
-        Image_Width = prps['Image_Width']
-        Image_Height = prps['Image_Height']
         Focal_Length = prps['Focal_Length']
         Relative_Altitude = prps["RelativeAltitude"]
         if all(v is not None for v in [sensorWidth, sensorHeight]):
@@ -37,10 +35,8 @@ def image_poly(imgar, sensorWidth, sensorHeight):
             sensor_width = 13.2
             sensor_height = 8.8
         poly = calculator.calculate_footprint(
-            Focal_Length, Image_Width, Image_Height, Relative_Altitude,
-            GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
-            drone_longitude, drone_latitude, sensor_width, sensor_height
-        )
+            Focal_Length, Relative_Altitude, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
+            drone_longitude, drone_latitude, sensor_width, sensor_height)
         g2 = Polygon(poly)
         wow3 = geojson.dumps(g2)
         wow4 = json.loads(wow3)

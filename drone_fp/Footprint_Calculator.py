@@ -8,7 +8,8 @@ class DroneFootprintCalculator:
         self.is_northern_hemisphere = is_northern_hemisphere
         self.utm_proj = pyproj.Proj(proj='utm', zone=self.utm_zone, ellps='WGS84', north=self.is_northern_hemisphere)
 
-    def calculate_footprint(self, Focal_Length, Image_Width, Image_Height, Relative_Altitude, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree, drone_longitude, drone_latitude, sensor_width, sensor_height):
+    def calculate_footprint(self, Focal_Length, Relative_Altitude, GimbalRollDegree, GimbalYawDegree,
+                            GimbalPitchDegree, drone_longitude, drone_latitude, sensor_width, sensor_height):
         # Convert drone's longitude and latitude to UTM
         drone_easting, drone_northing = self.utm_proj(drone_longitude, drone_latitude)
 
@@ -19,7 +20,7 @@ class DroneFootprintCalculator:
         # Calculate quaternion from gimbal angles
         roll_rad = math.radians(GimbalRollDegree)
         pitch_rad = math.radians(GimbalPitchDegree)
-        yaw_rad = math.radians((-1 * GimbalYawDegree / 2.0))  # Note the division by 2
+        yaw_rad = math.radians((-1 * GimbalYawDegree) / 2.0)  # Note the division by 2
 
         cy = math.cos(yaw_rad)
         sy = math.sin(yaw_rad)

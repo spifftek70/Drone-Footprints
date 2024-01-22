@@ -19,7 +19,7 @@ class DroneFootprintCalculator:
         # Calculate quaternion from gimbal angles
         roll_rad = math.radians(GimbalRollDegree)
         pitch_rad = math.radians(GimbalPitchDegree)
-        yaw_rad = math.radians(GimbalYawDegree / 2.0)  # Note the division by 2
+        yaw_rad = math.radians((-1 * GimbalYawDegree / 2.0))  # Note the division by 2
 
         cy = math.cos(yaw_rad)
         sy = math.sin(yaw_rad)
@@ -61,8 +61,6 @@ class DroneFootprintCalculator:
         lonlat3 = self.utm_proj(easting3, northing3, inverse=True)
         lonlat4 = self.utm_proj(easting4, northing4, inverse=True)
 
-        return [lonlat1, lonlat2, lonlat3, lonlat4]
-        # return [lonlat3, lonlat2, lonlat4, lonlat1]
-        # return [lonlat2, lonlat4, lonlat1, lonlat3]
-        # return [lonlat1, lonlat4, lonlat2, lonlat3]
+        return [lonlat1, lonlat3, lonlat2, lonlat4]
+
 
