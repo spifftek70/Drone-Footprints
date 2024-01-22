@@ -9,18 +9,22 @@ from operator import itemgetter
 from progress.bar import Bar
 from Create_GeoTiffs import create_georaster
 from Color_Class import Color
-from rtk_process import find_MTK
-from Calculate_Footprints import image_poly
+from RTK_Process import find_MTK
+from Create_Polygons import image_poly
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
 parser.add_argument("-i", "--indir", help="Input directory", required=True)
 parser.add_argument("-o", "--dest", help="Output directory", required=True)
-parser.add_argument("-g", "--nonst", help="geoTIFF output", required=True)
+parser.add_argument("-g", "--geoTIFF", help="geoTIFF output", required=True)
+parser.add_argument("-w", "--sensorWidth", help="Sensor Width", required=False)
+parser.add_argument("-d", "--sensorHeight", help="Sensor Height", required=False)
 args = parser.parse_args()
 indir = args.indir
 outdir = args.dest
-geo_tiff = args.nonst
+geo_tiff = args.geoTIFF
+sensorWidth = args.sensorWidth
+sensorHeight = args.sensorHeight
 now = datetime.datetime.now()
 file_name = "M_" + now.strftime("%Y-%m-%d_%H-%M") + ".json"
 
@@ -114,7 +118,7 @@ def format_data(exif_array):
         points = dict(type="Feature", geometry=ptGeom, properties=ptProps)
         feature_coll['features'].append(points)
         bar.next()
-    img_box = image_poly(img_stuff)
+    img_box = image_poly(img_stuff, sensorHeight, sensorHeight)
     tiles = img_box[0]
     polyArray = img_box[1]
     if geo_tiff == 'y':

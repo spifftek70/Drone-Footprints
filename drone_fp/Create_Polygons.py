@@ -1,74 +1,60 @@
 from progress.bar import Bar
 import geojson
+from geojson_rewind import rewind
 from Drone_Footprint_Calculator import DroneFootprintCalculator
 import utm
 import json
 import math
 from Color_Class import Color
+from shapely.geometry import Polygon
 
 
-def image_poly(imgar):
+def image_poly(imgar, sensorWidth, sensorHeight):
     print(Color.CYAN + "\nPlotting Imagery Footprints" + Color.END)
     polys = []
     over_poly = []
     bar = Bar('Plotting Image Bounds', max=len(imgar))
     for cent in iter(imgar):
-        lat = cent['coords'][1]
-        lng = cent['coords'][0]
+        drone_longitude = cent['coords'][0]
+        drone_latitude = cent['coords'][1]
         prps = cent['props']
-        zone, hemisphere, easting, northing = decimal_degrees_to_utm(lat, lng)
-        utm_zone = zone
+        zone, hemisphere, easting, northing = decimal_degrees_to_utm(drone_latitude, drone_longitude)
+        utm_zone = int(zone)
         is_northern_hemisphere = True
         calculator = DroneFootprintCalculator(utm_zone, is_northern_hemisphere)
+        file_name = prps['File_Name']
         GimbalRollDegree = prps['GimbalRollDegree']
         GimbalPitchDegree = prps['GimbalPitchDegree']
         GimbalYawDegree = prps['GimbalYawDegree']
-        # utm_zone_number = zone
-        utm_zone_letter = hemisphere
         Image_Width = prps['Image_Width']
         Image_Height = prps['Image_Height']
-        # abso_yaw = gimy
-        # img_n = prps['File_Name']
         Focal_Length = prps['Focal_Length']
         Relative_Altitude = prps["RelativeAltitude"]
-        sensor_width = 13.2
-        sensor_height = 8.8
-        drone_longitude = cent['coords'][1]
-        drone_latitude = cent['coords'][0]
-        print(Focal_Length, Image_Width, Image_Height, Relative_Altitude,
-            GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
-            drone_longitude, drone_latitude, sensor_width, sensor_height)
-        lonlat_coords = calculator.calculate_footprint(
+        if all(v is not None for v in [sensorWidth, sensorHeight]):
+            sensor_width = float(sensorWidth)
+            sensor_height = float(sensorHeight)
+        else:
+            sensor_width = 13.2
+            sensor_height = 8.8
+        poly = calculator.calculate_footprint(
             Focal_Length, Image_Width, Image_Height, Relative_Altitude,
             GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
             drone_longitude, drone_latitude, sensor_width, sensor_height
         )
-
-        # poly = [lon1, lat1, lon2, lat2]
-        # print(footprint)
-        # exit()
-        # ltlgpy = utm_polygon_to_latlon(poly, zone, hemisphere)
-        # g2 = Polygon(poly)
-        print(lonlat_coords)
-        exit()
-        # g3 = shapely.geometry.box(ltlgpy[0], ltlgpy[1], ltlgpy[2], ltlgpy[3])
-        # print(g3)
-        # Change Heading / orientation
-        # ngfh = affinity.scale(g2, xfact=1.075, yfact=1.075, zfact=-1.075, origin='centroid')
-        # ngf = shapely.geometry.polygon.orient(g2, -20)
-        # ngf = affinity.rotate(g2, 6, origin='centroid', use_radians=True)  #
-        # g3 = ngf.reverse().wkt
-        # g4 = shapely.wkt.loads(g3)
+        g2 = Polygon(poly)
         wow3 = geojson.dumps(g2)
         wow4 = json.loads(wow3)
-        gd_feat = dict(type="Feature", geometry=wow4, properties=prps)
+        wow5 = rewind(wow4)
+        gd_feat = dict(type="Feature", geometry=wow5, properties=prps)
         polys.append(gd_feat)
+        polyArray = dict(file_name=file_name, polygon=g2)
+        over_poly.append(polyArray)
         bar.next()
-    pop3 = geojson.dumps(over_poly)
+    pop3 = geojson.dumps(polys)
     pop4 = json.loads(pop3)
     bar.finish()
     print(Color.CYAN + "All Imagery Footprints Plotted" + Color.END)
-    return polys, pop4
+    return pop4, over_poly
 
 
 def getFOV(sensor_width, sensor_height, Focal_Length):
