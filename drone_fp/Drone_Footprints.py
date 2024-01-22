@@ -2,6 +2,7 @@ from __future__ import division
 import os
 import geojson
 import fnmatch
+from os.path import splitext
 import argparse
 import exiftool
 import datetime
@@ -78,7 +79,6 @@ def format_data(exif_array):
             lat = float(tags['XMP:GPSLatitude'])
             long = float(tags['XMP:GPSLongitude'])
         except KeyError:
-            print("Error parsing")
             lat = float(tags['Composite:GPSLatitude'])
             long = float(tags['Composite:GPSLongitude'])
         # except KeyError:
@@ -148,9 +148,10 @@ def writeOutputtoText(filename, file_list):
 
 def find_file(some_dir):
     matches = []
-    for root, dirnames, filenames in os.walk(some_dir):
-        for filename in fnmatch.filter(filenames, '*.JPG'):
-            matches.append(os.path.join(root, filename))
+    for x in os.listdir(some_dir):
+        if splitext(x)[1].lower() in {'.jpg'}:
+            files = os.path.join(some_dir, x)
+            matches.append(files)
     return matches
 
 
