@@ -12,7 +12,7 @@ def find_MTK(some_dir, tags):
         return tags
     else:
         filedata = getdata(matches)
-        coords = findAndReplace(tags, filedata)
+        coords = findAndReplace(filedata, tags)
         return coords
 
 
@@ -31,35 +31,33 @@ def getdata(matches):
         lon_col = idx[7]
         str_lat = lat_col.split(',', 1)[0]
         str_lon = lon_col.split(',', 1)[0]
-        coord = [float(str_lat), float(str_lon)]
-        gpsTime = GPSTime(week_number=int(week_col[0]), time_of_week=time_col)
+        gpsTime = GPSTime(week_number=abs(week_col[0]), time_of_week=time_col)
         dateTime = gpsTime.to_datetime()
         strDateTime = str(dateTime)
         newDateTime = strDateTime.replace("-", ":")
         sep = '.'
         finalDateFormat = newDateTime.split(sep, 1)[0]
-        date_time = {}
-        LatDic = {}
-        LngDic = {}
-        LatDic["Latitude"] = str_lat
-        LngDic["Longitude"] = str_lon
-        date_time["DateTime"] = finalDateFormat
-        gpsArray.append([date_time, LatDic, LngDic])
+        print(finalDateFormat)
+        rtkdata = dict(Latitude=str_lat, Longitude=str_lon, DateTime=finalDateFormat)
+        gpsArray.append(rtkdata)
     f.close()
     return gpsArray
 
 
-def findAndReplace(array1, array2):
-    # Iterate through array2
-    for item in array2:
-        # Extract DateTime, Latitude, and Longitude from the item in array2
-        datetime2 = item[0]["DateTime"]
-        latitude2 = item[1]["Latitude"]
-        longitude2 = item[2]["Longitude"]
+def findAndReplace(list_a, list_b):
+    if len(list_a) != len(list_b):
+        raise ValueError("Both lists must have the same length.")
 
-        # Check if DateTime in array1 matches DateTime in array2
-        if array1.get("EXIF:DateTimeOriginal") == datetime2:
-            # If there is a match, replace GPSLatitude and GPSLongitude in array1
-            array1["EXIF:GPSLatitude"] = float(latitude2)
-            array1["EXIF:GPSLongitude"] = float(longitude2)
-    return array1
+    integrated_list_b = []
+
+    for item_a, item_b in zip(list_a, list_b):
+        if "Latitude" in item_a:
+            item_b["Composite:GPSLatitude"] = item_a["Latitude"]
+        if "Longitude" in item_a:
+            item_b["Composite:GPSLongitude"] = item_a["Longitude"]
+
+        integrated_list_b.append(item_b)
+    print("original tags -", list_b)
+    print("\n\n\nnew RTK tags -", integrated_list_b)
+    exit()
+    return integrated_list_b
