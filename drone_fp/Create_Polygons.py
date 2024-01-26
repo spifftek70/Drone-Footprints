@@ -1,7 +1,9 @@
+#### Created / written by Dean E. Hand (dean.e.hand@me.com).
+
 from progress.bar import Bar
 import geojson
 from geojson_rewind import rewind
-from Footprint_Calculator import DroneFootprintCalculator
+from Footprint_Calculator_FG import DroneFootprintCalculator
 import utm
 import json
 import math
@@ -23,9 +25,12 @@ def image_poly(imgar, sensorWidth, sensorHeight):
         is_northern_hemisphere = True
         calculator = DroneFootprintCalculator(utm_zone, is_northern_hemisphere)
         file_name = prps['File_Name']
-        GimbalRollDegree = prps['GimbalRollDegree']
-        GimbalPitchDegree = prps['GimbalPitchDegree']
-        GimbalYawDegree = prps['GimbalYawDegree']
+        GimbalRollDegree = abs(prps['GimbalRollDegree'])
+        GimbalPitchDegree = abs(prps['GimbalPitchDegree'])
+        GimbalYawDegree = abs(prps['GimbalYawDegree'])
+        FlightRollDegree = abs(prps['FlightRollDegree'])
+        FlightYawDegree = abs(prps['FlightYawDegree'])
+        FlightPitchDegree = abs(prps['FlightPitchDegree'])
         Focal_Length = prps['Focal_Length']
         Relative_Altitude = prps["RelativeAltitude"]
         if all(v is not None for v in [sensorWidth, sensorHeight]):
@@ -36,6 +41,7 @@ def image_poly(imgar, sensorWidth, sensorHeight):
             sensor_height = 8.8
         poly = calculator.calculate_footprint(
             Focal_Length, Relative_Altitude, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
+            FlightRollDegree, FlightYawDegree, FlightPitchDegree,
             drone_longitude, drone_latitude, sensor_width, sensor_height)
         g2 = Polygon(poly)
         wow3 = geojson.dumps(g2)

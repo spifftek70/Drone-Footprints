@@ -1,3 +1,5 @@
+#### Created / written by Dean E. Hand (dean.e.hand@me.com).
+
 import ntpath
 import os
 from osgeo import gdal, ogr, osr
@@ -35,13 +37,13 @@ def create_georaster(tags, indir):
                      '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {}'.format(ext2[0], ext2[1],
-                                               pt3[0], pt3[1],
-                                               ext3[0], ext3[1],
-                                               pt2[0], pt2[1],
-                                               ext0[0], ext0[1],
-                                               pt1[0], pt1[1],
+                                               pt0[0], pt0[1],
                                                ext1[0], ext1[1],
-                                               pt0[0], pt0[1])
+                                               pt1[0], pt1[1],
+                                               ext0[0], ext0[1],
+                                               pt2[0], pt2[1],
+                                               ext3[0], ext3[1],
+                                               pt3[0], pt3[1])
         gcp_items = filter(None, gcp_string.split("-gcp"))
         gcp_list = []
         for item in gcp_items:
