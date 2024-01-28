@@ -15,35 +15,37 @@ def create_georaster(tags, indir):
     bar = Bar('Creating GeoTIFFs', max=len(tags))
     for tag in iter(tags):
         coords = tag['geometry']['coordinates'][0]
-        pt0 = coords[3][0], coords[3][1]
-        pt1 = coords[2][0], coords[2][1]
-        pt2 = coords[1][0], coords[1][1]
-        pt3 = coords[0][0], coords[0][1]
+        pt0 = coords[0][0], coords[0][1]  # Now this is Top-right
+        pt1 = coords[1][0], coords[1][1]  # Now this is Top-left
+        pt2 = coords[2][0], coords[2][1]  # Now this is Bottom-left
+        pt3 = coords[3][0], coords[3][1]  # Now this is Bottom-right
+
         props = tag['properties']
         file_in = indir + "/" + props['File_Name']
         new_name = ntpath.basename(file_in[:-3]) + 'tif'
         dst_filename = out_out + "/" + new_name
+
         gdal.UseExceptions()
         ds = gdal.Open(file_in, 0)
         gt = ds.GetGeoTransform()
         cols = ds.RasterXSize
         rows = ds.RasterYSize
+
         ext = GetExtent(gt, cols, rows)
-        ext0 = ext[0][0], ext[0][1]
-        ext1 = ext[1][0], ext[1][1]
-        ext2 = ext[2][0], ext[2][1]
-        ext3 = ext[3][0], ext[3][1]
+        ext0 = ext[0][0], ext[0][1]  # Assuming this is top-right
+        ext1 = ext[1][0], ext[1][1]  # Assuming this is top-left
+        ext2 = ext[2][0], ext[2][1]  # Assuming this is bottom-left
+        ext3 = ext[3][0], ext[3][1]  # Assuming this is bottom-right
+
+        # Modify the order of GCPs assignment here to correct the mirroring
         gcp_string = '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
                      '-gcp {} {} {} {} ' \
-                     '-gcp {} {} {} {}'.format(ext2[0], ext2[1],
-                                               pt0[0], pt0[1],
-                                               ext1[0], ext1[1],
-                                               pt1[0], pt1[1],
-                                               ext0[0], ext0[1],
-                                               pt2[0], pt2[1],
-                                               ext3[0], ext3[1],
-                                               pt3[0], pt3[1])
+                     '-gcp {} {} {} {}'.format(ext2[0], ext2[1], pt0[0], pt0[1],
+                                               ext3[0], ext3[1], pt1[0], pt1[1],
+                                               ext0[0], ext0[1], pt2[0], pt2[1],
+                                               ext1[0], ext1[1], pt3[0], pt3[1])
+
         gcp_items = filter(None, gcp_string.split("-gcp"))
         gcp_list = []
         for item in gcp_items:
@@ -51,6 +53,7 @@ def create_georaster(tags, indir):
             z = 0
             gcp = gdal.GCP(x, y, z, pixel, line)
             gcp_list.append(gcp)
+
         srs = osr.SpatialReference()
         srs.ImportFromEPSG(4326)
         wkt = srs.ExportToWkt()
