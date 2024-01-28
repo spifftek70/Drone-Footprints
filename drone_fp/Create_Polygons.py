@@ -3,7 +3,8 @@
 from progress.bar import Bar
 import geojson
 from geojson_rewind import rewind
-from Footprint_Calculator_FG import DroneFootprintCalculator
+# from Footprint_Calculator_FG import DroneFootprintCalculator
+from Footprint_Calculator_ver3 import DroneFootprintCalculator
 import utm
 import json
 import math
@@ -31,21 +32,43 @@ def image_poly(imgar, sensorWidth, sensorHeight):
         FlightRollDegree = abs(prps['FlightRollDegree'])
         FlightYawDegree = abs(prps['FlightYawDegree'])
         FlightPitchDegree = abs(prps['FlightPitchDegree'])
-        Focal_Length = prps['Focal_Length']
-        Relative_Altitude = prps["RelativeAltitude"]
+        Focal_Length = abs(prps['Focal_Length'])
+        Relative_Altitude = abs(prps["RelativeAltitude"])
         if all(v is not None for v in [sensorWidth, sensorHeight]):
             sensor_width = float(sensorWidth)
             sensor_height = float(sensorHeight)
         else:
             sensor_width = 13.2
             sensor_height = 8.8
-        poly = calculator.calculate_footprint(
+        # print(
+        #     Focal_Length, ", ", Relative_Altitude,  ", ", GimbalRollDegree,  ", ", GimbalYawDegree,  ", ", GimbalPitchDegree,
+        #     ", ", FlightRollDegree,  ", ", FlightYawDegree,  ", ", FlightPitchDegree,
+        #     ", ", drone_longitude,  ", ", drone_latitude,  ", ", sensor_width,  ", ", sensor_height
+        # )
+        # continue
+        # calculator = DroneFootprintCalculator(utm_zone=12, is_northern_hemisphere=True)
+        footprint = calculator.calculate_footprint(
             Focal_Length, Relative_Altitude, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
             FlightRollDegree, FlightYawDegree, FlightPitchDegree,
-            drone_longitude, drone_latitude, sensor_width, sensor_height)
-        g2 = Polygon(poly)
+            drone_longitude, drone_latitude, sensor_width, sensor_height
+        )
+        # print(footprint)
+        # exit()
+        # poly = calculator.calculate_footprint(
+        #     Focal_Length, Relative_Altitude, GimbalRollDegree, GimbalYawDegree, GimbalPitchDegree,
+        #     FlightRollDegree, FlightYawDegree, FlightPitchDegree,
+        #     drone_longitude, drone_latitude, sensor_width, sensor_height)
+        g2 = Polygon(footprint)
+        # if g2.geom_type == 'MultiPolygon':
+        #     print("MultiPolygon")
+        # elif g2.geom_type == 'Polygon':
+        #     print("Polygon")
+        # exit()
+        # raise IOError('Shape is not a polygon.')
         wow3 = geojson.dumps(g2)
         wow4 = json.loads(wow3)
+        # print(wow4)
+        # exit()
         wow5 = rewind(wow4)
         gd_feat = dict(type="Feature", geometry=wow5, properties=prps)
         polys.append(gd_feat)
