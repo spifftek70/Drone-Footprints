@@ -1,5 +1,3 @@
-#### Created / written by Dean E. Hand (dean.e.hand@me.com).
-
 import math
 import pyproj
 
@@ -92,13 +90,6 @@ class DroneFootprintCalculator:
             [half_width, -half_height],
             [-half_width, -half_height]
         ]
-
-        # local_corners = [
-        #     [half_width, half_height],
-        #     [-half_width, half_height],
-        #     [-half_width, -half_height],
-        #     [half_width, -half_height]
-        # ]
 
         # Transform local coordinates to global coordinates
         global_corners = []
