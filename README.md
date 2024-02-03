@@ -19,14 +19,13 @@ Date Created: 09/07/2019<br>
 ## Output<br/>
 `-o` - The output directory for the GeoJSON file. Required
 
-`-g` - Do you want GeoTIFFs created.  Sometimes you only want the polygons. Answer "y" for GeoTiffs or "n" if not. Required
-
 `-w` - Sensor Width (default is 13.2) Not Required (Check your Drones Specs for information)
 
 `-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
 
 ## Example Command
-`python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output' -g y`
+`python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output'
+
 ## Sample Dataset
 A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/1Hwrhi-eK_-i8R2NQ3churBls-i4aAXg9)
 
