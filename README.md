@@ -30,13 +30,13 @@ Date Created: 09/07/2019<br>
 ## Processing Notes
 
 ### The accuracy of this process depends highly on a number of factors.
-1. IMU calibration
-2. Gimbal calibration
-3. Compass Calibration
-4. Shooting angle (for best results - `Parallel to Main Path`)
-5. Capture Mode (for best results - `Hover&Capture at Point`)
-6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
-7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
+>1. IMU calibration
+>2. Gimbal calibration
+>3. Compass Calibration
+>4. Shooting angle (for best results - `Parallel to Main Path`)
+>5. Capture Mode (for best results - `Hover&Capture at Point`)
+>6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
+>7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
 so the code calculates the GSD and FOV using the FlightYawDegree.
 
 ## Future Builds
