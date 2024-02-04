@@ -30,7 +30,18 @@ Date Created: 09/07/2019<br>
 A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/1Hwrhi-eK_-i8R2NQ3churBls-i4aAXg9)
 
 ## Sample JSON Output 
-A sample of the json output can be found [here](https://drive.google.com/open?id=1RhSlY9KL2NYpnnVyNqI5c6cLzC0YWMTj)
+[M_2024-02-04_07-03.json](samples%2Fgeojson%2FM_2024-02-04_07-03.json)
+
+## Sample GeoTIFFs
+[![DJI_0261.tif](samples%2Fgeotiffs%2FDJI_0261.tif)
+[![DJI_0267.tif](samples%2Fgeotiffs%2FDJI_0267.tif)
+[![DJI_0273.tif](samples%2Fgeotiffs%2FDJI_0273.tif)
+[![DJI_0280.tif](samples%2Fgeotiffs%2FDJI_0280.tif)
+
+## Sample Screenshots (QGIS)
+![screenshot1.png](samples%2Fscreenshots%2Fscreenshot1.png)
+![screenshot2.png](samples%2Fscreenshots%2Fscreenshot2.png)
+![screenshot3.png](samples%2Fscreenshots%2Fscreenshot3.png)
 
 ## Processing Notes
 

@@ -1,3 +1,8 @@
+#  Copyright (c) 2024.
+#  __author__ = "Dean Hand"
+#  __license__ = "AGPL"
+#  __version__ = "1.0"
+
 import numpy as np
 from osgeo import osr, gdal
 from pyproj import Proj, Transformer, CRS
