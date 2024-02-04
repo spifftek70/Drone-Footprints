@@ -127,6 +127,7 @@ def writeOutputtoText(geojson_file, gjsonf, b_array):
     print(Color.YELLOW + "GeoJSON File Created." + Color.END)
     return
 
+
 def find_file(some_dir):
     matches = []
     for filename in os.listdir(some_dir):
