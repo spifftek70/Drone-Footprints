@@ -22,11 +22,13 @@ Date Created: 09/07/2019<br>
 
 `-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
 
+----------------------------------------------------------------------------------------------------------------
 ## Example Commands
 `python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output`
 
 `python Drone_Footprints.py -i "/Path/To/Dataset/images" -o "/Path/To/Dataset/output" -w 6.16 -d 4.62`
 
+----------------------------------------------------------------------------------------------------------------
 ## Processing Notes
 
 ### The accuracy of this process depends highly on a number of factors.
@@ -38,6 +40,7 @@ Date Created: 09/07/2019<br>
 6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
 7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
 so the code calculates the GSD and FOV using the FlightYawDegree.
+----------------------------------------------------------------------------------------------------------------
 
 ## Future Builds
 
@@ -48,7 +51,7 @@ process.
 
 ### RTK Processing
 Should add much better accuracy to any RTK dataset that's processed.
-
+----------------------------------------------------------------------------------------------------------------
 ## Sample Dataset
 A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/1Hwrhi-eK_-i8R2NQ3churBls-i4aAXg9)
 
@@ -65,3 +68,4 @@ A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/
 ![screenshot1.png](samples%2Fscreenshots%2Fscreenshot1.png)
 ![screenshot2.png](samples%2Fscreenshots%2Fscreenshot2.png)
 ![screenshot3.png](samples%2Fscreenshots%2Fscreenshot3.png)
+----------------------------------------------------------------------------------------------------------------
