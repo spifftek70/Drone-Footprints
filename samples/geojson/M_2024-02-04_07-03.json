@@ -1,0 +1,3054 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -111.884157722222,
+                        33.3675673611111
+                    ],
+                    [
+                        -111.884517027778,
+                        33.3678386944444
+                    ],
+                    [
+                        -111.884781361111,
+                        33.3680324444444
+                    ],
+                    [
+                        -111.884989527778,
+                        33.3681839444444
+                    ],
+                    [
+                        -111.885013111111,
+                        33.3682001944444
+                    ],
+                    [
+                        -111.88588525,
+                        33.3682156388889
+                    ],
+                    [
+                        -111.885553722222,
+                        33.3679618611111
+                    ],
+                    [
+                        -111.885275333333,
+                        33.3677578888889
+                    ],
+                    [
+                        -111.885001361111,
+                        33.3675576944444
+                    ],
+                    [
+                        -111.884754166667,
+                        33.3673661666667
+                    ],
+                    [
+                        -111.884508805556,
+                        33.3671740277778
+                    ],
+                    [
+                        -111.884239166667,
+                        33.3669921111111
+                    ],
+                    [
+                        -111.884160583333,
+                        33.36694225
+                    ],
+                    [
+                        -111.884165333333,
+                        33.3663251944444
+                    ],
+                    [
+                        -111.884541694444,
+                        33.3665970555556
+                    ],
+                    [
+                        -111.884820861111,
+                        33.3668004722222
+                    ],
+                    [
+                        -111.885071,
+                        33.3669840555556
+                    ],
+                    [
+                        -111.885336583333,
+                        33.3671796388889
+                    ],
+                    [
+                        -111.88559975,
+                        33.367373
+                    ],
+                    [
+                        -111.885876194444,
+                        33.3675764444444
+                    ],
+                    [
+                        -111.886127916667,
+                        33.3677615277778
+                    ],
+                    [
+                        -111.886392333333,
+                        33.3679561666667
+                    ],
+                    [
+                        -111.886629361111,
+                        33.3681313888889
+                    ],
+                    [
+                        -111.886762027778,
+                        33.3682283611111
+                    ],
+                    [
+                        -111.886990166667,
+                        33.3677656944444
+                    ],
+                    [
+                        -111.886674944444,
+                        33.3675127777778
+                    ],
+                    [
+                        -111.886405861111,
+                        33.3673022222222
+                    ],
+                    [
+                        -111.886140861111,
+                        33.3671130833333
+                    ],
+                    [
+                        -111.885861638889,
+                        33.3669086666667
+                    ],
+                    [
+                        -111.885590111111,
+                        33.3667120555556
+                    ],
+                    [
+                        -111.885332416667,
+                        33.3665364166667
+                    ],
+                    [
+                        -111.885058333333,
+                        33.3663323611111
+                    ],
+                    [
+                        -111.884782222222,
+                        33.3661364722222
+                    ],
+                    [
+                        -111.884596944444,
+                        33.3660081388889
+                    ],
+                    [
+                        -111.884602055556,
+                        33.3660094166667
+                    ],
+                    [
+                        -111.885481666667,
+                        33.3660305833333
+                    ],
+                    [
+                        -111.885851611111,
+                        33.3662991944444
+                    ],
+                    [
+                        -111.886131166667,
+                        33.3665040555556
+                    ],
+                    [
+                        -111.886396888889,
+                        33.3666980833333
+                    ],
+                    [
+                        -111.886662138889,
+                        33.3668923055556
+                    ],
+                    [
+                        -111.886898166667,
+                        33.3670661111111
+                    ],
+                    [
+                        -111.887025861111,
+                        33.3671571666667
+                    ],
+                    [
+                        -111.887057583333,
+                        33.3665590277778
+                    ],
+                    [
+                        -111.886712583333,
+                        33.3662976111111
+                    ],
+                    [
+                        -111.886474666667,
+                        33.3661248888889
+                    ],
+                    [
+                        -111.886444111111,
+                        33.3661023055556
+                    ]
+                ]
+            },
+            "properties": {
+                "date": "2024:01:28 16:10:56",
+                "sensor_make": "Hasselblad",
+                "sensor_model": "L1D-20c"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884157722222,
+                    33.3675673611111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0242.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884529,
+                            33.367475
+                        ],
+                        [
+                            -111.884199,
+                            33.367244
+                        ],
+                        [
+                            -111.883786,
+                            33.36766
+                        ],
+                        [
+                            -111.884116,
+                            33.36789
+                        ],
+                        [
+                            -111.884529,
+                            33.367475
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0242.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884517027778,
+                    33.3678386944444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0243.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884886,
+                            33.367747
+                        ],
+                        [
+                            -111.884558,
+                            33.367518
+                        ],
+                        [
+                            -111.884148,
+                            33.36793
+                        ],
+                        [
+                            -111.884476,
+                            33.36816
+                        ],
+                        [
+                            -111.884886,
+                            33.367747
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0243.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884781361111,
+                    33.3680324444444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0244.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.8,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885153,
+                            33.367945
+                        ],
+                        [
+                            -111.884829,
+                            33.367711
+                        ],
+                        [
+                            -111.88441,
+                            33.368119
+                        ],
+                        [
+                            -111.884734,
+                            33.368354
+                        ],
+                        [
+                            -111.885153,
+                            33.367945
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0244.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.8,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884989527778,
+                    33.3681839444444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0245.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.9,
+                "FlightYawDegree": -48.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885366,
+                            33.368098
+                        ],
+                        [
+                            -111.88504,
+                            33.36786
+                        ],
+                        [
+                            -111.884613,
+                            33.36827
+                        ],
+                        [
+                            -111.884939,
+                            33.368508
+                        ],
+                        [
+                            -111.885366,
+                            33.368098
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0245.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.9,
+                "FlightYawDegree": -48.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885013111111,
+                    33.3682001944444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0246.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885384,
+                            33.36811
+                        ],
+                        [
+                            -111.885056,
+                            33.367878
+                        ],
+                        [
+                            -111.884642,
+                            33.368291
+                        ],
+                        [
+                            -111.88497,
+                            33.368522
+                        ],
+                        [
+                            -111.885384,
+                            33.36811
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0246.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.88588525,
+                    33.3682156388889
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0247.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886258,
+                            33.368131
+                        ],
+                        [
+                            -111.885936,
+                            33.367895
+                        ],
+                        [
+                            -111.885513,
+                            33.3683
+                        ],
+                        [
+                            -111.885835,
+                            33.368536
+                        ],
+                        [
+                            -111.886258,
+                            33.368131
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0247.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885553722222,
+                    33.3679618611111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0248.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885927,
+                            33.367876
+                        ],
+                        [
+                            -111.885603,
+                            33.36764
+                        ],
+                        [
+                            -111.88518,
+                            33.368048
+                        ],
+                        [
+                            -111.885504,
+                            33.368284
+                        ],
+                        [
+                            -111.885927,
+                            33.367876
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0248.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885275333333,
+                    33.3677578888889
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0249.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885649,
+                            33.367672
+                        ],
+                        [
+                            -111.885325,
+                            33.367436
+                        ],
+                        [
+                            -111.884902,
+                            33.367844
+                        ],
+                        [
+                            -111.885226,
+                            33.36808
+                        ],
+                        [
+                            -111.885649,
+                            33.367672
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0249.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885001361111,
+                    33.3675576944444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0250.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.2,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885375,
+                            33.367474
+                        ],
+                        [
+                            -111.885053,
+                            33.367236
+                        ],
+                        [
+                            -111.884627,
+                            33.367642
+                        ],
+                        [
+                            -111.88495,
+                            33.36788
+                        ],
+                        [
+                            -111.885375,
+                            33.367474
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0250.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.2,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884754166667,
+                    33.3673661666667
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0251.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -47.8,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.88513,
+                            33.367284
+                        ],
+                        [
+                            -111.884808,
+                            33.367044
+                        ],
+                        [
+                            -111.884379,
+                            33.367448
+                        ],
+                        [
+                            -111.8847,
+                            33.367689
+                        ],
+                        [
+                            -111.88513,
+                            33.367284
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0251.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -47.8,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884508805556,
+                    33.3671740277778
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0252.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -47.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884884,
+                            33.367094
+                        ],
+                        [
+                            -111.884565,
+                            33.366853
+                        ],
+                        [
+                            -111.884134,
+                            33.367254
+                        ],
+                        [
+                            -111.884453,
+                            33.367496
+                        ],
+                        [
+                            -111.884884,
+                            33.367094
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0252.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -47.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884239166667,
+                    33.3669921111111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0253.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.8,
+                "FlightYawDegree": -49.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884613,
+                            33.366902
+                        ],
+                        [
+                            -111.884283,
+                            33.366668
+                        ],
+                        [
+                            -111.883866,
+                            33.367083
+                        ],
+                        [
+                            -111.884195,
+                            33.367316
+                        ],
+                        [
+                            -111.884613,
+                            33.366902
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0253.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.8,
+                "FlightYawDegree": -49.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884160583333,
+                    33.36694225
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0254.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.0,
+                "FlightYawDegree": -51.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884532,
+                            33.366842
+                        ],
+                        [
+                            -111.884193,
+                            33.366616
+                        ],
+                        [
+                            -111.883789,
+                            33.367042
+                        ],
+                        [
+                            -111.884128,
+                            33.367269
+                        ],
+                        [
+                            -111.884532,
+                            33.366842
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0254.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.0,
+                "FlightYawDegree": -51.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884165333333,
+                    33.3663251944444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0255.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.1,
+                "FlightYawDegree": -49.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884542,
+                            33.366236
+                        ],
+                        [
+                            -111.884212,
+                            33.365999
+                        ],
+                        [
+                            -111.883789,
+                            33.366415
+                        ],
+                        [
+                            -111.884119,
+                            33.366651
+                        ],
+                        [
+                            -111.884542,
+                            33.366236
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0255.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.1,
+                "FlightYawDegree": -49.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884541694444,
+                    33.3665970555556
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0256.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884913,
+                            33.366507
+                        ],
+                        [
+                            -111.884585,
+                            33.366275
+                        ],
+                        [
+                            -111.884171,
+                            33.366687
+                        ],
+                        [
+                            -111.884498,
+                            33.366919
+                        ],
+                        [
+                            -111.884913,
+                            33.366507
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0256.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884820861111,
+                    33.3668004722222
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0257.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -49.8,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885193,
+                            33.366707
+                        ],
+                        [
+                            -111.884862,
+                            33.366477
+                        ],
+                        [
+                            -111.884449,
+                            33.366893
+                        ],
+                        [
+                            -111.88478,
+                            33.367124
+                        ],
+                        [
+                            -111.885193,
+                            33.366707
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0257.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -49.8,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885071,
+                    33.3669840555556
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0258.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885442,
+                            33.366893
+                        ],
+                        [
+                            -111.885113,
+                            33.366662
+                        ],
+                        [
+                            -111.8847,
+                            33.367076
+                        ],
+                        [
+                            -111.885029,
+                            33.367306
+                        ],
+                        [
+                            -111.885442,
+                            33.366893
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0258.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885336583333,
+                    33.3671796388889
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0259.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885707,
+                            33.367089
+                        ],
+                        [
+                            -111.885379,
+                            33.366858
+                        ],
+                        [
+                            -111.884966,
+                            33.36727
+                        ],
+                        [
+                            -111.885294,
+                            33.367501
+                        ],
+                        [
+                            -111.885707,
+                            33.367089
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0259.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.88559975,
+                    33.367373
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0260.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885969,
+                            33.367283
+                        ],
+                        [
+                            -111.885643,
+                            33.367052
+                        ],
+                        [
+                            -111.88523,
+                            33.367463
+                        ],
+                        [
+                            -111.885557,
+                            33.367694
+                        ],
+                        [
+                            -111.885969,
+                            33.367283
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0260.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.4,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885876194444,
+                    33.3675764444444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0261.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886245,
+                            33.367486
+                        ],
+                        [
+                            -111.885919,
+                            33.367256
+                        ],
+                        [
+                            -111.885507,
+                            33.367667
+                        ],
+                        [
+                            -111.885834,
+                            33.367897
+                        ],
+                        [
+                            -111.886245,
+                            33.367486
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0261.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886127916667,
+                    33.3677615277778
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0262.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886498,
+                            33.36767
+                        ],
+                        [
+                            -111.88617,
+                            33.36744
+                        ],
+                        [
+                            -111.885758,
+                            33.367853
+                        ],
+                        [
+                            -111.886086,
+                            33.368083
+                        ],
+                        [
+                            -111.886498,
+                            33.36767
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0262.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886392333333,
+                    33.3679561666667
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0263.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.2,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886763,
+                            33.367867
+                        ],
+                        [
+                            -111.886437,
+                            33.367635
+                        ],
+                        [
+                            -111.886022,
+                            33.368045
+                        ],
+                        [
+                            -111.886348,
+                            33.368278
+                        ],
+                        [
+                            -111.886763,
+                            33.367867
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0263.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.2,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886629361111,
+                    33.3681313888889
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0264.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887001,
+                            33.368045
+                        ],
+                        [
+                            -111.886677,
+                            33.36781
+                        ],
+                        [
+                            -111.886258,
+                            33.368218
+                        ],
+                        [
+                            -111.886582,
+                            33.368452
+                        ],
+                        [
+                            -111.887001,
+                            33.368045
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0264.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886762027778,
+                    33.3682283611111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0265.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887131,
+                            33.368137
+                        ],
+                        [
+                            -111.886803,
+                            33.367907
+                        ],
+                        [
+                            -111.886393,
+                            33.36832
+                        ],
+                        [
+                            -111.886721,
+                            33.368549
+                        ],
+                        [
+                            -111.887131,
+                            33.368137
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0265.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.3,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886990166667,
+                    33.3677656944444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0266.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.0,
+                "FlightYawDegree": -48.1,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887368,
+                            33.367681
+                        ],
+                        [
+                            -111.887043,
+                            33.367441
+                        ],
+                        [
+                            -111.886613,
+                            33.36785
+                        ],
+                        [
+                            -111.886938,
+                            33.36809
+                        ],
+                        [
+                            -111.887368,
+                            33.367681
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0266.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.0,
+                "FlightYawDegree": -48.1,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886674944444,
+                    33.3675127777778
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0267.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.1,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887049,
+                            33.367429
+                        ],
+                        [
+                            -111.886727,
+                            33.367191
+                        ],
+                        [
+                            -111.886301,
+                            33.367596
+                        ],
+                        [
+                            -111.886623,
+                            33.367835
+                        ],
+                        [
+                            -111.887049,
+                            33.367429
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0267.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.1,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886405861111,
+                    33.3673022222222
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0268.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -47.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.88678,
+                            33.367222
+                        ],
+                        [
+                            -111.886462,
+                            33.366981
+                        ],
+                        [
+                            -111.886031,
+                            33.367382
+                        ],
+                        [
+                            -111.88635,
+                            33.367623
+                        ],
+                        [
+                            -111.88678,
+                            33.367222
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0268.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -47.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886140861111,
+                    33.3671130833333
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0269.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -47.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886517,
+                            33.367032
+                        ],
+                        [
+                            -111.886196,
+                            33.366791
+                        ],
+                        [
+                            -111.885765,
+                            33.367195
+                        ],
+                        [
+                            -111.886086,
+                            33.367435
+                        ],
+                        [
+                            -111.886517,
+                            33.367032
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0269.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -47.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885861638889,
+                    33.3669086666667
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0270.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -47.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886237,
+                            33.366828
+                        ],
+                        [
+                            -111.885917,
+                            33.366587
+                        ],
+                        [
+                            -111.885487,
+                            33.366989
+                        ],
+                        [
+                            -111.885806,
+                            33.36723
+                        ],
+                        [
+                            -111.886237,
+                            33.366828
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0270.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -47.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885590111111,
+                    33.3667120555556
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0271.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885965,
+                            33.366629
+                        ],
+                        [
+                            -111.885643,
+                            33.36639
+                        ],
+                        [
+                            -111.885216,
+                            33.366795
+                        ],
+                        [
+                            -111.885537,
+                            33.367034
+                        ],
+                        [
+                            -111.885965,
+                            33.366629
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0271.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885332416667,
+                    33.3665364166667
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0272.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -48.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885707,
+                            33.36645
+                        ],
+                        [
+                            -111.885381,
+                            33.366213
+                        ],
+                        [
+                            -111.884958,
+                            33.366623
+                        ],
+                        [
+                            -111.885284,
+                            33.366859
+                        ],
+                        [
+                            -111.885707,
+                            33.36645
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0272.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -48.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885058333333,
+                    33.3663323611111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0273.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -47.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885434,
+                            33.366251
+                        ],
+                        [
+                            -111.885113,
+                            33.36601
+                        ],
+                        [
+                            -111.884683,
+                            33.366414
+                        ],
+                        [
+                            -111.885003,
+                            33.366655
+                        ],
+                        [
+                            -111.885434,
+                            33.366251
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0273.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.7,
+                "FlightYawDegree": -47.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884782222222,
+                    33.3661364722222
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0274.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -48.9,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885154,
+                            33.366049
+                        ],
+                        [
+                            -111.884829,
+                            33.365815
+                        ],
+                        [
+                            -111.88441,
+                            33.366224
+                        ],
+                        [
+                            -111.884736,
+                            33.366458
+                        ],
+                        [
+                            -111.885154,
+                            33.366049
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0274.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -48.9,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884596944444,
+                    33.3660081388889
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0275.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.2,
+                "FlightYawDegree": -49.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884974,
+                            33.365917
+                        ],
+                        [
+                            -111.884642,
+                            33.365681
+                        ],
+                        [
+                            -111.88422,
+                            33.366099
+                        ],
+                        [
+                            -111.884552,
+                            33.366335
+                        ],
+                        [
+                            -111.884974,
+                            33.365917
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0275.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.2,
+                "FlightYawDegree": -49.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.884602055556,
+                    33.3660094166667
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0276.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.5,
+                "FlightYawDegree": -47.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.884985,
+                            33.365929
+                        ],
+                        [
+                            -111.884661,
+                            33.365682
+                        ],
+                        [
+                            -111.884219,
+                            33.36609
+                        ],
+                        [
+                            -111.884544,
+                            33.366337
+                        ],
+                        [
+                            -111.884985,
+                            33.365929
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0276.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.5,
+                "FlightYawDegree": -47.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885481666667,
+                    33.3660305833333
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0277.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -49.1,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.885854,
+                            33.365942
+                        ],
+                        [
+                            -111.885527,
+                            33.365708
+                        ],
+                        [
+                            -111.885109,
+                            33.36612
+                        ],
+                        [
+                            -111.885436,
+                            33.366353
+                        ],
+                        [
+                            -111.885854,
+                            33.365942
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0277.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -49.1,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.885851611111,
+                    33.3662991944444
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0278.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886222,
+                            33.366209
+                        ],
+                        [
+                            -111.885895,
+                            33.365978
+                        ],
+                        [
+                            -111.885481,
+                            33.366389
+                        ],
+                        [
+                            -111.885808,
+                            33.366621
+                        ],
+                        [
+                            -111.886222,
+                            33.366209
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0278.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -49.3,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886131166667,
+                    33.3665040555556
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0279.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.2,
+                "FlightYawDegree": -49.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886501,
+                            33.366416
+                        ],
+                        [
+                            -111.886177,
+                            33.366184
+                        ],
+                        [
+                            -111.885762,
+                            33.366592
+                        ],
+                        [
+                            -111.886086,
+                            33.366824
+                        ],
+                        [
+                            -111.886501,
+                            33.366416
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0279.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.2,
+                "FlightYawDegree": -49.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886396888889,
+                    33.3666980833333
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0280.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886768,
+                            33.366607
+                        ],
+                        [
+                            -111.886439,
+                            33.366376
+                        ],
+                        [
+                            -111.886026,
+                            33.36679
+                        ],
+                        [
+                            -111.886355,
+                            33.36702
+                        ],
+                        [
+                            -111.886768,
+                            33.366607
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0280.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886662138889,
+                    33.3668923055556
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0281.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887033,
+                            33.366801
+                        ],
+                        [
+                            -111.886704,
+                            33.36657
+                        ],
+                        [
+                            -111.886291,
+                            33.366984
+                        ],
+                        [
+                            -111.88662,
+                            33.367215
+                        ],
+                        [
+                            -111.887033,
+                            33.366801
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0281.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -49.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886898166667,
+                    33.3670661111111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0282.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -48.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887271,
+                            33.366981
+                        ],
+                        [
+                            -111.886947,
+                            33.366745
+                        ],
+                        [
+                            -111.886525,
+                            33.367152
+                        ],
+                        [
+                            -111.886849,
+                            33.367388
+                        ],
+                        [
+                            -111.887271,
+                            33.366981
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0282.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.5,
+                "FlightYawDegree": -48.5,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.887025861111,
+                    33.3671571666667
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0283.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -51.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887393,
+                            33.367058
+                        ],
+                        [
+                            -111.887058,
+                            33.366835
+                        ],
+                        [
+                            -111.886659,
+                            33.367256
+                        ],
+                        [
+                            -111.886993,
+                            33.36748
+                        ],
+                        [
+                            -111.887393,
+                            33.367058
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0283.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -51.0,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.887057583333,
+                    33.3665590277778
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0284.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.1,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887433,
+                            33.366466
+                        ],
+                        [
+                            -111.887099,
+                            33.366232
+                        ],
+                        [
+                            -111.886682,
+                            33.366652
+                        ],
+                        [
+                            -111.887016,
+                            33.366886
+                        ],
+                        [
+                            -111.887433,
+                            33.366466
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0284.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 47.1,
+                "FlightYawDegree": -49.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886712583333,
+                    33.3662976111111
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0285.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.887086,
+                            33.366211
+                        ],
+                        [
+                            -111.886761,
+                            33.365975
+                        ],
+                        [
+                            -111.886339,
+                            33.366384
+                        ],
+                        [
+                            -111.886664,
+                            33.36662
+                        ],
+                        [
+                            -111.887086,
+                            33.366211
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0285.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.6,
+                "FlightYawDegree": -48.6,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886474666667,
+                    33.3661248888889
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0286.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.886846,
+                            33.366038
+                        ],
+                        [
+                            -111.886522,
+                            33.365804
+                        ],
+                        [
+                            -111.886103,
+                            33.366211
+                        ],
+                        [
+                            -111.886427,
+                            33.366446
+                        ],
+                        [
+                            -111.886846,
+                            33.366038
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0286.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.4,
+                "FlightYawDegree": -48.7,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -111.886444111111,
+                    33.3661023055556
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0287.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.9,
+                "FlightYawDegree": -24.9,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -111.88683,
+                            33.36615
+                        ],
+                        [
+                            -111.886644,
+                            33.365822
+                        ],
+                        [
+                            -111.886058,
+                            33.366055
+                        ],
+                        [
+                            -111.886244,
+                            33.366383
+                        ],
+                        [
+                            -111.88683,
+                            33.36615
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "File_Name": "DJI_0287.JPG",
+                "Focal_Length": 10.26,
+                "Image_Width": 5472.0,
+                "Image_Height": 3648.0,
+                "Sensor_Model": "L1D-20c",
+                "Sensor_Make": "Hasselblad",
+                "RelativeAltitude": 46.9,
+                "FlightYawDegree": -24.9,
+                "DateTimeOriginal": "2024:01:28 16:10:56"
+            }
+        }
+    ]
+}
