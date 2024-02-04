@@ -1,12 +1,12 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility. 
 
 Name: drone_fp.py
->The purpose of this module is to calculate imagery footprints of individual drone images.  There is no stitching of 
-> images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
-> with:
->* Drone Flightpath (LineString)
->* Drone Location at location of photo (Point)
->* Individual Image Footprints (Polygons)
+The purpose of this module is to calculate imagery footprints of individual drone images.  There is no stitching of 
+ images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
+ with:
+* Drone Flightpath (LineString)
+* Drone Location at location of photo (Point)
+* Individual Image Footprints (Polygons)
 ----------------------------------------------------------------------------------------------------------------
 
 Author: Dean Hand <br>
@@ -30,13 +30,13 @@ Date Created: 09/07/2019<br>
 ## Processing Notes
 
 ### The accuracy of this process depends highly on a number of factors.
->1. IMU calibration
->2. Gimbal calibration
->3. Compass Calibration
->4. Shooting angle (for best results - `Parallel to Main Path`)
->5. Capture Mode (for best results - `Hover&Capture at Point`)
->6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
->7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
+1. IMU calibration
+2. Gimbal calibration
+3. Compass Calibration
+4. Shooting angle (for best results - `Parallel to Main Path`)
+5. Capture Mode (for best results - `Hover&Capture at Point`)
+6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
+7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
 so the code calculates the GSD and FOV using the FlightYawDegree.
 
 ## Future Builds
