@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: src
+Version: 1.0
+Summary: Drone_image footprint calculator
+Author: Dean Hand
+Author-email: spifftek@yahoo.com
+Keywords: src,DJI,exif
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Drone Image Processors
+Classifier: Topic :: Scientific/Engineering :: GIS
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Programming Language :: Python :: 3.6
+License-File: LICENSE
+Requires-Dist: geojson
+Requires-Dist: argparse
+Requires-Dist: geopandas
+Requires-Dist: fiona
+Requires-Dist: pyproj
+Requires-Dist: numpy
+Requires-Dist: utm
+Requires-Dist: geojson_rewind
+Requires-Dist: GDAL
+Requires-Dist: progress
+Requires-Dist: shapely
+Requires-Dist: progressbar
+Requires-Dist: pyexiftool
+Requires-Dist: gps-time
+Requires-Dist: datetime
+
+
+    Calculates the imagery footprint on the ground using exiftags in drone images.
+    

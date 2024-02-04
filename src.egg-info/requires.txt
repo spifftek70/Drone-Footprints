@@ -1,0 +1,15 @@
+geojson
+argparse
+geopandas
+fiona
+pyproj
+numpy
+utm
+geojson_rewind
+GDAL
+progress
+shapely
+progressbar
+pyexiftool
+gps-time
+datetime
