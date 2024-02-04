@@ -1,28 +1,34 @@
 from setuptools import setup
 import re
 
-with open('drone_fp/__init__.py', 'r') as fd:
+with open('src/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
 
 setup(
-    name='drone_fp',
+    name='src',
     version=version,
     description='Drone_image footprint calculator',
     long_description="""
-    Calculates the imagery footprint on the ground using exiftags in drone images.
+    The purpose of this module is to calculate imagery footprints of individual drone images. There is no stitching of
+    images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
+    with:
+
+    * Drone Flightpath (LineString)
+    * Drone Location at location of photo (Point)
+    * Individual Image Footprints (Polygons)
     """,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Drone Image Processors',
         'Topic :: Scientific/Engineering :: GIS',
         'Topic :: Scientific/Engineering :: Information Analysis',
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.9'
     ],
-    packages=['drone_fp'],
-    keywords=['drone_fp', 'DJI', 'exif'],
-    # url='',
+    packages=['src'],
+    keywords=['src', 'DJI', 'exif'],
+    url='https://github.com/spifftek70/Drone-Footprints',
     author='Dean Hand',
-    author_email='spifftek@yahoo.com',
+    author_email='dean.e.hand@me.com',
     install_requires=[
         'geojson',
         'argparse',
