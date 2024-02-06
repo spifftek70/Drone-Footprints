@@ -67,5 +67,5 @@ A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/
 ## Sample Screenshots (QGIS)
 ![screenshot1.png](samples%2Fscreenshots%2Fscreenshot1.png)
 ![screenshot2.png](samples%2Fscreenshots%2Fscreenshot2.png)
-![screenshot3.png](samples%2Fscreenshots%2Fscreenshot3.png)
+![adding_geotiffs.mp4](samples%2Fscreenshots%2Fadding_geotiffs.mp4)
 ----------------------------------------------------------------------------------------------------------------
