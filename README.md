@@ -68,6 +68,4 @@ A sample dataset can be found [here](https://drive.google.com/drive/u/1/folders/
 ![screenshot1.png](samples%2Fscreenshots%2Fscreenshot1.png)
 ![screenshot2.png](samples%2Fscreenshots%2Fscreenshot2.png)
 [![IMAGE ALT TEXT HERE](http://i3.ytimg.com/vi/eaPfwUOpPlo/hqdefault.jpg)](https://youtu.be/eaPfwUOpPlo)
-
-[![Screenshot video](https://youtu.be/eaPfwUOpPlo)]
 ----------------------------------------------------------------------------------------------------------------
