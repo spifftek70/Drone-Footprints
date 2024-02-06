@@ -8,8 +8,8 @@ import os
 import exiftool
 import argparse
 import datetime
-from coordinate_conversions import *
-from geospatial_calculations import *
+from geospatial_calculations_nadir import *
+from create_geotiffs import *
 from Color_Class import Color
 from operator import itemgetter
 import geojson
@@ -62,7 +62,7 @@ def format_data(indir_path, geotff, metadata):
             sensor_height = float(sensorHeight)
         else:
             sensor_width = 13.2  # Example sensor width, adjust based on your sensor
-            sensor_height = 8.8
+            sensor_height = 8.8 # future non-nadir work
         try:
             center_lat = float(tags['Composite:GPSLatitude'])
             center_lon = float(tags['Composite:GPSLongitude'])
@@ -70,18 +70,22 @@ def format_data(indir_path, geotff, metadata):
             center_lat = float(tags['EXIF:GPSLatitude'])
             center_lon = float(tags['EXIF:GPSLongitude'])
         try:
-            original_width = float(tags['EXIF:ImageWidth'])
-            original_height = float(tags['EXIF:ImageHeight'])
+            original_width = int(tags['EXIF:ImageWidth'])
+            original_height = int(tags['EXIF:ImageHeight'])
         except KeyError:
-            original_width = float(tags['EXIF:ExifImageWidth'])
-            original_height = float(tags['EXIF:ExifImageHeight'])
+            original_width = int(tags['EXIF:ExifImageWidth'])
+            original_height = int(tags['EXIF:ExifImageHeight'])
         try:
             altitude = float(tags['XMP:RelativeAltitude'])
-            yaw = float(tags['XMP:FlightYawDegree'])
+            FlightPitchDegree = float(tags['XMP:FlightPitchDegree']) # future non-nadir work
+            FlightRollDegree = float(tags['XMP:FlightRollDegree']) # future non-nadir work
+            FlightYawDegree = float(tags['XMP:FlightYawDegree'])
+            GimbalPitchDegree = float(tags['XMP:GimbalPitchDegree']) # future non-nadir work
+            GimbalRollDegree = float(tags['XMP:GimbalRollDegree']) # future non-nadir work
+            GimbalYawDegree = float(tags['XMP:GimbalYawDegree']) # future non-nadir work
         except KeyError:
             altitude = float(tags['EXIF:GPSAltitude'])
-            yaw = float(tags["MakerNotes:Yaw"])
-            # print(Color.RED + "Oops! Something went wrong. Not standard Metadata" + Color.END)
+            FlightYawDegree = float(tags["MakerNotes:Yaw"])
         focal_length = float(tags['EXIF:FocalLength'])
         file_Name = tags['File:FileName']
         image_path = os.path.join(indir_path, file_Name)
@@ -89,18 +93,15 @@ def format_data(indir_path, geotff, metadata):
             datetime = tags['EXIF:DateTimeOriginal']
             sensor_model = tags['EXIF:Model']
             sensor_make = tags['EXIF:Make']
+        center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
         gsd = (sensor_width * altitude) / (focal_length * original_width)
         pixel_width = pixel_height = gsd
-        center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
-        coord_array = calculate_gcp_list(center_x, center_y, pixel_width, pixel_height, yaw, original_width,
-                                         original_height, zone_number, center_lat, center_lon, zone_number,
-                                         hemisphere)
-
+        coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
+                                                 original_width, original_height, zone_number, center_lat)
         g2 = Polygon(coord_array)
         poly = geojson.dumps(g2)
         polyed = geojson.loads(poly)
         poly_r = rewind(polyed)
-        # hemisphere = hemisphere_flag(center_lat)
         output_file = splitext(file_Name)[0] + '.tif'
         geotiff_file = os.path.join(geotff, output_file)
         warp_image_with_gcp(image_path, geotiff_file, coord_array)
@@ -108,7 +109,7 @@ def format_data(indir_path, geotff, metadata):
         linecoords.append(coords)
         ptProps = dict(File_Name=tags['File:FileName'], Focal_Length=focal_length,
                        Image_Width=original_width, Image_Height=original_height, Sensor_Model=sensor_model,
-                       Sensor_Make=sensor_make, RelativeAltitude=altitude, FlightYawDegree=yaw,
+                       Sensor_Make=sensor_make, RelativeAltitude=altitude, FlightYawDegree=FlightYawDegree,
                        DateTimeOriginal=datetime)
         img_over = dict(coords=coords, props=ptProps)
         img_stuff.append(img_over)
@@ -139,6 +140,8 @@ def find_file(some_dir):
         if splitext(filename)[1].lower() in {'.jpg'}:
             files = os.path.join(some_dir, filename)
             matches.append(files)
+    if len(matches) == 0:
+        print(Color.RED + "No image files found" + Color.END)
     matches.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
     return matches
 
