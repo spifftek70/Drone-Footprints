@@ -5,7 +5,7 @@
 
 import math
 import utm
-from pyproj import Proj, Transformer, CRS
+from pyproj import Transformer, CRS
 
 
 def decimal_degrees_to_utm(latitude, longitude):
