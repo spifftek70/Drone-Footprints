@@ -73,7 +73,7 @@ Geojson name is constructed using the date/time of processing like so:
 
 ----------------------------------------------------------------------------------------------------------------
 
-## Future Builds
+## :boom: Future Builds
 
 ### Sensor Size DB
 The file [drone_sensors.csv](drone_fp%2Fdrone_sensors.csv) is the start of autoprocessing for 
@@ -84,7 +84,7 @@ process.
 Should add much better accuracy to any RTK dataset that's processed.
 
 ----------------------------------------------------------------------------------------------------------------
-## Sample Outputs
+## :star: Sample Outputs
 
 ### Sample Dataset
  - [Mesa 02-04-2024](https://drive.google.com/drive/folders/16BR0h04ATS6uYavgXros031j8kfbCZJp?usp=share_link)
