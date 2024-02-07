@@ -7,6 +7,7 @@ The purpose of this module is to calculate imagery footprints of individual dron
 * Drone Flightpath (LineString)
 * Drone location at point of photo (Point)
 * Individual Image Footprints (Polygons)
+
 ----------------------------------------------------------------------------------------------------------------
 Author: Dean Hand <br>
 Date Created: 09/07/2019<br>
@@ -83,23 +84,24 @@ process.
 Should add much better accuracy to any RTK dataset that's processed.
 
 ----------------------------------------------------------------------------------------------------------------
+## Sample Outputs
 
-## Sample Dataset
+### Sample Dataset
  - [Mesa 02-04-2024](https://drive.google.com/drive/folders/16BR0h04ATS6uYavgXros031j8kfbCZJp?usp=share_link)
  - [Mesa 01-28-2024-a](https://drive.google.com/drive/folders/1eE4UY3IXOdtwvZhvHdsvN5eP0siKtKVU?usp=share_link)
  - [Mesa 01-28-2024](https://drive.google.com/drive/folders/1tx55rh3CgyDzteBAS7c3qEHLJobb902M?usp=share_link)
  - [Mesa 01-25-2024](https://drive.google.com/drive/folders/13jCmLv4FMEQnQJ1fm8c5k3OO_kBJC-hq?usp=share_link)
 
-## Sample JSON Output 
+### Sample JSON Output 
 [M_2024-02-04_07-03.json](samples%2Fgeojson%2FM_2024-02-04_07-03.json)
 
-## Sample GeoTIFFs
+### Sample GeoTIFFs
 - [DJI_0261.tif](samples%2Fgeotiffs%2FDJI_0261.tif)
 - [DJI_0267.tif](samples%2Fgeotiffs%2FDJI_0267.tif)
 - [DJI_0273.tif](samples%2Fgeotiffs%2FDJI_0273.tif)
 - [DJI_0280.tif](samples%2Fgeotiffs%2FDJI_0280.tif)
 
-## Sample Screenshots (QGIS)
+### Sample Screenshots (QGIS)
 <img src="samples%2Fscreenshots%2Fscreenshot1.png" alt="drawing" width="600"/>
 <img src="samples%2Fscreenshots%2Fscreenshot2.png" alt="drawing" width="600"/>
 
