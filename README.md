@@ -13,6 +13,7 @@ Author: Dean Hand <br>
 Date Created: 09/07/2019<br>
 
 ----------------------------------------------------------------------------------------------------------------
+
 ## Arguments
 `-i` - The Default root folder for the mission you wish to process.  Required
 
@@ -23,12 +24,14 @@ Date Created: 09/07/2019<br>
 `-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
 
 ----------------------------------------------------------------------------------------------------------------
+
 ## Example Commands
 `python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output`
 
 `python Drone_Footprints.py -i "/Path/To/Dataset/images" -o "/Path/To/Dataset/output" -w 6.16 -d 4.62`
 
 ----------------------------------------------------------------------------------------------------------------
+
 ## Processing Notes
 
 ### The accuracy of this process depends highly on a number of factors.
@@ -80,6 +83,7 @@ process.
 ### RTK Processing
 Should add much better accuracy to any RTK dataset that's processed.
 ----------------------------------------------------------------------------------------------------------------
+
 ## Sample Dataset
  - [Mesa 02-04-2024](https://drive.google.com/drive/folders/16BR0h04ATS6uYavgXros031j8kfbCZJp?usp=share_link)
  - [Mesa 01-28-2024-a](https://drive.google.com/drive/folders/1eE4UY3IXOdtwvZhvHdsvN5eP0siKtKVU?usp=share_link)
