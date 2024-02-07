@@ -17,6 +17,7 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from os.path import splitext
 from progress.bar import Bar
+from PPK_Process import find_MTK
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
@@ -52,7 +53,10 @@ def format_data(indir_path, geotff, metadata):
     sensor_make = ''
     datetime = ''
     i = 0
+    # ppk_meta = find_MTK(indir_path, metadata)
     for tags in iter(metadata):
+        # print(tags)
+        # exit()
         bar.next()
         i = i + 1
         if tags in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
@@ -84,15 +88,17 @@ def format_data(indir_path, geotff, metadata):
             GimbalRollDegree = float(tags['XMP:GimbalRollDegree']) # future non-nadir work
             GimbalYawDegree = float(tags['XMP:GimbalYawDegree']) # future non-nadir work
         except KeyError:
-            altitude = float(tags['EXIF:GPSAltitude'])
+            altitude = float(tags['Composite:GPSAltitude'])
             FlightYawDegree = float(tags["MakerNotes:Yaw"])
         focal_length = float(tags['EXIF:FocalLength'])
         file_Name = tags['File:FileName']
         image_path = os.path.join(indir_path, file_Name)
-        if i == 1:
-            datetime = tags['EXIF:DateTimeOriginal']
-            sensor_model = tags['EXIF:Model']
-            sensor_make = tags['EXIF:Make']
+        # if i == 1:
+        datetime = tags['EXIF:DateTimeOriginal']
+        sensor_model = tags['EXIF:Model']
+        sensor_make = tags['EXIF:Make']
+        # print('file name:', file_Name, "\tcentral Lat:", center_lat, "\tcentral Lon:", center_lon, "\tDate Time: ", datetime)
+        # continue
         center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
         gsd = (sensor_width * altitude) / (focal_length * original_width)
         pixel_width = pixel_height = gsd
