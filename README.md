@@ -13,6 +13,26 @@ The purpose of this module is to calculate imagery footprints of individual dron
 
 ----------------------------------------------------------------------------------------------------------------
 
+## Installation
+
+You'll need a ready made gdal version 3.8.3 or later.
+
+On Ubuntu, you can install as follows:
+
+```
+sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+sudo apt-get update
+sudo apt-get install libgdal-dev
+```
+
+Installation via pip
+
+```
+pip install -r requirements.txt
+```
+
+----------------------------------------------------------------------------------------------------------------
+
 ## :bulb: Processing Notes and Tips
 
 ### Arguments
