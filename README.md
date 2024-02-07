@@ -1,6 +1,9 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility. 
-
-Name: drone_fp.py
+```
+Author: Dean Hand
+Date Created: 09/07/2019
+```
+Name: Drone_Footprints.py \
 The purpose of this module is to calculate imagery footprints of individual drone images.  There is no stitching of 
  images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
  with:
@@ -9,11 +12,10 @@ The purpose of this module is to calculate imagery footprints of individual dron
 * Individual Image Footprints (Polygons)
 
 ----------------------------------------------------------------------------------------------------------------
-Author: Dean Hand <br>
-Date Created: 09/07/2019<br>
-----------------------------------------------------------------------------------------------------------------
 
-## Arguments
+## Processing Notes
+
+### Arguments
 `-i` - The Default root folder for the mission you wish to process.  Required
 
 `-o` - The output directory for the GeoJSON file and GeoTiffs. Required
@@ -24,14 +26,12 @@ Date Created: 09/07/2019<br>
 
 ----------------------------------------------------------------------------------------------------------------
 
-## Example Commands
+### Example Commands
 `python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output`
 
 `python Drone_Footprints.py -i "/Path/To/Dataset/images" -o "/Path/To/Dataset/output" -w 6.16 -d 4.62`
 
 ----------------------------------------------------------------------------------------------------------------
-
-## Processing Notes
 
 ### The accuracy of this process depends highly on a number of factors.
 1. IMU calibration
