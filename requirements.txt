@@ -10,7 +10,6 @@ geometry
 numpy
 progressbar
 pyexiftool
-osgeo
 gps-time
 datetime
 GDAL
