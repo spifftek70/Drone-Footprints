@@ -16,7 +16,7 @@ Date Created: 09/07/2019<br>
 ## Arguments
 `-i` - The Default root folder for the mission you wish to process.  Required
 
-`-o` - The output directory for the GeoJSON file. Required
+`-o` - The output directory for the GeoJSON file and GeoTiffs. Required
 
 `-w` - Sensor Width (default is 13.2) Not Required (Check your Drones Specs for information)
 
@@ -40,6 +40,28 @@ Date Created: 09/07/2019<br>
 6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
 7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
 so the code calculates the GSD and FOV using the FlightYawDegree.
+
+### Sort into Datasets
+It is highly recommended that you sort the images you want processed into corresponding datasets
+
+- Separate Images by flight mission
+  - Create a mission folder for each flight mission
+  - Create an image folder within the mission folder
+
+``````
+├── /Path/to/mission_folder
+│   ├── images
+
+``````
+
+### Outputs locations
+It is a good practice to set your output folder `-o` location within your flight mission folder as shown in 
+[Example Commands](#example-commands), but it is not required.
+``````
+├── /Path/to/output_folder
+│   ├── geotiffs
+│   ├── geojsons
+``````
 ----------------------------------------------------------------------------------------------------------------
 
 ## Future Builds
