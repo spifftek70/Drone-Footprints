@@ -25,6 +25,12 @@ sudo apt-get update
 sudo apt-get install libgdal-dev
 ```
 
+Installation via pip
+
+```
+pip install -r requirements.txt
+```
+
 ----------------------------------------------------------------------------------------------------------------
 
 ## :bulb: Processing Notes and Tips
