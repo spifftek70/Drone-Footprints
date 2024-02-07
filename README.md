@@ -51,7 +51,6 @@ It is highly recommended that you sort the images you want processed into corres
 ``````
 ├── /Path/to/mission_folder
 │   ├── images
-
 ``````
 
 ### Outputs locations
@@ -60,8 +59,15 @@ It is a good practice to set your output folder `-o` location within your flight
 ``````
 ├── /Path/to/output_folder
 │   ├── geotiffs
+│   │   ├── image1.tif
+│   │   ├── image1.tif
 │   ├── geojsons
+│   │   ├── M_2024-02-06_11-16.json
 ``````
+Geojson name is constructed using the date/time of processing like so:
+ - `M` = mission
+ - `2024-02-06` = year, month, day
+ - `11-16` = hour, minute
 ----------------------------------------------------------------------------------------------------------------
 
 ## Future Builds
