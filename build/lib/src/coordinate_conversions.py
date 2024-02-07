@@ -5,6 +5,7 @@
 
 import math
 import utm
+from pyproj import Proj, Transformer, CRS
 
 
 def decimal_degrees_to_utm(latitude, longitude):
@@ -33,3 +34,28 @@ def utm_to_latlon(utm_x_str, utm_y_str, utm_zone, utm_nth):
 
 def hemisphere_flag(latitude):
     return 'N' if latitude >= 0 else 'S'
+
+
+def is_gimbal_pitch_in_range(gimbal_pitch_degree):
+    """
+    Check if the gimbal pitch degree is within the range of -91 to -89 (inclusive).
+
+    Parameters:
+    gimbal_pitch_degree (float): The pitch degree of the gimbal.
+
+    Returns:
+    bool: True if within range, False otherwise.
+    """
+    return -91 <= gimbal_pitch_degree <= -89
+
+
+def proj_stuff(center_latitude, zone_number):
+    # Assuming zone_number and center_latitude are already defined
+    is_southern = center_latitude < 0
+    utm_crs = CRS(proj='utm', zone=zone_number, ellps='WGS84', datum='WGS84', south=is_southern)
+    wgs84_crs = CRS(proj='latlong', datum='WGS84')
+
+    # Initialize the Transformer object for transforming from UTM to WGS84
+    transformer = Transformer.from_crs(utm_crs, wgs84_crs, always_xy=True)
+
+    return transformer
