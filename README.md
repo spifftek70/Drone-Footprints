@@ -5,7 +5,7 @@ The purpose of this module is to calculate imagery footprints of individual dron
  images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
  with:
 * Drone Flightpath (LineString)
-* Drone Location at location of photo (Point)
+* Drone location at point of photo (Point)
 * Individual Image Footprints (Polygons)
 ----------------------------------------------------------------------------------------------------------------
 
