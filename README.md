@@ -8,10 +8,8 @@ The purpose of this module is to calculate imagery footprints of individual dron
 * Drone location at point of photo (Point)
 * Individual Image Footprints (Polygons)
 ----------------------------------------------------------------------------------------------------------------
-
 Author: Dean Hand <br>
 Date Created: 09/07/2019<br>
-
 ----------------------------------------------------------------------------------------------------------------
 
 ## Arguments
@@ -71,6 +69,7 @@ Geojson name is constructed using the date/time of processing like so:
  - `M` = mission
  - `2024-02-06` = year, month, day
  - `11-16` = hour, minute
+
 ----------------------------------------------------------------------------------------------------------------
 
 ## Future Builds
@@ -82,6 +81,7 @@ process.
 
 ### RTK Processing
 Should add much better accuracy to any RTK dataset that's processed.
+
 ----------------------------------------------------------------------------------------------------------------
 
 ## Sample Dataset
