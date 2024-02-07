@@ -1,3 +1,6 @@
-1.0 (2019-09-07)
+1.0 (2024-02-07)
 ----------------
-Initial Release
+Working copy 
+
+Uses GSD to calculate corner points
+Uses GDAL Warp to map corner points to extents
