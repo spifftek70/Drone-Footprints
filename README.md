@@ -1,8 +1,8 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility. 
-```
-Author: Dean Hand
-Date Created: 09/07/2019
-```
+
+> Author: Dean Hand \
+> Date Created: 09/07/2019
+
 Name: Drone_Footprints.py \
 The purpose of this module is to calculate imagery footprints of individual drone images.  There is no stitching of 
  images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
@@ -13,7 +13,7 @@ The purpose of this module is to calculate imagery footprints of individual dron
 
 ----------------------------------------------------------------------------------------------------------------
 
-## Processing Notes
+## :bulb: Processing Notes
 
 ### Arguments
 `-i` - The Default root folder for the mission you wish to process.  Required
