@@ -96,7 +96,7 @@ Should add much better accuracy to any RTK dataset that's processed.
 - [DJI_0280.tif](samples%2Fgeotiffs%2FDJI_0280.tif)
 
 ## Sample Screenshots (QGIS)
-![screenshot1.png](samples%2Fscreenshots%2Fscreenshot1.png)
-![screenshot2.png](samples%2Fscreenshots%2Fscreenshot2.png)
+<img src="samples%2Fscreenshots%2Fscreenshot1.png" alt="drawing" width="200"/>
+<img src="samples%2Fscreenshots%2Fscreenshot2.png" alt="drawing" width="200"/>
 [![IMAGE ALT TEXT HERE](samples%2Fscreenshots%2Fezgif-2-5968847bb5.gif)](https://youtu.be/eaPfwUOpPlo)
 ----------------------------------------------------------------------------------------------------------------
