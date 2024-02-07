@@ -13,7 +13,7 @@ The purpose of this module is to calculate imagery footprints of individual dron
 
 ----------------------------------------------------------------------------------------------------------------
 
-## :bulb: Processing Notes
+## :bulb: Processing Notes and Tips
 
 ### Arguments
 `-i` - The Default root folder for the mission you wish to process.  Required
