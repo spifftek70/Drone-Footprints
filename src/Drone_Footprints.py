@@ -56,7 +56,7 @@ def format_data(indir_path, geotff, metadata):
     # ppk_meta = find_MTK(indir_path, metadata)
     for tags in iter(metadata):
         # print(tags)
-        # exit()
+        # exit()if
         bar.next()
         i = i + 1
         if tags in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
