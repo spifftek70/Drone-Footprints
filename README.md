@@ -33,7 +33,7 @@ The purpose of this module is to calculate imagery footprints of individual dron
 
 ----------------------------------------------------------------------------------------------------------------
 
-### The accuracy of this process depends highly on a number of factors.
+### :warning: The accuracy of this process depends highly on a number of factors.
 1. IMU calibration
 2. Gimbal calibration
 3. Compass Calibration
@@ -43,7 +43,7 @@ The purpose of this module is to calculate imagery footprints of individual dron
 7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
 so the code calculates the GSD and FOV using the FlightYawDegree.
 
-### Sort into Datasets
+### :memo: Sort into Datasets
 It is highly recommended that you sort the images you want processed into corresponding datasets
 
 - Separate Images by flight mission
