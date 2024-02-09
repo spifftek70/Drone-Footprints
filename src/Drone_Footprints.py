@@ -9,6 +9,7 @@ import exiftool
 import argparse
 import datetime
 from geospatial_calculations_nadir import *
+from geospatial_calculations_nonnadir import calculate_fov
 from create_geotiffs import *
 from Color_Class import Color
 from operator import itemgetter
@@ -17,7 +18,7 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from os.path import splitext
 from progress.bar import Bar
-from PPK_Process import find_MTK
+# from PPK_Process import find_MTK
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
@@ -81,6 +82,7 @@ def format_data(indir_path, geotff, metadata):
             original_height = int(tags['EXIF:ExifImageHeight'])
         try:
             altitude = float(tags['XMP:RelativeAltitude'])
+            ab_altitude = float(tags['XMP:AbsoluteAltitude'])
             FlightPitchDegree = float(tags['XMP:FlightPitchDegree']) # future non-nadir work
             FlightRollDegree = float(tags['XMP:FlightRollDegree']) # future non-nadir work
             FlightYawDegree = float(tags['XMP:FlightYawDegree'])
@@ -97,13 +99,35 @@ def format_data(indir_path, geotff, metadata):
         datetime = tags['EXIF:DateTimeOriginal']
         sensor_model = tags['EXIF:Model']
         sensor_make = tags['EXIF:Make']
-        # print('file name:', file_Name, "\tcentral Lat:", center_lat, "\tcentral Lon:", center_lon, "\tDate Time: ", datetime)
+        # print('file name:', file_Name, "\tcentral Lat:", center_lat, "\tcentral Lon:", center_lon, "\tDate Time: ", datetime, "\n\n")
         # continue
         center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
-        gsd = (sensor_width * altitude) / (focal_length * original_width)
-        pixel_width = pixel_height = gsd
-        coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
-                                                 original_width, original_height, zone_number, center_lat)
+        # gsd = (sensor_width * altitude) / (focal_length * original_width)
+        # pixel_width = pixel_height = gsd
+        # coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
+        #                                          original_width, original_height, zone_number, center_lat)
+
+        # coord_array = process_footprint_data(original_width, original_height, altitude, focal_length,
+        #                                      GimbalPitchDegree, GimbalRollDegree, GimbalYawDegree, FlightPitchDegree,
+        #                                      FlightRollDegree, FlightYawDegree, sensor_width, sensor_height,
+        #                                      center_x, center_y, zone_number, hemisphere, center_lat)
+        # print("\n\nfile name= ", file_Name, "\n\nfocal_length=", focal_length, "\naltitude=", altitude, "\nGimbalRollDegree=", GimbalRollDegree,
+        #       "\nGimbalYawDegree=", GimbalYawDegree, "GimbalPitchDegree=", GimbalPitchDegree, "\nFlightRollDegree=",
+        #       FlightRollDegree, "\nFlightYawDegree=", FlightYawDegree, "\nFlightPitchDegree=", FlightPitchDegree,
+        #       "\nDrone Lon=", center_lon, "\nDrone lat=", center_lat, "\nsensor_width=", sensor_width,
+        #       "\nsensor_height =",
+        #       sensor_height, "\noriginal_width =", original_width, "\noriginal_height=", original_height, "\n\n")
+        # continue
+        coord_array = calculate_fov(altitude, focal_length, sensor_width, sensor_height,
+                                   GimbalRollDegree, GimbalPitchDegree, GimbalYawDegree,
+                                   FlightRollDegree, FlightPitchDegree, FlightYawDegree,
+                                   center_lat, center_lon, center_x, center_y, zone_number,
+                                   hemisphere)
+
+        # array_check = footprint_calculator.get_footprint_polygon()
+        # print(coord_array, "\n\n\n\n")
+        # continue
+        # exit()
         g2 = Polygon(coord_array)
         poly = geojson.dumps(g2)
         polyed = geojson.loads(poly)
