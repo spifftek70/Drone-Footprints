@@ -85,9 +85,7 @@ def warp_image_with_gcp(image_path, output_file, coord_array):
                                     srcNodata=nodata_value,
                                     dstNodata=nodata_value,
                                     creationOptions=['ALPHA=YES'])  # This option adds an alpha band for transparency
-
     # Perform the warp
     gdal.Warp(output_file, ds, options=warp_options)
-
     # Clean up
     ds = None
