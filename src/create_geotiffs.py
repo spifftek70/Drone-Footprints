@@ -69,7 +69,7 @@ def warp_image_with_gcp(image_path, output_file, coord_array):
     ds.SetGCPs(gcp_list, srs.ExportToWkt())
     nodata_value = 0
     # Define warp options
-    warp_options = gdal.WarpOptions(dstSRS='EPSG:' + str(4326),
+    warp_options = gdal.WarpOptions(dstSRS=wkt,
                                     resampleAlg=gdal.GRA_Bilinear,
                                     format='GTiff',
                                     srcNodata=nodata_value,
