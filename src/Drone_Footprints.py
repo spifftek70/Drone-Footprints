@@ -57,7 +57,7 @@ def format_data(indir_path, geotff, metadata):
     # ppk_meta = find_MTK(indir_path, metadata)
     for tags in iter(metadata):
         # print(tags)
-        # exit()if
+        # exit()
         bar.next()
         i = i + 1
         if tags in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
@@ -91,7 +91,10 @@ def format_data(indir_path, geotff, metadata):
             GimbalYawDegree = float(tags['XMP:GimbalYawDegree']) # future non-nadir work
         except KeyError:
             re_altitude = float(tags['Composite:GPSAltitude'])
-            FlightYawDegree = float(tags["MakerNotes:Yaw"])
+            # FlightYawDegree = float(tags["MakerNotes:Yaw"])
+            GimbalPitchDegree = float(tags["XMP:Pitch"])
+            GimbalRollDegree = float(tags["XMP:Roll"])
+            FlightYawDegree = float(tags["XMP:Yaw"])
         focal_length = float(tags['EXIF:FocalLength'])
         file_Name = tags['File:FileName']
         image_path = os.path.join(indir_path, file_Name)
@@ -115,18 +118,13 @@ def format_data(indir_path, geotff, metadata):
                                     center_lat, center_lon)
         # print(coord_array)
         # continue
-        # exit()
         g2 = Polygon(coord_array)
         poly = geojson.dumps(g2)
         polyed = geojson.loads(poly)
         poly_r = rewind(polyed)
         output_file = splitext(file_Name)[0] + '.tif'
-        temp_tiff = splitext(file_Name)[0] + '_temp.tif'
         geotiff_file = os.path.join(geotff, output_file)
-        geotiff_temp_file = os.path.join(geotff, temp_tiff)
-        # print(geotiff_file)
-        # continue
-        warp_image_with_gcp(image_path, geotiff_file, coord_array, FlightYawDegree)
+        warp_image_with_gcp(image_path, geotiff_file, coord_array, original_width, original_height)
         coords = [float(center_lon), float(center_lat)]
         linecoords.append(coords)
         ptProps = dict(File_Name=tags['File:FileName'], Focal_Length=focal_length,
