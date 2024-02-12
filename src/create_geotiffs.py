@@ -41,25 +41,16 @@ def create_gcp_list(coords, ext):
     ext3 = ext[2][0], ext[2][1]  # Assuming this is bottom-left
     ext0 = ext[3][0], ext[3][1]  # Assuming this is bottom-right
 
-    # Modify the order of GCPs assignment here to correct the mirroring
-    gcp_string = '-gcp {} {} {} {} ' \
-                 '-gcp {} {} {} {} ' \
-                 '-gcp {} {} {} {} ' \
-                 '-gcp {} {} {} {}'.format(ext0[0], ext0[1], pt2[0], pt2[1],
-                                           ext1[0], ext1[1], pt3[0], pt3[1],
-                                           ext2[0], ext2[1], pt0[0], pt0[1],
-                                           ext3[0], ext3[1], pt1[0], pt1[1])
-    gcp_items = filter(None, gcp_string.split("-gcp"))
-    gcp_list = []
-    for item in gcp_items:
-        pixel, line, x, y = map(float, item.split())
-        z = 0
-        gcp = gdal.GCP(x, y, z, pixel, line)
-        gcp_list.append(gcp)
+    gcp_list = [
+        gdal.GCP(pt0[0], pt0[1], 0, ext2[0], ext2[1]),
+        gdal.GCP(pt1[0], pt1[1], 0, ext3[0], ext3[1]),
+        gdal.GCP(pt2[0], pt2[1], 0, ext0[0], ext0[1]),
+        gdal.GCP(pt3[0], pt3[1], 0, ext1[0], ext1[1])
+    ]
     return gcp_list
 
 
-def warp_image_with_gcp(image_path, output_file, coord_array, yaw):
+def warp_image_with_gcp(image_path, output_file, coord_array, width, height):
     """
     Warps an image using the provided list of GCPs to align it with geographic north.
     The output image will be saved to the specified path.
@@ -68,9 +59,7 @@ def warp_image_with_gcp(image_path, output_file, coord_array, yaw):
     gdal.DontUseExceptions()
     ds = gdal.Open(image_path)
     gt = ds.GetGeoTransform()
-    cols = ds.RasterXSize
-    rows = ds.RasterYSize
-    ext = GetExtent(gt, cols, rows)
+    ext = GetExtent(gt, width, height)
     gcp_list = create_gcp_list(coord_array, ext)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
@@ -78,7 +67,7 @@ def warp_image_with_gcp(image_path, output_file, coord_array, yaw):
     ds.SetGCPs(gcp_list, srs.ExportToWkt())
     nodata_value = 0
 
-    vrt_ds = gdal.Translate(output_file, ds, format='VRT', GCPs=gcp_list, outputSRS=wkt)
+    vrt_ds = gdal.Translate('', ds, format='VRT', GCPs=gcp_list, outputSRS=wkt)
     # Define warp options
     warp_options = gdal.WarpOptions(dstSRS='EPSG:' + str(4326),
                                     format='GTiff',
