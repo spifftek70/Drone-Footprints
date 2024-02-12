@@ -124,7 +124,7 @@ def format_data(indir_path, geotff, metadata):
         poly_r = rewind(polyed)
         output_file = splitext(file_Name)[0] + '.tif'
         geotiff_file = os.path.join(geotff, output_file)
-        warp_image_with_gcp(image_path, geotiff_file, coord_array, original_width, original_height)
+        warp_image_with_gcp(image_path, geotiff_file, coord_array)
         coords = [float(center_lon), float(center_lat)]
         linecoords.append(coords)
         ptProps = dict(File_Name=tags['File:FileName'], Focal_Length=focal_length,

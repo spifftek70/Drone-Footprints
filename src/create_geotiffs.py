@@ -50,7 +50,7 @@ def create_gcp_list(coords, ext):
     return gcp_list
 
 
-def warp_image_with_gcp(image_path, output_file, coord_array, width, height):
+def warp_image_with_gcp(image_path, output_file, coord_array):
     """
     Warps an image using the provided list of GCPs to align it with geographic north.
     The output image will be saved to the specified path.
@@ -59,24 +59,25 @@ def warp_image_with_gcp(image_path, output_file, coord_array, width, height):
     gdal.DontUseExceptions()
     ds = gdal.Open(image_path)
     gt = ds.GetGeoTransform()
-    ext = GetExtent(gt, width, height)
+    cols = ds.RasterXSize
+    rows = ds.RasterYSize
+    ext = GetExtent(gt, cols, rows)
     gcp_list = create_gcp_list(coord_array, ext)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     wkt = srs.ExportToWkt()
     ds.SetGCPs(gcp_list, srs.ExportToWkt())
     nodata_value = 0
-
-    vrt_ds = gdal.Translate('', ds, format='VRT', GCPs=gcp_list, outputSRS=wkt)
     # Define warp options
     warp_options = gdal.WarpOptions(dstSRS='EPSG:' + str(4326),
-                                    format='GTiff',
                                     resampleAlg=gdal.GRA_Bilinear,
+                                    format='GTiff',
                                     srcNodata=nodata_value,
                                     dstNodata=nodata_value,
                                     creationOptions=['ALPHA=YES'])  # This option adds an alpha band for transparency
-    #
-    ds = gdal.Warp(output_file, vrt_ds, options=warp_options)
+
+    # Perform the warp
+    gdal.Warp(output_file, ds, options=warp_options)
+
     # Clean up
     ds = None
-    vrt_ds = None
