@@ -5,7 +5,7 @@
 
 import math
 import utm
-from pyproj import Transformer, CRS
+from pyproj import Transformer, CRS, Geod
 
 
 def decimal_degrees_to_utm(latitude, longitude):
@@ -59,3 +59,30 @@ def proj_stuff(center_latitude, zone_number):
     transformer = Transformer.from_crs(utm_crs, wgs84_crs, always_xy=True)
 
     return transformer
+
+
+def proj_stuff2(zone_number, hemisphere):
+    # Correctly set the +south parameter based on the hemisphere
+    south_flag = "+south" if hemisphere == 'S' else ""
+    proj_utm = f"+proj=utm +zone={zone_number} {south_flag} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+    transformer = Transformer.from_proj(proj_utm, "epsg:4326", always_xy=True)
+    return transformer
+
+
+def calculate_geographic_offset(latitude, longitude, distance_meters, bearing_degrees):
+    """
+    Calculate the geographic offset from a given point, distance, and bearing.
+
+    Parameters:
+    - latitude (float): Starting latitude.
+    - longitude (float): Starting longitude.
+    - distance_meters (float): Distance to offset in meters.
+    - bearing_degrees (float): Bearing in degrees from north.
+
+    Returns:
+    - tuple: (latitude, longitude) coordinates after the offset.
+    """
+    geod = Geod(ellps="WGS84")
+    new_longitude, new_latitude, _ = geod.fwd(longitude, latitude, bearing_degrees, distance_meters)
+
+    return new_latitude, new_longitude
