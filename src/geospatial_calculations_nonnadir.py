@@ -1,34 +1,30 @@
-from coordinate_conversions import *
-import math
+#  __author__ = "Dean Hand"
+#  __license__ = "AGPL"
+#  __version__ = "1.0"
+
+# Modified from: https://github.com/frank-engel-usgs/camera-footprint-calculator/blob/master/camera_calculator.py
+#    Date                 : August 2019
+#    Copyright            : (C) 2019 by Luigi Pirelli
+#    Email                : luipir at gmail dot com
+
 import numpy as np
 from Bbox_calculations import CameraCalculator
 from coordinate_conversions import *
 
 
 def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_roll_deg, gimbal_pitch_deg,
-                  gimbal_yaw_deg, flight_roll_deg, flight_pitch_deg, flight_yaw_deg, drone_lat, drone_lon,
-                  center_x, center_y, zone_number, hemisphere):
+                  gimbal_yaw_deg, drone_lat, drone_lon):
     # Convert camera specifications to radians for FOV calculation
-    focal_length_m = focal_length / 1000  # Convert to meters
-    sensor_width_m = sensor_width / 1000  # Convert to meters
-    sensor_height_m = sensor_height / 1000  # Convert to meters
-    FOVh = 2 * math.atan(sensor_width_m / (2 * focal_length_m))
-    FOVv = 2 * math.atan(sensor_height_m / (2 * focal_length_m))
+    FOVh = 2 * math.atan(sensor_width / (2 * focal_length))
+    FOVv = 2 * math.atan(sensor_height / (2 * focal_length))
 
     # Instantiate CameraCalculator
     camera_calculator = CameraCalculator()
 
-    # Combine gimbal and flight orientations for total orientation adjustment
-    cal_roll_rad = to_radians((flight_roll_deg + gimbal_roll_deg) / 2)
-    cal_pitch_rad = to_radians((flight_pitch_deg + gimbal_pitch_deg) / 2)
-    cal_yaw_rad = to_radians((flight_yaw_deg + gimbal_yaw_deg) / 2)
-
     # Use gimbal orientations directly for camera FOV calculation
-    # cal_roll_rad = to_radians(gimbal_roll_deg)
-    # cal_pitch_rad = to_radians(gimbal_pitch_deg)
-    # cal_yaw_rad = to_radians(gimbal_yaw_deg)
-
-    # Use these effective orientations for FOV and projection calculations
+    cal_roll_rad = to_radians(gimbal_roll_deg)
+    cal_pitch_rad = to_radians(gimbal_pitch_deg % 90)
+    cal_yaw_rad = to_radians(gimbal_yaw_deg + 90)
 
     # Calculate bounding polygon using camera orientation
     bbox = camera_calculator.getBoundingPolygon(FOVh, FOVv, altitude, cal_roll_rad, cal_pitch_rad, cal_yaw_rad)
