@@ -1,58 +1,11 @@
-"""
-***************************************************************************
-    camera_calculator.py
-    ---------------------
-    Date                 : August 2019
-    Copyright            : (C) 2019 by Luigi Pirelli
-    Email                : luipir at gmail dot com
-***************************************************************************
-*                                                                         *
-*   This program is free software; you can redistribute it and/or modify  *
-*   it under the terms of the GNU General Public License as published by  *
-*   the Free Software Foundation; either version 2 of the License, or     *
-*   (at your option) any later version.                                   *
-*                                                                         *
-***************************************************************************
-"""
 
-__author__ = 'Luigi Pirelli'
-__date__ = 'August 2019'
-__copyright__ = '(C) 2019, Luigi Pirelli'
 
 import math
 import numpy as np
-
-# pip install vector3d
 from vector3d.vector import Vector
 
 
 class CameraCalculator:
-    """Porting of CameraCalculator.java
-
-    This code is a 1to1 python porting of the java code:
-        https://github.com/zelenmi6/thesis/blob/master/src/geometry/CameraCalculator.java
-    referred in:
-        https://stackoverflow.com/questions/38099915/calculating-coordinates-of-an-oblique-aerial-image
-    The only part not ported are that explicetly abandoned or not used at all by the main
-    call to getBoundingPolygon method.
-    by: milan zelenka
-    https://github.com/zelenmi6
-    https://stackoverflow.com/users/6528363/milan-zelenka
-
-    example:
-
-        c=CameraCalculator()
-        bbox=c.getBoundingPolygon(
-            math.radians(62),
-            math.radians(84),
-            117.1,
-            math.radians(0),
-            math.radians(33.6),
-            math.radians(39.1))
-        for i, p in enumerate(bbox):
-            print("point:", i, '-', p.x, p.y, p.z)
-    """
-
     def __init__(self):
         pass
 
@@ -81,12 +34,13 @@ class CameraCalculator:
         ray44 = CameraCalculator.ray4(FOVh, FOVv)
 
         rotatedVectors = CameraCalculator.rotateRays(
-            ray11, ray22, ray33, ray44, roll, pitch, heading)
+                ray11, ray22, ray33, ray44, roll, pitch, heading * -1)
 
-        origin = Vector(0, 0, altitude)
+        origin = Vector(0, -0, altitude)
         intersections = CameraCalculator.getRayGroundIntersections(rotatedVectors, origin)
 
         return intersections
+
 
     # Ray-vectors defining the the camera's field of view. FOVh and FOVv are interchangeable
     # depending on the camera's orientation
@@ -101,7 +55,7 @@ class CameraCalculator:
             vector3d.vector.Vector: normalised vector
         '''
         pass
-        ray = Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1)
+        ray = Vector(math.tan(FOVv/2), math.tan(FOVh/2), -1)
         return ray.normalize()
 
     @staticmethod
@@ -113,7 +67,7 @@ class CameraCalculator:
         Returns:
             vector3d.vector.Vector: normalised vector
         '''
-        ray = Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1)
+        ray = Vector(math.tan(FOVv/2), -math.tan(FOVh/2), -1)
         return ray.normalize()
 
     @staticmethod
@@ -125,7 +79,7 @@ class CameraCalculator:
         Returns:
             vector3d.vector.Vector: normalised vector
         '''
-        ray = Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1)
+        ray = Vector(-math.tan(FOVv/2), -math.tan(FOVh/2), -1)
         return ray.normalize()
 
     @staticmethod
@@ -137,7 +91,7 @@ class CameraCalculator:
         Returns:
             vector3d.vector.Vector: normalised vector
         '''
-        ray = Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1)
+        ray = Vector(-math.tan(FOVv/2), math.tan(FOVh/2), -1)
         return ray.normalize()
 
     @staticmethod
@@ -170,13 +124,8 @@ class CameraCalculator:
         m21 = cosBeta * sinGamma
         m22 = cosBeta * cosGamma
 
-        # Matrix rotationMatrix = new Matrix(new double[][]{{m00, m01, m02}, {m10, m11, m12}, {m20, m21, m22}})
         rotationMatrix = np.array([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]])
 
-        # Matrix ray1Matrix = new Matrix(new double[][]{{ray1.x}, {ray1.y}, {ray1.z}})
-        # Matrix ray2Matrix = new Matrix(new double[][]{{ray2.x}, {ray2.y}, {ray2.z}})
-        # Matrix ray3Matrix = new Matrix(new double[][]{{ray3.x}, {ray3.y}, {ray3.z}})
-        # Matrix ray4Matrix = new Matrix(new double[][]{{ray4.x}, {ray4.y}, {ray4.z}})
         ray1Matrix = np.array([[ray1.x], [ray1.y], [ray1.z]])
         ray2Matrix = np.array([[ray2.x], [ray2.y], [ray2.z]])
         ray3Matrix = np.array([[ray3.x], [ray3.y], [ray3.z]])
@@ -208,40 +157,31 @@ class CameraCalculator:
         Returns:
             vector3d.vector.Vector
         """
-        # Vector3d [] intersections = new Vector3d[rays.length];
-        # for (int i = 0; i < rays.length; i ++) {
-        #     intersections[i] = CameraCalculator.findRayGroundIntersection(rays[i], origin);
-        # }
-        # return intersections
-
-        # 1to1 translation without python syntax optimisation
         intersections = []
-
         for i in range(len(rays)):
-            intersections.append(CameraCalculator.findRayGroundIntersection(rays[i], origin))
+            intersections.append( CameraCalculator.findRayGroundIntersection(rays[i], origin) )
         return intersections
 
     @staticmethod
     def findRayGroundIntersection(ray, origin):
         """
-        Finds a ray-vector's intersection with the ground approximated by a planeç
+        Finds a ray-vector's intersection with the ground approximated by a plane
         Parameters:
             ray (vector3d.vector.Vector): Ray-vector
             origin (vector3d.vector.Vector): Camera's position
         Returns:
-            vector3d.vector.Vector
+            vector3d.vector.Vector: Intersection point with the ground plane
         """
-        # Parametric form of an equation
-        # P = origin + vector * t
-        x = Vector(origin.x, ray.x)
-        y = Vector(origin.y, ray.y)
-        z = Vector(origin.z, ray.z)
+        # Calculate t for the intersection with the ground plane (z = 0)
+        if ray.z == 0:
+            # Avoid division by zero; if ray.z is 0, the ray is parallel to the ground plane and won't intersect
+            return None  # Or handle this case as per your application's logic
+        t = -origin.z / ray.z
 
-        # Equation of the horizontal plane (ground)
-        # -z = 0
+        # Calculate the intersection point using the parametric equation of the ray
+        x = origin.x + ray.x * t
+        y = origin.y + ray.y * t
+        z = 0  # The intersection is with the ground plane, so z is 0
 
-        # Calculate t by substituting z
-        t = - (z.x / z.y)
+        return Vector(x, y, z)
 
-        # Substitute t in the original parametric equations to get points of intersection
-        return Vector(x.x + x.y * t, y.x + y.y * t, z.x + z.y * t)
