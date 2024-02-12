@@ -8,8 +8,9 @@ import os
 import exiftool
 import argparse
 import datetime
-from geospatial_calculations_nadir import *
-from create_geotiffs import *
+# from geospatial_calculations_nadir import *
+from geospatial_calculations_nonnadir import calculate_fov
+from create_geotiffs import warp_image_with_gcp
 from Color_Class import Color
 from operator import itemgetter
 import geojson
@@ -17,7 +18,7 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from os.path import splitext
 from progress.bar import Bar
-from PPK_Process import find_MTK
+# from PPK_Process import find_MTK
 
 
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
@@ -56,7 +57,7 @@ def format_data(indir_path, geotff, metadata):
     # ppk_meta = find_MTK(indir_path, metadata)
     for tags in iter(metadata):
         # print(tags)
-        # exit()if
+        # exit()
         bar.next()
         i = i + 1
         if tags in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
@@ -80,7 +81,8 @@ def format_data(indir_path, geotff, metadata):
             original_width = int(tags['EXIF:ExifImageWidth'])
             original_height = int(tags['EXIF:ExifImageHeight'])
         try:
-            altitude = float(tags['XMP:RelativeAltitude'])
+            re_altitude = float(tags['XMP:RelativeAltitude'])
+            ab_altitude = float(tags['XMP:AbsoluteAltitude'])
             FlightPitchDegree = float(tags['XMP:FlightPitchDegree']) # future non-nadir work
             FlightRollDegree = float(tags['XMP:FlightRollDegree']) # future non-nadir work
             FlightYawDegree = float(tags['XMP:FlightYawDegree'])
@@ -88,8 +90,11 @@ def format_data(indir_path, geotff, metadata):
             GimbalRollDegree = float(tags['XMP:GimbalRollDegree']) # future non-nadir work
             GimbalYawDegree = float(tags['XMP:GimbalYawDegree']) # future non-nadir work
         except KeyError:
-            altitude = float(tags['Composite:GPSAltitude'])
-            FlightYawDegree = float(tags["MakerNotes:Yaw"])
+            re_altitude = float(tags['Composite:GPSAltitude'])
+            # FlightYawDegree = float(tags["MakerNotes:Yaw"])
+            GimbalPitchDegree = float(tags["XMP:Pitch"])
+            GimbalRollDegree = float(tags["XMP:Roll"])
+            FlightYawDegree = float(tags["XMP:Yaw"])
         focal_length = float(tags['EXIF:FocalLength'])
         file_Name = tags['File:FileName']
         image_path = os.path.join(indir_path, file_Name)
@@ -97,26 +102,37 @@ def format_data(indir_path, geotff, metadata):
         datetime = tags['EXIF:DateTimeOriginal']
         sensor_model = tags['EXIF:Model']
         sensor_make = tags['EXIF:Make']
-        # print('file name:', file_Name, "\tcentral Lat:", center_lat, "\tcentral Lon:", center_lon, "\tDate Time: ", datetime)
+        # center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
+        # gsd = (sensor_width * altitude) / (focal_length * original_width)
+        # pixel_width = pixel_height = gsd
+        # coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
+        #                                          original_width, original_height, zone_number, center_lat)
+        # print("\n\nfile name= ", file_Name, "\n\nfocal_length=", focal_length, "\naltitude=", re_altitude, "\nGimbalRollDegree=", GimbalRollDegree,
+        #       "\nGimbalYawDegree=", GimbalYawDegree, "\nYaw_degree_fixed= ", GimbalYawDegree, "\nGimbalPitchDegree=", GimbalPitchDegree,
+        #       "\nFlightRollDegree=", FlightRollDegree, "\nFlightYawDegree=", FlightYawDegree, "\nFlightPitchDegree=", FlightPitchDegree,
+        #       "\nDrone Lon=", center_lon, "\nDrone lat=", center_lat, "\nsensor_width=", sensor_width,
+        #       "\nsensor_height =", sensor_height, "\noriginal_width =", original_width, "\noriginal_height=", original_height, "\n\n")
         # continue
-        center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
-        gsd = (sensor_width * altitude) / (focal_length * original_width)
-        pixel_width = pixel_height = gsd
-        coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
-                                                 original_width, original_height, zone_number, center_lat)
+        coord_array = calculate_fov(re_altitude, focal_length, sensor_width, sensor_height,
+                                    GimbalRollDegree, GimbalPitchDegree, FlightYawDegree,
+                                    center_lat, center_lon)
+        # print(coord_array)
+        # continue
         g2 = Polygon(coord_array)
         poly = geojson.dumps(g2)
         polyed = geojson.loads(poly)
         poly_r = rewind(polyed)
         output_file = splitext(file_Name)[0] + '.tif'
         geotiff_file = os.path.join(geotff, output_file)
-        warp_image_with_gcp(image_path, geotiff_file, coord_array)
+        warp_image_with_gcp(image_path, geotiff_file, coord_array, original_width, original_height)
         coords = [float(center_lon), float(center_lat)]
         linecoords.append(coords)
         ptProps = dict(File_Name=tags['File:FileName'], Focal_Length=focal_length,
                        Image_Width=original_width, Image_Height=original_height, Sensor_Model=sensor_model,
-                       Sensor_Make=sensor_make, RelativeAltitude=altitude, FlightYawDegree=FlightYawDegree,
-                       DateTimeOriginal=datetime)
+                       Sensor_Make=sensor_make, relativeAltitude=re_altitude, FlightYawDegree=FlightYawDegree,
+                       FlightPitchDegree=FlightPitchDegree, FlightRollDegree=FlightRollDegree,
+                       DateTimeOriginal=datetime, GimbalPitchDegree=GimbalPitchDegree, GimbalYawDegree=GimbalYawDegree,
+                       GimbalRollDegree=GimbalRollDegree)
         img_over = dict(coords=coords, props=ptProps)
         img_stuff.append(img_over)
         ptGeom = dict(type="Point", coordinates=coords)
