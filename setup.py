@@ -25,7 +25,7 @@ setup(
         'Programming Language :: Python :: 3.9'
     ],
     packages=['src'],
-    keywords=['src', 'DJI', 'exif'],
+    keywords=['src', 'DJI', 'exif', 'footprints'],
     url='https://github.com/spifftek70/Drone-Footprints',
     author='Dean Hand',
     author_email='dean.e.hand@me.com',
@@ -46,6 +46,7 @@ setup(
         'pyexiftool',
         'GDAL',
         'gps-time',
-        'datetime'],
+        'datetime',
+        'vector3d'],
     zip_safe=False
 )
