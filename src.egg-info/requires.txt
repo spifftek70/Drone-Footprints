@@ -13,3 +13,4 @@ progressbar
 pyexiftool
 gps-time
 datetime
+vector3d
