@@ -1,12 +1,10 @@
 #  Copyright (c) 2024.
-#  __Modifying author__ = "Dean Hand"
+#  __author__ = "Dean Hand"
 #  __license__ = "AGPL"
 #  __version__ = "1.0"
 
-# Modified from: https://github.com/frank-engel-usgs/camera-footprint-calculator/blob/master/camera_calculator.py
-#    Date                 : August 2019
+# Based upon: https://github.com/frank-engel-usgs/camera-footprint-calculator/blob/master/camera_calculator.py
 #    Orignal by           : Luigi Pirelli
-#    Email                : luipir at gmail dot com
 
 import math
 import numpy as np
@@ -40,8 +38,6 @@ class CameraCalculator:
         intersections = CameraCalculator.getRayGroundIntersections(rotatedVectors, origin)
 
         return intersections
-
-
 
     @staticmethod
     def rotateRays(ray1, ray2, ray3, ray4, roll, pitch, yaw):
