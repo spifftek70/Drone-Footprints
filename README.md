@@ -96,13 +96,9 @@ Geojson name is constructed using the date/time of processing like so:
 
 ## :boom: Future Builds
 
-### Sensor Size DB
-The file [drone_sensors.csv](drone_fp%2Fdrone_sensors.csv) is the start of autoprocessing for 
-senosr width and height.  It is incomplete, but once finshed, I'll incomporate that code into the 
-process.
-
-### RTK Processing
-Should add much better accuracy to any RTK dataset that's processed.
+### Sensor Size checks
+There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that
+information becomes available.
 
 ----------------------------------------------------------------------------------------------------------------
 ## :star: Sample Outputs
@@ -127,5 +123,10 @@ Should add much better accuracy to any RTK dataset that's processed.
 <img src="samples%2Fscreenshots%2Fscreenshot2.png" alt="drawing" width="600"/>
 
 [![IMAGE ALT TEXT HERE](samples%2Fscreenshots%2Fezgif-2-5968847bb5.gif)](https://youtu.be/eaPfwUOpPlo)
+
+----------------------------------------------------------------------------------------------------------------
+
+## known Issues
+Images that are not taken at Nadir are still not warping correctly as I've intended.  I could use some help or insight there.
 
 ----------------------------------------------------------------------------------------------------------------
