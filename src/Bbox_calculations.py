@@ -19,69 +19,65 @@ class CameraCalculator:
         pass
 
     @staticmethod
-    def getBoundingPolygon(FOVh, FOVv, altitude, roll, pitch, heading):
-        # import ipdb; ipdb.set_trace()
-        ray1 = Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1)
-        ray2 = Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1)
-        ray3 = Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1)
-        ray4 = Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1)
+    def getBoundingPolygon(FOVh, FOVv, altitude, roll, pitch, yaw):
+        # Correctly handle vector initialization and heading adjustment
+        rays = [Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
+                Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
+                Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
+                Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize()]
 
-        ray11 = ray1.normalize()
-        ray22 = ray2.normalize()
-        ray33 = ray3.normalize()
-        ray44 = ray4.normalize()
-
-        rotatedVectors = CameraCalculator.rotateRays(
-                ray11, ray22, ray33, ray44, roll, pitch, heading * -1)
-
-        origin = Vector(0, -0, altitude)
-        intersections = CameraCalculator.getRayGroundIntersections(rotatedVectors, origin)
-
+        # Adjust the heading correctly without negation unless specifically needed for the coordinate system
+        rotated_vectors = CameraCalculator.rotateRays(rays, roll, pitch, yaw * -1)
+        origin = Vector(0, 0, altitude)
+        intersections = CameraCalculator.getRayGroundIntersections(rotated_vectors, origin)
         return intersections
 
     @staticmethod
-    def rotateRays(ray1, ray2, ray3, ray4, roll, pitch, yaw):
-        sinAlpha = math.sin(yaw)
-        sinBeta = math.sin(pitch)
-        sinGamma = math.sin(roll)
-        cosAlpha = math.cos(yaw)
-        cosBeta = math.cos(pitch)
-        cosGamma = math.cos(roll)
-        m00 = cosAlpha * cosBeta
-        m01 = cosAlpha * sinBeta * sinGamma - sinAlpha * cosGamma
-        m02 = cosAlpha * sinBeta * cosGamma + sinAlpha * sinGamma
-        m10 = sinAlpha * cosBeta
-        m11 = sinAlpha * sinBeta * sinGamma + cosAlpha * cosGamma
-        m12 = sinAlpha * sinBeta * cosGamma - cosAlpha * sinGamma
-        m20 = -sinBeta
-        m21 = cosBeta * sinGamma
-        m22 = cosBeta * cosGamma
+    def rotateRays(rays, roll, pitch, yaw):
+        # Calculate sine and cosine for each of the angles for efficiency
+        sin_roll = math.sin(roll)
+        cos_roll = math.cos(roll)
+        sin_pitch = math.sin(pitch)
+        cos_pitch = math.cos(pitch)
+        sin_yaw = math.sin(yaw)
+        cos_yaw = math.cos(yaw)
 
-        RotationMatrix = np.array([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]])
+        # Rotation matrix components
+        m00 = cos_yaw * cos_pitch
+        m01 = cos_yaw * sin_pitch * sin_roll - sin_yaw * cos_roll
+        m02 = cos_yaw * sin_pitch * cos_roll + sin_yaw * sin_roll
+        m10 = sin_yaw * cos_pitch
+        m11 = sin_yaw * sin_pitch * sin_roll + cos_yaw * cos_roll
+        m12 = sin_yaw * sin_pitch * cos_roll - cos_yaw * sin_roll
+        m20 = -sin_pitch
+        m21 = cos_pitch * sin_roll
+        m22 = cos_pitch * cos_roll
 
-        ray1Matrix = np.array([[ray1.x], [ray1.y], [ray1.z]])
-        ray2Matrix = np.array([[ray2.x], [ray2.y], [ray2.z]])
-        ray3Matrix = np.array([[ray3.x], [ray3.y], [ray3.z]])
-        ray4Matrix = np.array([[ray4.x], [ray4.y], [ray4.z]])
+        # Create rotation matrix
+        rotation_matrix = np.array([
+            [m00, m01, m02],
+            [m10, m11, m12],
+            [m20, m21, m22]
+        ])
 
-        res1 = RotationMatrix.dot(ray1Matrix)
-        res2 = RotationMatrix.dot(ray2Matrix)
-        res3 = RotationMatrix.dot(ray3Matrix)
-        res4 = RotationMatrix.dot(ray4Matrix)
+        rotated_rays = []
+        for ray in rays:
+            # Convert Vector to numpy array for matrix multiplication
+            ray_vector = np.array([ray.x, ray.y, ray.z])
+            # Apply rotation
+            rotated_vector = rotation_matrix.dot(ray_vector)
+            # Convert back to Vector and add to the list
+            rotated_rays.append(Vector(rotated_vector[0], rotated_vector[1], rotated_vector[2]))
 
-        RotatedRay1 = Vector(res1[0, 0], res1[1, 0], res1[2, 0])
-        RotatedRay2 = Vector(res2[0, 0], res2[1, 0], res2[2, 0])
-        RotatedRay3 = Vector(res3[0, 0], res3[1, 0], res3[2, 0])
-        RotatedRay4 = Vector(res4[0, 0], res4[1, 0], res4[2, 0])
-        RayArray = [RotatedRay1, RotatedRay2, RotatedRay3, RotatedRay4]
-
-        return RayArray
+        return rotated_rays
 
     @staticmethod
     def getRayGroundIntersections(rays, origin):
         intersections = []
-        for i in range(len(rays)):
-            intersections.append( CameraCalculator.findRayGroundIntersection(rays[i], origin) )
+        for ray in rays:
+            intersection = CameraCalculator.findRayGroundIntersection(ray, origin)
+            if intersection is not None:  # Handle potential None returns for parallel rays
+                intersections.append(intersection)
         return intersections
 
     @staticmethod

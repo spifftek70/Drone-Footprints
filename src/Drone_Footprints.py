@@ -18,6 +18,8 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from os.path import splitext
 from progress.bar import Bar
+import pandas as pd
+
 
 # from PPK_Process import find_MTK
 
@@ -63,13 +65,6 @@ def format_data(indir_path, geotff, metadata):
         bar.next()
         if tags in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
             metadata.pop(tags)
-        if sensorWidth is not None:
-            sensor_width = float(sensorWidth)
-            sensor_height = float(sensorHeight)
-        else:
-            sensor_width = 13.2  # Example sensor width, adjust based on your sensor
-            sensor_height = 8.8  # future non-nadir work
-
         try:
             Drone_Lat = float(tags['Composite:GPSLatitude'])
             Drone_Lon = float(tags['Composite:GPSLongitude'])
@@ -119,6 +114,17 @@ def format_data(indir_path, geotff, metadata):
         datetime = tags['EXIF:DateTimeOriginal']
         sensor_model = tags['EXIF:Model']
         sensor_make = tags['EXIF:Make']
+        senWid, senHet = find_string_csv(sensor_model)
+        if senWid is not None:
+            sensor_width = float(senWid)
+            sensor_height = float(senHet)
+        elif sensorWidth is not None:
+            sensor_width = float(sensorWidth)
+            sensor_height = float(sensorHeight)
+        else:
+            sensor_width = 13.2  # Example sensor width, adjust based on your sensor
+            sensor_height = 8.8  # future non-nadir work
+            print(Color.YELLOW + "Sensor Information not found. Setting Defaults (13.2, 8.8!" + Color.END)
         # center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(Drone_Lat, Drone_Lon)
         # gsd = (sensor_width * altitude) / (focal_length * original_width)
         # pixel_width = pixel_height = gsd
@@ -209,6 +215,13 @@ def main():
     print(Color.DARKCYAN + "All GeoTIFFs Created." + Color.END)
     writeOutputtoText(geojson_file, gjsonf, b_array)
     print(Color.GREEN + "Process Complete" + Color.END)
+
+
+def find_string_csv(to_find):
+    df = pd.read_csv('drone_sensors.csv')
+    sWd = df.loc[df.SensorModel == to_find, 'SensorWidth'].to_numpy()[0]
+    sHt = df.loc[df.SensorModel == to_find, 'SensorHeight'].to_numpy()[0]
+    return sWd, sHt
 
 
 if __name__ == "__main__":
