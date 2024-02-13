@@ -136,7 +136,7 @@ def format_data(indir_path, geotff, metadata):
         output_file = splitext(file_Name)[0] + '.tif'
         geotiff_file = os.path.join(geotff, output_file)
         coord_array = calculate_fov(re_altitude, focal_length, sensor_width, sensor_height,
-                                    GimbalRollDegree, GimbalPitchDegree, GimbalYawDegree,
+                                    GimbalRollDegree, GimbalPitchDegree, FlightYawDegree,
                                     Drone_Lat, Drone_Lon)
         # print(coord_array)
         # continue
