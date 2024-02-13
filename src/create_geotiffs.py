@@ -42,10 +42,10 @@ def create_gcp_list(coords, ext):
     ext0 = ext[3][0], ext[3][1]  # Assuming this is bottom-right
 
     gcp_list = [
-        gdal.GCP(pt0[0], pt0[1], 0, ext2[0], ext2[1]),
-        gdal.GCP(pt1[0], pt1[1], 0, ext3[0], ext3[1]),
-        gdal.GCP(pt2[0], pt2[1], 0, ext0[0], ext0[1]),
-        gdal.GCP(pt3[0], pt3[1], 0, ext1[0], ext1[1])
+        gdal.GCP(pt0[0], pt0[1], 1, ext2[0], ext2[1]),
+        gdal.GCP(pt1[0], pt1[1], 1, ext3[0], ext3[1]),
+        gdal.GCP(pt2[0], pt2[1], 1, ext0[0], ext0[1]),
+        gdal.GCP(pt3[0], pt3[1], 1, ext1[0], ext1[1])
     ]
     return gcp_list
 
@@ -69,15 +69,18 @@ def warp_image_with_gcp(image_path, output_file, coord_array):
     ds.SetGCPs(gcp_list, srs.ExportToWkt())
     nodata_value = 0
     # Define warp options
+    vrt_ds = gdal.Translate('', ds, format='VRT')
+
     warp_options = gdal.WarpOptions(dstSRS=wkt,
-                                    resampleAlg=gdal.GRA_Bilinear,
+                                    # resampleAlg=gdal.GRA_Bilinear,
                                     format='GTiff',
                                     srcNodata=nodata_value,
                                     dstNodata=nodata_value,
                                     creationOptions=['ALPHA=YES'])  # This option adds an alpha band for transparency
 
     # Perform the warp
-    gdal.Warp(output_file, ds, options=warp_options)
+    vrt_ds = gdal.Warp(output_file, vrt_ds, options=warp_options)
 
     # Clean up
     ds = None
+    vrt_ds = None
