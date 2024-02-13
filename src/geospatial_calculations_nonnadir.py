@@ -5,6 +5,7 @@
 import numpy as np
 from Bbox_calculations import CameraCalculator
 from coordinate_conversions import *
+from shapely.geometry import Polygon
 
 
 def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_roll_deg, gimbal_pitch_deg,
@@ -23,7 +24,7 @@ def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_ro
     # Correctly convert gimbal orientations to radians
     cal_roll_rad = np.radians(gimbal_roll_deg)
     cal_pitch_rad = np.radians(gimbal_pitch_deg % 90)  # Direct conversion to radians without modulo operation
-    cal_yaw_rad = np.radians(gimbal_yaw_deg + 90)  # Direct conversion to radians without adding 90
+    cal_yaw_rad = np.radians((gimbal_yaw_deg + 90) * -1)  # Direct conversion to radians without adding 90
 
     # Calculate bounding polygon using camera orientation
     bbox = camera_calculator.getBoundingPolygon(FOVh, FOVv, altitude, cal_roll_rad, cal_pitch_rad, cal_yaw_rad)

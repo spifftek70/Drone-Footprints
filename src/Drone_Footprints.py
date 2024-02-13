@@ -10,7 +10,7 @@ import argparse
 import datetime
 # from geospatial_calculations_nadir import *
 from geospatial_calculations_nonnadir import calculate_fov
-from create_geotiffs import warp_image_with_gcp
+from create_geotiffs import create_geotiffs
 from Color_Class import Color
 from operator import itemgetter
 import geojson
@@ -129,14 +129,15 @@ def format_data(indir_path, geotff, metadata):
         #       "\nsensor_height =", sensor_height, "\noriginal_width =", original_width, "\noriginal_height=",
         #       original_height, "\n\n")
         # # continue
-        output_file = splitext(file_Name)[0] + '.tif'
-        geotiff_file = os.path.join(geotff, output_file)
         coord_array = calculate_fov(re_altitude, focal_length, sensor_width, sensor_height,
                                     GimbalRollDegree, GimbalPitchDegree, FlightYawDegree,
                                     Drone_Lat, Drone_Lon)
         # print(coord_array)
         # continue
-        warp_image_with_gcp(image_path, geotiff_file, coord_array)
+        output_file = splitext(file_Name)[0] + '.tif'
+        geotiff_file = os.path.join(geotff, output_file)
+        vecTif_file = splitext(file_Name)[0] + '_temp.tif'
+        geoVecTiff_file = os.path.join(geotff, vecTif_file)
         g2 = Polygon(coord_array)
         poly = geojson.dumps(g2)
         polyed = geojson.loads(poly)
@@ -159,6 +160,9 @@ def format_data(indir_path, geotff, metadata):
         ptGeom = dict(type="Point", coordinates=coords)
         points = dict(type="Feature", geometry=ptGeom, properties=ptProps)
         gd_feat = dict(type="Feature", geometry=poly_r, style=sty, className=clname, properties=ptProps)
+        aryGeom = gd_feat['geometry']['coordinates'][0]
+        fixArry = [(aryGeom[3]), (aryGeom[2]), (aryGeom[1]), (aryGeom[0])]
+        create_geotiffs(image_path, geotiff_file, fixArry)
         feature_coll['features'].append(points)
         feature_coll['features'].append(gd_feat)
     lineGeom = dict(type="LineString", coordinates=linecoords)
