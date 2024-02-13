@@ -21,9 +21,6 @@ from progress.bar import Bar
 import pandas as pd
 
 
-# from PPK_Process import find_MTK
-
-
 parser = argparse.ArgumentParser(description="Input Mission JSON File")
 parser.add_argument("-i", "--indir", help="Input directory", required=True)
 parser.add_argument("-o", "--dest", help="Output directory", required=True)
@@ -58,7 +55,6 @@ def format_data(indir_path, geotff, metadata):
     datetime = ''
     i = 0
     colors = ["#C2272D", "#F8931F", "#FFFF01", "#009245", "#0193D9", "#0C04ED", "#612F90"]
-    # ppk_meta = find_MTK(indir_path, metadata)
     for tags in iter(metadata):
         # print(tags)
         # continue
@@ -125,17 +121,11 @@ def format_data(indir_path, geotff, metadata):
             sensor_width = 13.2  # Example sensor width, adjust based on your sensor
             sensor_height = 8.8  # future non-nadir work
             print(Color.YELLOW + "Sensor Information not found. Setting Defaults (13.2, 8.8!" + Color.END)
-        # center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(Drone_Lat, Drone_Lon)
-        # gsd = (sensor_width * altitude) / (focal_length * original_width)
-        # pixel_width = pixel_height = gsd
-        # coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
-        #                                          original_width, original_height, zone_number, Drone_Lat)
         # print("\n\nfile name= ", file_Name, "\n\nfocal_length=", focal_length, "\naltitude=", re_altitude,
         #       "\nGimbalRollDegree=", GimbalRollDegree,
         #       "\nGimbalYawDegree=", GimbalYawDegree, "\nGimbalPitchDegree=", GimbalPitchDegree,
         #       "\nFlightRollDegree=", FlightRollDegree, "\nFlightYawDegree=", FlightYawDegree, "\nFlightPitchDegree=",
-        #       FlightPitchDegree,
-        #       "\nDrone Lon=", Drone_Lon, "\nDrone lat=", Drone_Lat, "\nsensor_width=", sensor_width,
+        #       FlightPitchDegree,"\nDrone Lon=", Drone_Lon, "\nDrone lat=", Drone_Lat, "\nsensor_width=", sensor_width,
         #       "\nsensor_height =", sensor_height, "\noriginal_width =", original_width, "\noriginal_height=",
         #       original_height, "\n\n")
         # # continue
