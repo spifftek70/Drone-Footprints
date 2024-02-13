@@ -21,13 +21,15 @@ class CameraCalculator:
     @staticmethod
     def getBoundingPolygon(FOVh, FOVv, altitude, roll, pitch, yaw):
         # Correctly handle vector initialization and heading adjustment
-        rays = [Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
-                Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
+
+        rays = [Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
                 Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
-                Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize()]
+                Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
+                Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize()
+                ]
 
         # Adjust the heading correctly without negation unless specifically needed for the coordinate system
-        rotated_vectors = CameraCalculator.rotateRays(rays, roll, pitch, yaw * -1)
+        rotated_vectors = CameraCalculator.rotateRays(rays, roll, pitch, yaw)
         origin = Vector(0, 0, altitude)
         intersections = CameraCalculator.getRayGroundIntersections(rotated_vectors, origin)
         return intersections

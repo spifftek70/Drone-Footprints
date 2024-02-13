@@ -4,83 +4,44 @@
 #  __version__ = "1.0"
 
 from osgeo import osr, gdal
+import pandas as pd
+from coordinate_conversions import convert_wgs_to_utm
 
 
-def GetExtent(gt, cols, rows):
-    ''' Return list of corner coordinates from a geotransform
-        @type gt:   C{tuple/list}
-        @param gt: geotransform
-        @type cols:   C{int}
-        @param cols: number of columns in the dataset
-        @type rows:   C{int}
-        @param rows: number of rows in the dataset
-        @rtype:    C{[float,...,float]}
-        @return:   coordinates of each corner
-    '''
-    ext = []
-    xarr = [0, cols]
-    yarr = [0, rows]
-
-    for px in xarr:
-        for py in yarr:
-            x = gt[0] + (px * gt[1]) + (py * gt[2])
-            y = gt[3] + (px * gt[4]) + (py * gt[5])
-            ext.append([x, y])
-        yarr.reverse()
-    return ext
-
-
-def create_gcp_list(coords, ext):
-    pt1 = coords[0][0], coords[0][1]  # Now this is Top-right
-    pt0 = coords[1][0], coords[1][1]  # Now this is Top-left
-    pt3 = coords[2][0], coords[2][1]  # Now this is Bottom-left
-    pt2 = coords[3][0], coords[3][1]  # Now this is Bottom-right
-
-    ext1 = ext[0][0], ext[0][1]  # Assuming this is top-right
-    ext2 = ext[1][0], ext[1][1]  # Assuming this is top-left
-    ext3 = ext[2][0], ext[2][1]  # Assuming this is bottom-left
-    ext0 = ext[3][0], ext[3][1]  # Assuming this is bottom-right
-
-    gcp_list = [
-        gdal.GCP(pt0[0], pt0[1], 1, ext2[0], ext2[1]),
-        gdal.GCP(pt1[0], pt1[1], 1, ext3[0], ext3[1]),
-        gdal.GCP(pt2[0], pt2[1], 1, ext0[0], ext0[1]),
-        gdal.GCP(pt3[0], pt3[1], 1, ext1[0], ext1[1])
-    ]
-    return gcp_list
-
-
-def warp_image_with_gcp(image_path, output_file, coord_array):
+def create_geotiffs(image_path, output_file, coord_array):
     """
     Warps an image using the provided list of GCPs to align it with geographic north.
     The output image will be saved to the specified path.
     """
+
     # Open the input dataset
     gdal.DontUseExceptions()
     ds = gdal.Open(image_path)
-    gt = ds.GetGeoTransform()
+    # gt = ds.GetGeoTransform()
     cols = ds.RasterXSize
     rows = ds.RasterYSize
-    ext = GetExtent(gt, cols, rows)
-    gcp_list = create_gcp_list(coord_array, ext)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
     wkt = srs.ExportToWkt()
-    ds.SetGCPs(gcp_list, srs.ExportToWkt())
-    nodata_value = 0
-    # Define warp options
-    vrt_ds = gdal.Translate('', ds, format='VRT')
+    # Open the input dataset
 
-    warp_options = gdal.WarpOptions(dstSRS=wkt,
-                                    # resampleAlg=gdal.GRA_Bilinear,
-                                    format='GTiff',
-                                    srcNodata=nodata_value,
-                                    dstNodata=nodata_value,
-                                    creationOptions=['ALPHA=YES'])  # This option adds an alpha band for transparency
+    """
+        Warps an image using the provided list of coordinates to align it with geographic north.
+        Each coordinate should be a tuple of (longitude, latitude).
+        The output image will be saved to the specified path.
+        """
+    # Create a DataFrame from the coord_array
+    df = pd.DataFrame(coord_array, columns=['Longitude', 'Latitude'])
+    # For a real application, these should be accurately determined
+    df['z'] = 0  # Default elevation
+    df['i_pix'] = [0, cols, cols, 0]  # Example pixel X coordinates
+    df['j_pix'] = [0, 0, rows, rows]  # Example pixel Y coordinates
+    # Create GCPs
+    gcps = [gdal.GCP(row['Longitude'], row['Latitude'], row['z'], row['i_pix'], row['j_pix']) for index, row in
+            df.iterrows()]
 
-    # Perform the warp
-    vrt_ds = gdal.Warp(output_file, vrt_ds, options=warp_options)
-
-    # Clean up
+    ds.SetGCPs(gcps, wkt)
+    vrt_ds = gdal.Translate(output_file, ds, format='GTiff', GCPs=gcps, outputSRS=wkt)
+    # Close the dataset
     ds = None
     vrt_ds = None
