@@ -2,11 +2,6 @@
 #  __license__ = "AGPL"
 #  __version__ = "1.0"
 
-# Modified from: https://github.com/frank-engel-usgs/camera-footprint-calculator/blob/master/camera_calculator.py
-#    Date                 : August 2019
-#    Copyright            : (C) 2019 by Luigi Pirelli
-#    Email                : luipir at gmail dot com
-
 import numpy as np
 from Bbox_calculations import CameraCalculator
 from coordinate_conversions import *
