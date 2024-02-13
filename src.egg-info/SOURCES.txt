@@ -32,14 +32,15 @@ samples/screenshots/ezgif-2-5968847bb5.gif
 samples/screenshots/screenshot1.png
 samples/screenshots/screenshot2.png
 samples/screenshots/screenshot3.png
+src/Bbox_calculations.py
 src/Color_Class.py
 src/Drone_Footprints.py
-src/PPK_Process.py
 src/__init__.py
 src/coordinate_conversions.py
 src/create_geotiffs.py
 src/drone_sensors.csv
 src/geospatial_calculations_nadir.py
+src/geospatial_calculations_nonnadir.py
 src.egg-info/PKG-INFO
 src.egg-info/SOURCES.txt
 src.egg-info/dependency_links.txt
