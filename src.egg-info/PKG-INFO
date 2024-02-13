@@ -5,7 +5,7 @@ Summary: Drone_image footprint calculator
 Home-page: https://github.com/spifftek70/Drone-Footprints
 Author: Dean Hand
 Author-email: dean.e.hand@me.com
-Keywords: src,DJI,exif
+Keywords: src,DJI,exif,footprints
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Drone Image Processors
 Classifier: Topic :: Scientific/Engineering :: GIS
@@ -27,6 +27,7 @@ Requires-Dist: progressbar
 Requires-Dist: pyexiftool
 Requires-Dist: gps-time
 Requires-Dist: datetime
+Requires-Dist: vector3d
 
 
     The purpose of this module is to calculate imagery footprints of individual drone images. There is no stitching of
