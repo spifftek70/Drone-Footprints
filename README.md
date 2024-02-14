@@ -127,7 +127,7 @@ information becomes available.
 ----------------------------------------------------------------------------------------------------------------
 
 ## known Issues
-Images that are not taken at Nadir are still not warping correctly as I've intended.  I could use some help or insight there.
+Images that are not taken at Nadir are still not warping as well as I'd like.  Help to improve will be accepted.
 
 Tested and works with:
 - Phantom 4 Series
