@@ -13,7 +13,8 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from progress.bar import Bar
 from fov_calculations import calculate_fov
-from create_geotiffs import create_geotiffs
+# from create_geotiffs import create_geotiffs
+from create_raster import create_geotiffs
 from utils import read_sensor_dimensions_from_csv, Color
 
 
@@ -79,7 +80,14 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
 
             output_file = Path(file_Name).stem + '.tif'
             geotiff_file = Path(geotiff_dir) / output_file
+
+            temp_file = Path(file_Name).stem + 'temp.tif'
+            geotiff_temp_file = Path(geotiff_dir) / temp_file
+
             image_path = os.path.join(indir_path, file_Name)
+
+            aux_name = Path(file_Name).stem + 'temp.tif.aux.xml'
+            aux_file = Path(geotiff_dir) / aux_name
 
             if FlightPitchDegree == 000:
                 properties = dict(File_Name=file_Name, Focal_Length=focal_length,
@@ -111,7 +119,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             array_rw = rewound_polygon['coordinates'][0]
             fix_array = [(array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
             closed_array = [(array_rw[0]), (array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
-            create_geotiffs(image_path, geotiff_file, fix_array)
+            # Create the GeoTiff from JPG files
+            create_geotiffs(image_path, geotiff_temp_file, geotiff_file, fix_array)
             type_point = dict(type="Point", coordinates=[Drone_Lon, Drone_Lat])
             type_polygon = dict(type="Polygon", coordinates=[closed_array])
             feature_point = dict(type="Feature", geometry=type_point, properties=properties)
@@ -119,7 +128,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             feature_collection['features'].append(feature_point)
             feature_collection['features'].append(feature_polygon)
             line_coordinates.append([Drone_Lon, Drone_Lat])
-
+            os.remove(geotiff_temp_file)
+            os.remove(aux_file)
         except KeyError as e:
             print(Color.RED + f"Error processing {file_Name}: {e}" + Color.END)
 
