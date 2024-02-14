@@ -1,5 +1,5 @@
 import numpy as np
-from coordinate_conversions import *
+from geospatial_conversions import *
 
 
 def calculate_footprints_nadir(easting, northing, pixel_width, pixel_height, yaw, original_width,
