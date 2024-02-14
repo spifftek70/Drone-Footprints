@@ -4,8 +4,7 @@
 
 import numpy as np
 from Bbox_calculations import CameraCalculator
-from coordinate_conversions import *
-from shapely.geometry import Polygon
+from geospatial_conversions import *
 
 
 def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_roll_deg, gimbal_pitch_deg,
@@ -14,7 +13,7 @@ def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_ro
     if altitude < 0 or focal_length <= 0:
         raise ValueError("Altitude and focal length must be positive.")
 
-        # Convert camera specifications to radians for FOV calculation
+    # Convert camera specifications to radians for FOV calculation
     FOVh = 2 * math.atan(sensor_width / (2 * focal_length))
     FOVv = 2 * math.atan(sensor_height / (2 * focal_length))
 
@@ -50,7 +49,6 @@ def translate_to_geographic(bbox, drone_lon, drone_lat):
     translated_bbox = []
     for point in bbox:
         # Adjust for the effect of gimbal pitch and yaw here before converting
-        # This placeholder assumes direct conversion, add rotation and pitch adjustments as needed
         point_easting, point_northing = drone_easting + point.x, drone_northing + point.y
 
         # Convert adjusted points back to geographic coordinates
