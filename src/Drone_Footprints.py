@@ -33,8 +33,12 @@ def parse_arguments():
     return parser.parse_args()
 
 def get_image_files(directory):
-    return [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS]
+    image_files = [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS]
 
+    # Sort the list of image files by the digits in their filenames
+    sorted_image_files = sorted(image_files, key=lambda x: int(''.join(filter(str.isdigit, str(x.name)))))
+
+    return sorted_image_files
 
 def get_metadata(files):
     exif_array = []
@@ -48,7 +52,6 @@ def get_metadata(files):
 def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     feature_collection = {"type": "FeatureCollection", "features": []}
     line_coordinates = []
-
     bar = Bar(Color.BLUE + 'Processing Images' + Color.END, max=len(metadata))
     datetime_original = ''
     sensor_make = ''
@@ -62,13 +65,13 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             GimbalRollDegree = float(data.get('XMP:GimbalRollDegree') or data.get('MakerNotes:CameraRoll') or data.get("XMP:Roll"))
             GimbalPitchDegree = float(data.get('XMP:GimbalPitchDegree') or data.get('MakerNotes:CameraPitch') or data.get("XMP:Pitch"))
             GimbalYawDegree = float(data.get('XMP:GimbalYawDegree') or data.get('MakerNotes:CameraYaw') or data.get("XMP:Yaw"))
-            FlightPitchDegree = float(data.get('XMP:FlightPitchDegree') or data.get('MakerNotes:Pitch'))
-            FlightRollDegree = float(data.get('XMP:FlightRollDegree') or data.get('MakerNotes:Roll'))
-            FlightYawDegree = float(data.get('XMP:FlightYawDegree') or data.get('MakerNotes:Yaw'))
+            FlightPitchDegree = float(data.get('XMP:FlightPitchDegree') or data.get('MakerNotes:Pitch') or 000)
+            FlightRollDegree = float(data.get('XMP:FlightRollDegree') or data.get('MakerNotes:Roll') or 000)
+            FlightYawDegree = float(data.get('XMP:FlightYawDegree') or data.get('MakerNotes:Yaw') or 000)
             image_width = int(data.get('EXIF:ImageWidth') or data.get('EXIF:ExifImageWidth'))
             image_height = int(data.get('EXIF:ImageHeight') or data.get('EXIF:ExifImageHeight'))
             focal_length = float(data.get('EXIF:FocalLength'))
-            file_Name = Path(data.get('SourceFile', "Unknown")).name
+            file_Name = data.get('File:FileName')
             datetime_original = data.get('EXIF:DateTimeOriginal', "Unknown")
             sensor_model = data.get('EXIF:Model', 'default')  # Fallback to 'default' if not found
             sensor_make = data.get('EXIF:Make', 'default')
@@ -78,13 +81,26 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             geotiff_file = Path(geotiff_dir) / output_file
             image_path = os.path.join(indir_path, file_Name)
 
-            properties = dict(File_Name=file_Name, Focal_Length=focal_length,
-                           Image_Width=image_width, Image_Height=image_height, Sensor_Model=sensor_model,
-                           Sensor_Make=sensor_make, relativeAltitude=re_altitude, FlightYawDegree=FlightYawDegree,
-                           FlightPitchDegree=FlightPitchDegree, FlightRollDegree=FlightRollDegree,
-                           DateTimeOriginal=datetime_original, GimbalPitchDegree=GimbalPitchDegree, GimbalYawDegree=GimbalYawDegree,
-                           GimbalRollDegree=GimbalRollDegree)
-
+            if FlightPitchDegree == 000:
+                properties = dict(File_Name=file_Name, Focal_Length=focal_length,
+                                  Image_Width=image_width, Image_Height=image_height, Sensor_Model=sensor_model,
+                                  Sensor_Make=sensor_make, relativeAltitude=re_altitude,
+                                  FlightYawDegree=GimbalYawDegree,
+                                  FlightPitchDegree=GimbalPitchDegree, FlightRollDegree=GimbalRollDegree,
+                                  DateTimeOriginal=datetime_original, GimbalPitchDegree=GimbalPitchDegree,
+                                  GimbalYawDegree=GimbalYawDegree,
+                                  GimbalRollDegree=GimbalRollDegree)
+            else:
+                properties = dict(File_Name=file_Name, Focal_Length=focal_length,
+                                  Image_Width=image_width, Image_Height=image_height, Sensor_Model=sensor_model,
+                                  Sensor_Make=sensor_make, relativeAltitude=re_altitude,
+                                  FlightYawDegree=FlightYawDegree,
+                                  FlightPitchDegree=FlightPitchDegree, FlightRollDegree=FlightRollDegree,
+                                  DateTimeOriginal=datetime_original, GimbalPitchDegree=GimbalPitchDegree,
+                                  GimbalYawDegree=GimbalYawDegree,
+                                  GimbalRollDegree=GimbalRollDegree)
+            # print(properties)
+            # continue
             coord_array = calculate_fov(re_altitude, focal_length, sensor_width, sensor_height,
                                         GimbalRollDegree, GimbalPitchDegree, FlightYawDegree,
                                         Drone_Lat, Drone_Lon)
@@ -93,18 +109,18 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             geojson_polygon = geojson.dumps(polygon)
             rewound_polygon = rewind(geojson.loads(geojson_polygon))
             array_rw = rewound_polygon['coordinates'][0]
-            fix_arry = [(array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
-            closed_arry = [(array_rw[0]), (array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
-            create_geotiffs(image_path, geotiff_file, fix_arry)
+            fix_array = [(array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
+            closed_array = [(array_rw[0]), (array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
+            create_geotiffs(image_path, geotiff_file, fix_array)
             type_point = dict(type="Point", coordinates=[Drone_Lon, Drone_Lat])
-            type_polygon = dict(type="Polygon", coordinates=[closed_arry])
+            type_polygon = dict(type="Polygon", coordinates=[closed_array])
             feature_point = dict(type="Feature", geometry=type_point, properties=properties)
             feature_polygon = dict(type="Feature", geometry=type_polygon, properties=properties)
             feature_collection['features'].append(feature_point)
             feature_collection['features'].append(feature_polygon)
             line_coordinates.append([Drone_Lon, Drone_Lat])
 
-        except Exception as e:
+        except KeyError as e:
             print(Color.RED + f"Error processing {file_Name}: {e}" + Color.END)
 
         bar.next()
