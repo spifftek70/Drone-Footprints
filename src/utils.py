@@ -5,19 +5,20 @@
 
 import pandas as pd
 
+
 class Color(object):
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-    DARKMAGENTA = "\033[0,35m",
-    DARKGREEN = "\033[0,32m",
+    PURPLE = "\033[95m"
+    CYAN = "\033[96m"
+    DARKCYAN = "\033[36m"
+    BLUE = "\033[94m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
+    DARKMAGENTA = ("\033[0,35m",)
+    DARKGREEN = ("\033[0,32m",)
 
     def __init__(self):
         self.color = self.PURPLE
@@ -31,7 +32,9 @@ class Color(object):
         self.color = self.DARKMAGENTA
 
 
-def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None):
+def read_sensor_dimensions_from_csv(
+    csv_filepath, default_sensor_width=None, default_sensor_height=None
+):
     """
     Reads sensor dimensions from a CSV file and returns a dictionary with sensor models as keys
     and tuples of (sensor width, sensor height) as values. If default_sensor_width and
@@ -50,11 +53,17 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
         df = pd.read_csv(csv_filepath)
         # Iterate through each row in the DataFrame and populate the dictionary
         for index, row in df.iterrows():
-            drone_make = row['DroneMake']
-            drone_model = row['DroneModel']
-            sensor_model = row['SensorModel']  # Assuming the CSV has a column named 'SensorModel'
-            width = row['SensorWidth']  # Assuming the CSV has a column named 'SensorWidth'
-            height = row['SensorHeight']  # Assuming the CSV has a column named 'SensorHeight'
+            drone_make = row["DroneMake"]
+            drone_model = row["DroneModel"]
+            sensor_model = row[
+                "SensorModel"
+            ]  # Assuming the CSV has a column named 'SensorModel'
+            width = row[
+                "SensorWidth"
+            ]  # Assuming the CSV has a column named 'SensorWidth'
+            height = row[
+                "SensorHeight"
+            ]  # Assuming the CSV has a column named 'SensorHeight'
             sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model)
 
     except FileNotFoundError:
@@ -66,5 +75,5 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
 
     # If default values are provided, use them as a fallback for any sensor model not in the CSV
     if default_sensor_width is not None and default_sensor_height is not None:
-        sensor_dimensions['default'] = (default_sensor_width, default_sensor_height)
+        sensor_dimensions["default"] = (default_sensor_width, default_sensor_height)
     return sensor_dimensions
