@@ -3,41 +3,39 @@
 #  __license__ = "AGPL"
 #  __version__ = "1.0"
 
-from osgeo import osr, gdal
-import pandas as pd
+from osgeo import gdal
 
 
-def create_geotiffs(image_path, output_file, coord_array):
-    """
-    Warps an image using the provided list of GCPs to align it with geographic north.
-    The output image will be saved to the specified path.
-    """
-
-    # Open the input dataset
+def warp_image_to_gcp(jpg_image_path, new_image_path, coordinate_array):
+    # Open the input image
     gdal.DontUseExceptions()
-    ds = gdal.Open(image_path)
-    cols = ds.RasterXSize
-    rows = ds.RasterYSize
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-    wkt = srs.ExportToWkt()
+    src_ds = gdal.Open(jpg_image_path)
+    if src_ds is None:
+        raise FileNotFoundError(f"Unable to open {jpg_image_path}")
 
-    """
-        Warps an image using the provided list of coordinates to align it with geographic north.
-        Each coordinate should be a tuple of (longitude, latitude).
-        The output image will be saved to the specified path.
-        """
-    # Create a DataFrame from the coord_array
-    df = pd.DataFrame(coord_array, columns=['Longitude', 'Latitude'])
-    df['z'] = 0  # Default elevation
-    df['i_pix'] = [0, cols, cols, 0]  # Example pixel X coordinates
-    df['j_pix'] = [0, 0, rows, rows]  # Example pixel Y coordinates
-    # Create GCPs
-    gcps = [gdal.GCP(row['Longitude'], row['Latitude'], row['z'], row['i_pix'], row['j_pix']) for index, row in
-            df.iterrows()]
+    # Define GCPs - The GCPs link pixel coordinates (px, py) to geographic coordinates (x, y).
+    # Assuming the order in coordinate_array is [Top Left, Top Right, Bottom Right, Bottom Left]
+    gcp_list = [
+        gdal.GCP(coordinate_array[0][0], coordinate_array[0][1], 0, 0, 0),  # Top Left
+        gdal.GCP(coordinate_array[1][0], coordinate_array[1][1], 0, src_ds.RasterXSize, 0),  # Top Right
+        gdal.GCP(coordinate_array[2][0], coordinate_array[2][1], 0, src_ds.RasterXSize, src_ds.RasterYSize),
+        # Bottom Right
+        gdal.GCP(coordinate_array[3][0], coordinate_array[3][1], 0, 0, src_ds.RasterYSize)  # Bottom Left
+    ]
 
-    ds.SetGCPs(gcps, wkt)
-    vrt_ds = gdal.Translate(output_file, ds, format='GTiff', GCPs=gcps, outputSRS=wkt)
-    # Close the dataset
-    ds = None
-    vrt_ds = None
+    # Create a memory copy of the src_ds, to assign GCPs to it
+    mem_driver = gdal.GetDriverByName('MEM')
+    mem_ds = mem_driver.CreateCopy('', src_ds, 0)
+    mem_ds.SetGCPs(gcp_list, src_ds.GetProjection())
+
+    # Warp the image using the GCPs
+    warp_options = gdal.WarpOptions(format='GTiff', dstSRS='EPSG:4326', dstNodata=255, outputType=gdal.GDT_Byte,
+                                    resampleAlg=gdal.GRA_Bilinear,  options=["COPY_SRC_OVERVIEWS=YES", "TILED=YES", "COMPRESS=LZW"])
+    warped_ds = gdal.Warp(new_image_path, mem_ds, options=warp_options)
+
+    if warped_ds is None:
+        raise Exception("Error warping image.")
+
+    warped_ds = None  # Close the dataset
+    mem_ds = None  # Close the in-memory dataset
+
