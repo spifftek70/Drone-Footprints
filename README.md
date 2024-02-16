@@ -15,8 +15,6 @@ The purpose of this module is to calculate imagery footprints of individual dron
 
 ## Installation
 
-### Requirements
-
 - Ready-made gdal version 3.8.3 or later.
 On Ubuntu, you can install as follows:
 
@@ -31,6 +29,9 @@ Installation via pip
 ```
 pip install -r requirements.txt
 ```
+
+## Requirements
+Python 3.6 and above
 
 ----------------------------------------------------------------------------------------------------------------
 
