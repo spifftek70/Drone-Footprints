@@ -22,16 +22,19 @@ class CameraCalculator:
     def getBoundingPolygon(FOVh, FOVv, altitude, roll, pitch, yaw):
         # Correctly handle vector initialization and heading adjustment
 
-        rays = [Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
-                Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
-                Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
-                Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize()
-                ]
+        rays = [
+            Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
+            Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
+            Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
+            Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
+        ]
 
         # Adjust the heading correctly without negation unless specifically needed for the coordinate system
         rotated_vectors = CameraCalculator.rotateRays(rays, roll, pitch, yaw)
         origin = Vector(0, 0, altitude)
-        intersections = CameraCalculator.getRayGroundIntersections(rotated_vectors, origin)
+        intersections = CameraCalculator.getRayGroundIntersections(
+            rotated_vectors, origin
+        )
         return intersections
 
     @staticmethod
@@ -56,11 +59,7 @@ class CameraCalculator:
         m22 = cos_pitch * cos_roll
 
         # Create rotation matrix
-        rotation_matrix = np.array([
-            [m00, m01, m02],
-            [m10, m11, m12],
-            [m20, m21, m22]
-        ])
+        rotation_matrix = np.array([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]])
 
         rotated_rays = []
         for ray in rays:
@@ -69,7 +68,9 @@ class CameraCalculator:
             # Apply rotation
             rotated_vector = rotation_matrix.dot(ray_vector)
             # Convert back to Vector and add to the list
-            rotated_rays.append(Vector(rotated_vector[0], rotated_vector[1], rotated_vector[2]))
+            rotated_rays.append(
+                Vector(rotated_vector[0], rotated_vector[1], rotated_vector[2])
+            )
 
         return rotated_rays
 
@@ -78,7 +79,9 @@ class CameraCalculator:
         intersections = []
         for ray in rays:
             intersection = CameraCalculator.findRayGroundIntersection(ray, origin)
-            if intersection is not None:  # Handle potential None returns for parallel rays
+            if (
+                intersection is not None
+            ):  # Handle potential None returns for parallel rays
                 intersections.append(intersection)
         return intersections
 
