@@ -57,6 +57,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     datetime_original = ''
     sensor_make = ''
     sensor_model = ''
+    i = 0
     for data in metadata:
         file_Name = "Unknown"  # Default file name to handle cases where metadata might be missing
         try:
@@ -76,8 +77,10 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             datetime_original = data.get('EXIF:DateTimeOriginal', "Unknown")
             sensor_model = data.get('EXIF:Model', 'default')  # Fallback to 'default' if not found
             sensor_make = data.get('EXIF:Make', 'default')
-            sensor_width, sensor_height = sensor_dimensions.get(sensor_model, sensor_dimensions.get('default'))
-
+            sensor_width, sensor_height, drone_make, drone_model = sensor_dimensions.get(sensor_model, sensor_dimensions.get('default'))
+            if drone_model and drone_make is None:
+                drone_model = ""
+                drone_make = "Unknown Drone"
             output_file = Path(file_Name).stem + '.tif'
             geotiff_file = Path(geotiff_dir) / output_file
 
@@ -117,6 +120,10 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             array_rw = rewound_polygon['coordinates'][0]
             fix_array = [(coord_array[1]), (coord_array[2]), (coord_array[3]), (coord_array[0])]
             closed_array = [(array_rw[0]), (array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
+            if i == 0 and (drone_make and drone_model):
+                print(Color.PURPLE + "Now processing images from -" + drone_make + " " + drone_model + " with -"
+                      + sensor_make + " " + sensor_model + " sensor" + Color.END)
+            i = i + 1
             # Create the GeoTiff from JPG files
             warp_image_to_gcp(image_path, geotiff_file, fix_array)
             # create_geotiffs(image_path, geotiff_temp_file1, geotiff_file, fix_array)
