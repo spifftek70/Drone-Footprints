@@ -13,8 +13,8 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from progress.bar import Bar
 from fov_calculations import calculate_fov
-# from create_geotiffs import create_geotiffs
-from create_raster import create_geotiffs
+from create_geotiffs import warp_image_to_gcp
+# from create_raster import create_geotiffs
 from utils import read_sensor_dimensions_from_csv, Color
 
 
@@ -81,12 +81,12 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             output_file = Path(file_Name).stem + '.tif'
             geotiff_file = Path(geotiff_dir) / output_file
 
-            temp_file = Path(file_Name).stem + 'temp.tif'
-            geotiff_temp_file = Path(geotiff_dir) / temp_file
+            temp_file1 = Path(file_Name).stem + '_temp1.tif'
+            geotiff_temp_file1 = Path(geotiff_dir) / temp_file1
 
             image_path = os.path.join(indir_path, file_Name)
 
-            aux_name = Path(file_Name).stem + 'temp.tif.aux.xml'
+            aux_name = Path(file_Name).stem + '_temp1.tif.aux.xml'
             aux_file = Path(geotiff_dir) / aux_name
 
             if FlightPitchDegree == 000:
@@ -105,22 +105,21 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                                   FlightYawDegree=FlightYawDegree,
                                   FlightPitchDegree=FlightPitchDegree, FlightRollDegree=FlightRollDegree,
                                   DateTimeOriginal=datetime_original, GimbalPitchDegree=GimbalPitchDegree,
-                                  GimbalYawDegree=GimbalYawDegree,
+                                  GimbalYawDegree=FlightYawDegree,
                                   GimbalRollDegree=GimbalRollDegree)
-            # print(properties)
-            # continue
+
             coord_array = calculate_fov(re_altitude, focal_length, sensor_width, sensor_height,
                                         GimbalRollDegree, GimbalPitchDegree, FlightYawDegree,
                                         Drone_Lat, Drone_Lon)
-
             polygon = Polygon(coord_array)
             geojson_polygon = geojson.dumps(polygon)
             rewound_polygon = rewind(geojson.loads(geojson_polygon))
             array_rw = rewound_polygon['coordinates'][0]
-            fix_array = [(array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
+            fix_array = [(coord_array[1]), (coord_array[2]), (coord_array[3]), (coord_array[0])]
             closed_array = [(array_rw[0]), (array_rw[3]), (array_rw[2]), (array_rw[1]), (array_rw[0])]
             # Create the GeoTiff from JPG files
-            create_geotiffs(image_path, geotiff_temp_file, geotiff_file, fix_array)
+            warp_image_to_gcp(image_path, geotiff_file, fix_array)
+            # create_geotiffs(image_path, geotiff_temp_file1, geotiff_file, fix_array)
             type_point = dict(type="Point", coordinates=[Drone_Lon, Drone_Lat])
             type_polygon = dict(type="Polygon", coordinates=[closed_array])
             feature_point = dict(type="Feature", geometry=type_point, properties=properties)
@@ -128,8 +127,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             feature_collection['features'].append(feature_point)
             feature_collection['features'].append(feature_polygon)
             line_coordinates.append([Drone_Lon, Drone_Lat])
-            os.remove(geotiff_temp_file)
-            os.remove(aux_file)
+            # os.remove(geotiff_temp_file1)
+            # os.remove(aux_file)
         except KeyError as e:
             print(Color.RED + f"Error processing {file_Name}: {e}" + Color.END)
 
@@ -155,7 +154,7 @@ def main():
 
     files = get_image_files(indir)
     metadata = get_metadata(files)
-
+    print(Color.YELLOW + "Metadata Gathered" + Color.END)
     geojson_dir = Path(outdir) / 'geojsons'
     geotiff_dir = Path(outdir) / 'geotiffs'
     geojson_dir.mkdir(parents=True, exist_ok=True)
