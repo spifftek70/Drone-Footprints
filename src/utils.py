@@ -48,13 +48,14 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
     try:
         # Read the CSV file into a DataFrame
         df = pd.read_csv(csv_filepath)
-
         # Iterate through each row in the DataFrame and populate the dictionary
         for index, row in df.iterrows():
-            model = row['SensorModel']  # Assuming the CSV has a column named 'SensorModel'
+            drone_make = row['DroneMake']
+            drone_model = row['DroneModel']
+            sensor_model = row['SensorModel']  # Assuming the CSV has a column named 'SensorModel'
             width = row['SensorWidth']  # Assuming the CSV has a column named 'SensorWidth'
             height = row['SensorHeight']  # Assuming the CSV has a column named 'SensorHeight'
-            sensor_dimensions[model] = (width, height)
+            sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model)
 
     except FileNotFoundError:
         print(f"Error: The file {csv_filepath} was not found.")
@@ -66,5 +67,4 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
     # If default values are provided, use them as a fallback for any sensor model not in the CSV
     if default_sensor_width is not None and default_sensor_height is not None:
         sensor_dimensions['default'] = (default_sensor_width, default_sensor_height)
-
     return sensor_dimensions
