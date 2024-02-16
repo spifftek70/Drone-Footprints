@@ -102,6 +102,3 @@ def warp_image_with_gcp(temp_output, output_path, coords):
         with rasterio.open(output_path, 'w', **out_meta) as dst:
             dst.crs = CRS.from_epsg(4326)
             dst.write(out_image)
-
-
-
