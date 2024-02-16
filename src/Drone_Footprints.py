@@ -67,6 +67,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     sensor_make = ""
     sensor_model = ""
     i = 0
+    # print(metadata)
+    # exit()
     for data in metadata:
         file_Name = "Unknown"  # Default file name to handle cases where metadata might be missing
         try:
@@ -81,7 +83,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             )
             GimbalRollDegree = float(
                 data.get("XMP:GimbalRollDegree")
-                or data.get("MakerNotes:CameraRoll")
+                or data.get("MakerNotes:CameraRoll") - 90
                 or data.get("XMP:Roll")
             )
             GimbalPitchDegree = float(
@@ -95,13 +97,13 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 or data.get("XMP:Yaw")
             )
             FlightPitchDegree = float(
-                data.get("XMP:FlightPitchDegree") or data.get("MakerNotes:Pitch") or 000
+                data.get("XMP:FlightPitchDegree") or data.get("MakerNotes:Pitch") or 999
             )
             FlightRollDegree = float(
-                data.get("XMP:FlightRollDegree") or data.get("MakerNotes:Roll") or 000
+                data.get("XMP:FlightRollDegree") or data.get("MakerNotes:Roll") or 999
             )
             FlightYawDegree = float(
-                data.get("XMP:FlightYawDegree") or data.get("MakerNotes:Yaw") or 000
+                data.get("XMP:FlightYawDegree") or data.get("MakerNotes:Yaw") or 999
             )
             image_width = int(
                 data.get("EXIF:ImageWidth") or data.get("EXIF:ExifImageWidth")
@@ -119,6 +121,12 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             sensor_width, sensor_height, drone_make, drone_model = (
                 sensor_dimensions.get(sensor_model, sensor_dimensions.get("default"))
             )
+
+            # cal_roll = GimbalRollDegree % 180
+            # if cal_roll > 10:
+            #     NewRollDegree = 0
+            # else:
+            #     NewRollDegree = 0
             if drone_model and drone_make is None:
                 drone_model = ""
                 drone_make = "Unknown Drone"
@@ -133,7 +141,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             aux_name = Path(file_Name).stem + "_temp1.tif.aux.xml"
             aux_file = Path(geotiff_dir) / aux_name
 
-            if FlightPitchDegree == 000:
+            if FlightPitchDegree == 999:
                 properties = dict(
                     File_Name=file_Name,
                     Focal_Length=focal_length,
@@ -142,13 +150,14 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     Sensor_Model=sensor_model,
                     Sensor_Make=sensor_make,
                     relativeAltitude=re_altitude,
-                    FlightYawDegree=GimbalYawDegree,
-                    FlightPitchDegree=GimbalPitchDegree,
-                    FlightRollDegree=GimbalRollDegree,
+                    FlightYawDegree=round(GimbalYawDegree, 2),
+                    FlightPitchDegree=round(GimbalPitchDegree, 2),
+                    FlightRollDegree=round(GimbalRollDegree, 2),
                     DateTimeOriginal=datetime_original,
-                    GimbalPitchDegree=GimbalPitchDegree,
-                    GimbalYawDegree=GimbalYawDegree,
-                    GimbalRollDegree=GimbalRollDegree,
+                    GimbalPitchDegree=round(GimbalPitchDegree, 2),
+                    GimbalYawDegree=round(GimbalYawDegree, 2),
+                    GimbalRollDegree=round(GimbalRollDegree, 2),
+                    DroneCoordinates=[Drone_Lon, Drone_Lat]
                 )
             else:
                 properties = dict(
@@ -159,15 +168,17 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     Sensor_Model=sensor_model,
                     Sensor_Make=sensor_make,
                     relativeAltitude=re_altitude,
-                    FlightYawDegree=FlightYawDegree,
-                    FlightPitchDegree=FlightPitchDegree,
-                    FlightRollDegree=FlightRollDegree,
+                    FlightYawDegree=round(FlightYawDegree, 2),
+                    FlightPitchDegree=round(FlightPitchDegree, 2),
+                    FlightRollDegree=round(FlightRollDegree, 2),
                     DateTimeOriginal=datetime_original,
-                    GimbalPitchDegree=GimbalPitchDegree,
-                    GimbalYawDegree=FlightYawDegree,
-                    GimbalRollDegree=GimbalRollDegree,
+                    GimbalPitchDegree=round(GimbalPitchDegree, 2),
+                    GimbalYawDegree=round(FlightYawDegree, 2),
+                    GimbalRollDegree=round(GimbalRollDegree, 2),
+                    DroneCoordinates=[Drone_Lon, Drone_Lat]
                 )
-
+            # print(properties)
+            # continue
             coord_array = calculate_fov(
                 re_altitude,
                 focal_length,
