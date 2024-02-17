@@ -13,7 +13,7 @@ from geojson_rewind import rewind
 from shapely.geometry import Polygon
 from progress.bar import Bar
 from fov_calculations import calculate_fov
-from create_geotiffs import warp_image_to_gcp
+from create_geotiffs import set_raster_extents
 
 # from create_raster import create_geotiffs
 from utils import read_sensor_dimensions_from_csv, Color
@@ -200,6 +200,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 (coord_array[3]),
                 (coord_array[0]),
             ]
+            # print(fix_array)
+            # continue
             closed_array = [
                 (array_rw[0]),
                 (array_rw[3]),
@@ -223,7 +225,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 )
             i = i + 1
             # Create the GeoTiff from JPG files
-            warp_image_to_gcp(image_path, geotiff_file, fix_array)
+            set_raster_extents(image_path, geotiff_file, fix_array)
             # create_geotiffs(image_path, geotiff_temp_file1, geotiff_file, fix_array)
             type_point = dict(type="Point", coordinates=[Drone_Lon, Drone_Lat])
             type_polygon = dict(type="Polygon", coordinates=[closed_array])
