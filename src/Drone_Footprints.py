@@ -20,7 +20,7 @@ from utils import read_sensor_dimensions_from_csv, Color
 
 
 # Constants
-IMAGE_EXTENSIONS = {".jpg", ".jpeg"}
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 SENSOR_INFO_CSV = "drone_sensors.csv"
 now = datetime.datetime.now()
 geojson_file = "M_" + now.strftime("%Y-%m-%d_%H-%M") + ".json"
