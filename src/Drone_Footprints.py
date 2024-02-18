@@ -168,7 +168,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     FlightRollDegree=round(FlightRollDegree, 2),
                     DateTimeOriginal=datetime_original,
                     GimbalPitchDegree=round(GimbalPitchDegree, 2),
-                    GimbalYawDegree=round(FlightYawDegree, 2),
+                    GimbalYawDegree=round(GimbalYawDegree, 2),
                     GimbalRollDegree=round(GimbalRollDegree, 2),
                     DroneCoordinates=[Drone_Lon, Drone_Lat],
                     Sensor_Width=sensor_width,
