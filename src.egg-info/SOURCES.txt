@@ -33,14 +33,13 @@ samples/screenshots/screenshot1.png
 samples/screenshots/screenshot2.png
 samples/screenshots/screenshot3.png
 src/Bbox_calculations.py
-src/Color_Class.py
 src/Drone_Footprints.py
 src/__init__.py
-src/coordinate_conversions.py
 src/create_geotiffs.py
+src/create_raster.py
 src/drone_sensors.csv
+src/fov_calculations.py
 src/geospatial_calculations_nadir.py
-src/geospatial_calculations_nonnadir.py
 src.egg-info/PKG-INFO
 src.egg-info/SOURCES.txt
 src.egg-info/dependency_links.txt
