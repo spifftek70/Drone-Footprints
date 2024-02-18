@@ -5,7 +5,7 @@
 
 
 import numpy as np
-from geospatial_conversions import *
+from src.Utils.geospatial_conversions import *
 
 
 def calculate_footprints_nadir(

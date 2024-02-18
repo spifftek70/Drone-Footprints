@@ -4,7 +4,7 @@
 
 import numpy as np
 from Bbox_calculations import CameraCalculator
-from geospatial_conversions import *
+from Utils.geospatial_conversions import *
 
 
 def calculate_fov(
@@ -45,7 +45,7 @@ def calculate_fov(
 
     # Translate bounding polygon to geographic coordinates
     translated_bbox = translate_to_geographic(bbox, drone_lon, drone_lat)
-    return translated_bbox
+    return translated_bbox, FOVh, FOVv
 
 
 def translate_to_geographic(bbox, drone_lon, drone_lat):
