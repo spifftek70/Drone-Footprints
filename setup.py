@@ -33,7 +33,6 @@ setup(
         'geojson',
         'argparse',
         'geopandas',
-        'fiona',
         'pyproj',
         'numpy',
         'utm',
@@ -47,6 +46,9 @@ setup(
         'GDAL',
         'gps-time',
         'datetime',
+        'pathlib',
+        'opencv-python'
+        'pillow'
         'vector3d'],
     zip_safe=False
 )
