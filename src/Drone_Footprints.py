@@ -16,7 +16,7 @@ from fov_calculations import calculate_fov
 from create_geotiffs import set_raster_extents
 
 # from create_raster import create_geotiffs
-from utils import read_sensor_dimensions_from_csv, Color
+from Utils.utils import read_sensor_dimensions_from_csv, Color
 
 
 # Constants
@@ -121,12 +121,6 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             sensor_width, sensor_height, drone_make, drone_model = (
                 sensor_dimensions.get(sensor_model, sensor_dimensions.get("default"))
             )
-
-            # cal_roll = GimbalRollDegree % 180
-            # if cal_roll > 10:
-            #     NewRollDegree = 0
-            # else:
-            #     NewRollDegree = 0
             if drone_model and drone_make is None:
                 drone_model = ""
                 drone_make = "Unknown Drone"
@@ -140,7 +134,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
 
             aux_name = Path(file_Name).stem + "_temp1.tif.aux.xml"
             aux_file = Path(geotiff_dir) / aux_name
-
+            gsd = (sensor_width * re_altitude) / (focal_length * image_width)
             if FlightPitchDegree == 999:
                 properties = dict(
                     File_Name=file_Name,
@@ -157,7 +151,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     GimbalPitchDegree=round(GimbalPitchDegree, 2),
                     GimbalYawDegree=round(GimbalYawDegree, 2),
                     GimbalRollDegree=round(GimbalRollDegree, 2),
-                    DroneCoordinates=[Drone_Lon, Drone_Lat]
+                    DroneCoordinates=[Drone_Lon, Drone_Lat],
+                    GSD=gsd
                 )
             else:
                 properties = dict(
@@ -175,11 +170,14 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     GimbalPitchDegree=round(GimbalPitchDegree, 2),
                     GimbalYawDegree=round(FlightYawDegree, 2),
                     GimbalRollDegree=round(GimbalRollDegree, 2),
-                    DroneCoordinates=[Drone_Lon, Drone_Lat]
+                    DroneCoordinates=[Drone_Lon, Drone_Lat],
+                    Sensor_Width=sensor_width,
+                    Sensor_Height=sensor_height,
+                    GSD=gsd
                 )
             # print(properties)
             # continue
-            coord_array = calculate_fov(
+            coord_array, FOVh, FOVv = calculate_fov(
                 re_altitude,
                 focal_length,
                 sensor_width,
