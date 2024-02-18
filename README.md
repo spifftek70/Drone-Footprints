@@ -126,15 +126,13 @@ information becomes available.
 [![IMAGE ALT TEXT HERE](samples%2Fscreenshots%2Fezgif-2-5968847bb5.gif)](https://youtu.be/eaPfwUOpPlo)
 
 ----------------------------------------------------------------------------------------------------------------
-
-## known Issues
-Images that are not taken at Nadir are still not warping as well as I'd like.  Help to improve will be accepted.
-
+## Drone Compatibility
 Tested and works with:
 - Phantom 4 Series
 - Mavic 2 Series
 - EVO II
 
+## known Issues
 Not currently working with older drones (i.e. Phantom 3 Series).  The differences in
 how telemetry is processed and translated into metadata is.... troublesome. 
 
