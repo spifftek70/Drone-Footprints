@@ -25,7 +25,8 @@ def is_valid_directory(arg):
     if not os.path.isdir(arg):
         print(Color.RED, "\"" + arg + "\"""  is not a valid directory" + Color.END)
         exit()
-
+    else:
+        return arg
 
 def parse_arguments():
     """
