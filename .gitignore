@@ -1,9 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/
 src/__pycache__/
-drone_fp.egg-info/
-dist/
-/geo-utils/
+Drone_Footprints.egg-info
 Test_Files
 build/
 qodana.yaml
+venv
