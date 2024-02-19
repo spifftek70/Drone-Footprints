@@ -103,6 +103,7 @@ def array2ds(cv2_array, polygon_wkt, epsg_code=4326):
     pixel_size_y = (maxy - miny) / height
 
     # Create and configure the GDAL dataset
+    gdal.DontUseExceptions()
     driver = gdal.GetDriverByName("MEM")
     ds = driver.Create("", width, height, bands, gdal.GDT_Byte)
 
