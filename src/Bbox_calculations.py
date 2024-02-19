@@ -1,10 +1,7 @@
 #  Copyright (c) 2024.
-#  __author__ = "Dean Hand"
-#  __license__ = "AGPL"
-#  __version__ = "1.0"
-
-# Based upon: https://github.com/frank-engel-usgs/camera-footprint-calculator/blob/master/camera_calculator.py
-#    Orignal by           : Luigi Pirelli
+#  Author: Dean Hand
+#  License: AGPL
+#  Version: 1.0
 
 import math
 import numpy as np
@@ -13,89 +10,117 @@ from vector3d.vector import Vector
 
 class CameraCalculator:
     def __init__(self):
+        """Initializes the CameraCalculator object."""
         pass
 
-    def __del__(delf):
+    def __del__(self):
+        """Cleans up any resources if necessary when the CameraCalculator object is destroyed."""
         pass
 
     @staticmethod
     def getBoundingPolygon(FOVh, FOVv, altitude, roll, pitch, yaw):
-        # Correctly handle vector initialization and heading adjustment
+        """
+        Calculates the bounding polygon of a camera's footprint given its field of view, position, and orientation.
 
+        Parameters:
+            FOVh (float): The horizontal field of view in radians.
+            FOVv (float): The vertical field of view in radians.
+            altitude (float): The altitude above ground in meters.
+            roll (float): The roll angle in radians.
+            pitch (float): The pitch angle in radians.
+            yaw (float): The yaw angle in radians.
+
+        Returns:
+            list: A list of Vector objects representing the corners of the bounding polygon on the ground.
+        """
+
+        # Define camera rays based on field of view
         rays = [
-            Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
-            Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),
-            Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
-            Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),
+            Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),  # Bottom left
+            Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),  # Top left
+            Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),  # Top right
+            Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),  # Bottom right
         ]
 
-        # Adjust the heading correctly without negation unless specifically needed for the coordinate system
+        # Rotate rays according to camera orientation
         rotated_vectors = CameraCalculator.rotateRays(rays, roll, pitch, yaw)
+
+        # Calculate intersection points of rays with ground plane
         origin = Vector(0, 0, altitude)
-        intersections = CameraCalculator.getRayGroundIntersections(
-            rotated_vectors, origin
-        )
+        intersections = CameraCalculator.getRayGroundIntersections(rotated_vectors, origin)
+
         return intersections
 
     @staticmethod
     def rotateRays(rays, roll, pitch, yaw):
-        # Calculate sine and cosine for each of the angles for efficiency
-        sin_roll = math.sin(roll)
-        cos_roll = math.cos(roll)
-        sin_pitch = math.sin(pitch)
-        cos_pitch = math.cos(pitch)
-        sin_yaw = math.sin(yaw)
-        cos_yaw = math.cos(yaw)
+        """
+        Rotates the given rays according to the specified roll, pitch, and yaw angles.
 
-        # Rotation matrix components
-        m00 = cos_yaw * cos_pitch
-        m01 = cos_yaw * sin_pitch * sin_roll - sin_yaw * cos_roll
-        m02 = cos_yaw * sin_pitch * cos_roll + sin_yaw * sin_roll
-        m10 = sin_yaw * cos_pitch
-        m11 = sin_yaw * sin_pitch * sin_roll + cos_yaw * cos_roll
-        m12 = sin_yaw * sin_pitch * cos_roll - cos_yaw * sin_roll
-        m20 = -sin_pitch
-        m21 = cos_pitch * sin_roll
-        m22 = cos_pitch * cos_roll
+        Parameters:
+            rays (list): A list of Vector objects representing the rays to rotate.
+            roll (float): The roll angle in radians.
+            pitch (float): The pitch angle in radians.
+            yaw (float): The yaw angle in radians.
 
-        # Create rotation matrix
-        rotation_matrix = np.array([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]])
+        Returns:
+            list: A list of Vector objects representing the rotated rays.
+        """
 
-        rotated_rays = []
-        for ray in rays:
-            # Convert Vector to numpy array for matrix multiplication
-            ray_vector = np.array([ray.x, ray.y, ray.z])
-            # Apply rotation
-            rotated_vector = rotation_matrix.dot(ray_vector)
-            # Convert back to Vector and add to the list
-            rotated_rays.append(
-                Vector(rotated_vector[0], rotated_vector[1], rotated_vector[2])
-            )
+        # Pre-compute sine and cosine of angles for efficiency
+        sin_roll, cos_roll = math.sin(roll), math.cos(roll)
+        sin_pitch, cos_pitch = math.sin(pitch), math.cos(pitch)
+        sin_yaw, cos_yaw = math.sin(yaw), math.cos(yaw)
+
+        # Define rotation matrix components
+        rotation_matrix = np.array([
+            [cos_yaw * cos_pitch, cos_yaw * sin_pitch * sin_roll - sin_yaw * cos_roll,
+             cos_yaw * sin_pitch * cos_roll + sin_yaw * sin_roll],
+            [sin_yaw * cos_pitch, sin_yaw * sin_pitch * sin_roll + cos_yaw * cos_roll,
+             sin_yaw * sin_pitch * cos_roll - cos_yaw * sin_roll],
+            [-sin_pitch, cos_pitch * sin_roll, cos_pitch * cos_roll]
+        ])
+
+        # Rotate each ray and collect the results
+        rotated_rays = [Vector(*(rotation_matrix.dot(np.array([ray.x, ray.y, ray.z])))) for ray in rays]
 
         return rotated_rays
 
     @staticmethod
     def getRayGroundIntersections(rays, origin):
-        intersections = []
-        for ray in rays:
-            intersection = CameraCalculator.findRayGroundIntersection(ray, origin)
-            if (
-                intersection is not None
-            ):  # Handle potential None returns for parallel rays
-                intersections.append(intersection)
+        """
+        Calculates the intersection points of the given rays with the ground plane.
+
+        Parameters:
+            rays (list): A list of Vector objects representing the rays.
+            origin (Vector): The origin point of the rays.
+
+        Returns:
+            list: A list of Vector objects representing the intersection points on the ground.
+        """
+
+        intersections = [CameraCalculator.findRayGroundIntersection(ray, origin) for ray in rays if
+                         CameraCalculator.findRayGroundIntersection(ray, origin) is not None]
+
         return intersections
 
     @staticmethod
     def findRayGroundIntersection(ray, origin):
-        # Calculate t for the intersection with the ground plane (z = 0)
-        if ray.z == 0:
-            # Avoid division by zero; if ray.z is 0, the ray is parallel to the ground plane and won't intersect
-            return None  # Or handle this case as per your application's logic
+        """
+        Finds the intersection point of a single ray with the ground plane.
+
+        Parameters:
+            ray (Vector): The ray vector.
+            origin (Vector): The origin point of the ray.
+
+        Returns:
+            Vector: The intersection point with the ground, or None if the ray is parallel to the ground.
+        """
+
+        if ray.z == 0:  # Ray is parallel to ground
+            return None
+
+        # Calculate intersection parameter t
         t = -origin.z / ray.z
 
-        # Calculate the intersection point using the parametric equation of the ray
-        x = origin.x + ray.x * t
-        y = origin.y + ray.y * t
-        z = 0  # The intersection is with the ground plane, so z is 0
-
-        return Vector(x, y, z)
+        # Calculate intersection point
+        return Vector(origin.x + ray.x * t, origin.y + ray.y * t, 0)
