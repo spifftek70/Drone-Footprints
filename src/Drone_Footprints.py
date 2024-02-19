@@ -26,10 +26,15 @@ now = datetime.datetime.now()
 geojson_file = "M_" + now.strftime("%Y-%m-%d_%H-%M") + ".json"
 
 
+def is_valid_directory(arg):
+    if not os.path.isdir(arg):
+        raise argparse.ArgumentTypeError(f"{arg} is not a valid directory")
+    return arg
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Input Mission JSON File")
-    parser.add_argument("-i", "--indir", help="Input directory", required=True)
-    parser.add_argument("-o", "--dest", help="Output directory", required=True)
+    parser.add_argument("-i", "--indir", type=is_valid_directory, help="Input directory", required=True)
+    parser.add_argument("-o", "--dest", type=is_valid_directory, help="Output directory", required=True)
     parser.add_argument("-w", "--sensorWidth", help="Sensor Width", required=False)
     parser.add_argument("-d", "--sensorHeight", help="Sensor Height", required=False)
     return parser.parse_args()
