@@ -1,12 +1,13 @@
-#  Copyright (c) 2024.
-#  __author__ = "Dean Hand"
-#  __license__ = "AGPL"
-#  __version__ = "1.0"
+# Copyright (c) 2024
+# __author__ = "Dean Hand"
+# __license__ = "AGPL"
+# __version__ = "1.0"
 
 import pandas as pd
 
 
-class Color(object):
+class Color:
+    """Defines color codes for console output."""
     PURPLE = "\033[95m"
     CYAN = "\033[96m"
     DARKCYAN = "\033[36m"
@@ -17,10 +18,11 @@ class Color(object):
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
     END = "\033[0m"
-    DARKMAGENTA = ("\033[0,35m",)
-    DARKGREEN = ("\033[0,32m",)
+    DARKMAGENTA = "\033[0;35m"
+    DARKGREEN = "\033[0;32m"
 
     def __init__(self):
+        """Initializes the Color object with default color settings."""
         self.color = self.PURPLE
         self.color = self.BLUE
         self.color = self.GREEN
@@ -32,38 +34,30 @@ class Color(object):
         self.color = self.DARKMAGENTA
 
 
-def read_sensor_dimensions_from_csv(
-    csv_filepath, default_sensor_width=None, default_sensor_height=None
-):
+def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None):
     """
-    Reads sensor dimensions from a CSV file and returns a dictionary with sensor models as keys
-    and tuples of (sensor width, sensor height) as values. If default_sensor_width and
-    default_sensor_height are provided, sensors not found in the CSV will default to these values.
+    Reads sensor dimensions from a CSV file, returning a dictionary with sensor models as keys
+    and tuples of (sensor width, sensor height, drone make, drone model) as values. Provides
+    default dimensions for sensors not found in the CSV.
 
-    :param csv_filepath: Path to the CSV file containing sensor dimensions.
-    :param default_sensor_width: Default sensor width to use if a sensor model is not found in the CSV.
-    :param default_sensor_height: Default sensor height to use if a sensor model is not found in the CSV.
-    :return: A dictionary with sensor models as keys and (width, height) tuples as values.
+    Parameters:
+    - csv_filepath (str): Path to the CSV file containing sensor dimensions.
+    - default_sensor_width (float, optional): Default sensor width if a model is not found in the CSV.
+    - default_sensor_height (float, optional): Default sensor height if a model is not found in the CSV.
+
+    Returns:
+    - dict: A dictionary with sensor models as keys and tuples (width, height, make, model) as values.
     """
-    # Initialize an empty dictionary to store sensor dimensions
-    sensor_dimensions = {}
+    sensor_dimensions = {}  # Initialize an empty dictionary to store sensor dimensions
 
     try:
-        # Read the CSV file into a DataFrame
-        df = pd.read_csv(csv_filepath)
-        # Iterate through each row in the DataFrame and populate the dictionary
-        for index, row in df.iterrows():
+        df = pd.read_csv(csv_filepath)  # Read the CSV file into a DataFrame
+        for index, row in df.iterrows():  # Iterate through each row and populate the dictionary
+            sensor_model = row["SensorModel"]
+            width = row["SensorWidth"]
+            height = row["SensorHeight"]
             drone_make = row["DroneMake"]
             drone_model = row["DroneModel"]
-            sensor_model = row[
-                "SensorModel"
-            ]  # Assuming the CSV has a column named 'SensorModel'
-            width = row[
-                "SensorWidth"
-            ]  # Assuming the CSV has a column named 'SensorWidth'
-            height = row[
-                "SensorHeight"
-            ]  # Assuming the CSV has a column named 'SensorHeight'
             sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model)
 
     except FileNotFoundError:
@@ -73,7 +67,8 @@ def read_sensor_dimensions_from_csv(
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-    # If default values are provided, use them as a fallback for any sensor model not in the CSV
+    # Use default values as a fallback for any sensor model not in the CSV
     if default_sensor_width is not None and default_sensor_height is not None:
         sensor_dimensions["default"] = (default_sensor_width, default_sensor_height)
+
     return sensor_dimensions
