@@ -5,7 +5,7 @@ with open('src/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
 
 setup(
-    name='src',
+    name='Drone_Footprints',
     version=version,
     description='Drone_image footprint calculator',
     long_description="""
@@ -25,7 +25,7 @@ setup(
         'Programming Language :: Python :: 3.9'
     ],
     packages=['src'],
-    keywords=['src', 'DJI', 'exif', 'footprints'],
+    keywords=['Drone', 'UAS', 'UAV', 'GIS', 'Geo-Rectification', 'DJI', 'exif', 'footprints'],
     url='https://github.com/spifftek70/Drone-Footprints',
     author='Dean Hand',
     author_email='dean.e.hand@me.com',
@@ -47,8 +47,8 @@ setup(
         'gps-time',
         'datetime',
         'pathlib',
-        'opencv-python'
-        'pillow'
+        'opencv-python',
+        'pillow',
         'vector3d'],
     zip_safe=False
 )
