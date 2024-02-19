@@ -20,6 +20,13 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 SENSOR_INFO_CSV = "drone_sensors.csv"
 
+
+def is_valid_directory(arg):
+    if not os.path.isdir(arg):
+        print(Color.RED, "\"" + arg + "\"""  is not a valid directory" + Color.END)
+        exit()
+
+
 def parse_arguments():
     """
     Parse command-line arguments for processing drone imagery.
@@ -28,7 +35,7 @@ def parse_arguments():
         argparse.Namespace: The parsed arguments with input directory, output directory, sensor width, and sensor height.
     """
     parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
-    parser.add_argument("-i", "--indir", help="Path to the input directory with images.", required=True)
+    parser.add_argument("-i", "--indir", type=is_valid_directory, help="Path to the input directory with images.", required=True)
     parser.add_argument("-o", "--dest", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
     parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).", required=False)
     parser.add_argument("-d", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).", required=False)
