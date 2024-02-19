@@ -95,7 +95,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     sensor_make = ""
     sensor_model = ""
     i = 0
-    # print(metadata)
+    # print(ppk_info)
     # exit()
     for data in metadata:
         try:
@@ -127,13 +127,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             output_file = Path(file_Name).stem + ".tif"
             geotiff_file = Path(geotiff_dir) / output_file
 
-            temp_file1 = Path(file_Name).stem + "_temp1.tif"
-            geotiff_temp_file1 = Path(geotiff_dir) / temp_file1
-
             image_path = os.path.join(indir_path, file_Name)
 
-            aux_name = Path(file_Name).stem + "_temp1.tif.aux.xml"
-            aux_file = Path(geotiff_dir) / aux_name
             gsd = (sensor_width * re_altitude) / (focal_length * image_width)
             if FlightPitchDegree == 999:
                 properties = dict(
@@ -225,8 +220,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             feature_collection["features"].append(feature_point)
             feature_collection["features"].append(feature_polygon)
             line_coordinates.append([Drone_Lon, Drone_Lat])
-            # os.remove(geotiff_temp_file1)
-            # os.remove(aux_file)
+
         except KeyError as e:
             print(Color.RED + f"Error processing {file_Name}: {e}" + Color.END)
 
