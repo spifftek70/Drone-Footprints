@@ -3,7 +3,7 @@
 #  License: AGPL
 #  Version: 1.0
 
-from osgeo import gdal, ogr, osr
+from osgeo import gdal, osr
 import numpy as np
 import cv2 as cv
 from shapely.wkt import loads
