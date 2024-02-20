@@ -70,8 +70,8 @@ def get_metadata(files):
     exif_array = []
     with exiftool.ExifToolHelper() as et:
         metadata = iter(et.get_metadata(files))
-    for d in metadata:
-        exif_array.append(d)
+        for d in metadata:
+            exif_array.append(d)
     return exif_array
 
 
@@ -147,6 +147,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     GimbalYawDegree=round(GimbalYawDegree, 2),
                     GimbalRollDegree=round(GimbalRollDegree, 2),
                     DroneCoordinates=[Drone_Lon, Drone_Lat],
+                    Sensor_Width=sensor_width,
+                    Sensor_Height=sensor_height,
                     GSD=gsd
                 )
             else:
