@@ -1,15 +1,19 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility. 
 
 > Author: Dean Hand \
-> Date Created: 09/07/2019
+> Date Created: 09/07/2019 \
+> Name: Drone_Footprints.py 
 
-Name: Drone_Footprints.py \
-The purpose of this module is to calculate imagery footprints of individual drone images.  There is no stitching of 
- images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
- with:
-* Drone Flightpath (LineString)
-* Drone location at point of photo (Point)
-* Individual Image Footprints (Polygons)
+The purpose of this application is to accurately calculate the geographic footprints of individual drone images. 
+Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV). 
+Following this, the application performs a series of calculations to establish the geospatial reference of each image. 
+Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise 
+geolocation without the need for stitching images together. This results in a remarkably efficient process. 
+The final output includes a geo-rectified GeoTiff image file, accompanied by a GeoJSON file detailing:
+
+- The Drone's Flight Path (as a LineString),
+- The Drone's Location at the moment the photo was taken (as a Point),
+- The Footprints of Individual Images (as Polygons).
 
 ----------------------------------------------------------------------------------------------------------------
 
@@ -56,21 +60,19 @@ Python 3.6 and above
 ----------------------------------------------------------------------------------------------------------------
 
 ### :warning: The accuracy of this process depends highly on a number of factors.
-1. IMU calibration
-2. Gimbal calibration
-3. Compass Calibration
-4. Shooting angle (for best results - `Parallel to Main Path`)
-5. Capture Mode (for best results - `Hover&Capture at Point`)
-6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
-7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
-so the code calculates the GSD and FOV using the FlightYawDegree.
+1. IMU calibration - Do this prior to needing a high accuracy dataset
+2. Gimbal calibration - Do this prior to needing a high accuracy dataset
+3. Compass Calibration - Do this prior to needing a high accuracy dataset
+4. Shooting angle - for best results, select `Parallel to Main Path`
+5. Capture Mode - for best results, select `Hover&Capture at Point`
+6. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
 
 ### :memo: Sort into Datasets
 It is highly recommended that you sort the images you want processed into corresponding datasets
 
 - Separate Images by flight mission
-  - Create a mission folder for each flight mission
-  - Create an image folder within the mission folder
+- Create a mission folder for each flight mission
+- Create an image folder within the mission folder
 
 ``````
 ├── /Path/to/mission_folder
