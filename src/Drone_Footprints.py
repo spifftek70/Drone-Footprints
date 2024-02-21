@@ -15,6 +15,8 @@ from progress.bar import Bar
 from fov_calculations import calculate_fov
 from create_geotiffs import set_raster_extents
 from Utils.utils import read_sensor_dimensions_from_csv, Color
+from pprint import pprint
+
 
 # Constants for image file extensions and the sensor information CSV file path
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
@@ -28,6 +30,7 @@ def is_valid_directory(arg):
     else:
         return arg
 
+
 def parse_arguments():
     """
     Parse command-line arguments for processing drone imagery.
@@ -36,11 +39,15 @@ def parse_arguments():
         argparse.Namespace: The parsed arguments with input directory, output directory, sensor width, and sensor height.
     """
     parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
-    parser.add_argument("-i", "--indir", type=is_valid_directory, help="Path to the input directory with images.", required=True)
+    parser.add_argument("-i", "--indir", type=is_valid_directory, help="Path to the input directory with images.",
+                        required=True)
     parser.add_argument("-o", "--dest", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
-    parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).", required=False)
-    parser.add_argument("-d", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).", required=False)
+    parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
+                        required=False)
+    parser.add_argument("-d", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).",
+                        required=False)
     return parser.parse_args()
+
 
 def get_image_files(directory):
     """
@@ -56,6 +63,7 @@ def get_image_files(directory):
         [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS],
         key=lambda x: int("".join(filter(str.isdigit, str(x.name))))
     )
+
 
 def get_metadata(files):
     """
@@ -95,7 +103,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     sensor_make = ""
     sensor_model = ""
     i = 0
-    # print(ppk_info)
+    # pprint(metatags)
     # exit()
     for data in metadata:
         try:
@@ -138,7 +146,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     Image_Height=image_height,
                     Sensor_Model=sensor_model,
                     Sensor_Make=sensor_make,
-                    relativeAltitude=re_altitude,
+                    relativeAltitude=round(re_altitude),
                     FlightYawDegree=round(GimbalYawDegree, 2),
                     FlightPitchDegree=round(GimbalPitchDegree, 2),
                     FlightRollDegree=round(GimbalRollDegree, 2),
@@ -159,7 +167,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     Image_Height=image_height,
                     Sensor_Model=sensor_model,
                     Sensor_Make=sensor_make,
-                    relativeAltitude=re_altitude,
+                    relativeAltitude=round(re_altitude),
                     FlightYawDegree=round(FlightYawDegree, 2),
                     FlightPitchDegree=round(FlightPitchDegree, 2),
                     FlightRollDegree=round(FlightRollDegree, 2),
@@ -172,7 +180,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                     Sensor_Height=sensor_height,
                     GSD=gsd
                 )
-            # print(properties)
+            # pprint(properties)
             # continue
             coord_array, FOVh, FOVv = calculate_fov(
                 re_altitude,
@@ -205,7 +213,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 (array_rw[0]),
             ]
             if i == 0 and (drone_make and drone_model):
-                print(Color.PURPLE+ "Now processing images from -" + drone_make + " "
+                print(Color.PURPLE + "Now processing images from -" + drone_make + " "
                       + drone_model + " with -" + sensor_make + " " + sensor_model
                       + " sensor" + Color.END)
             i = i + 1
