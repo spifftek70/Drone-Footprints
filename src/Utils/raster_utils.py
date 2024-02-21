@@ -53,7 +53,7 @@ def warp_image_to_polygon(img_arry, polygon, coordinate_array):
     dst_points = np.float32([gps_to_pixel(coord, minx, maxy, resolution_x, resolution_y) for coord in coordinate_array])
 
     # Calculate the homography matrix and apply warping
-    h_matrix, _ = cv.findHomography(src_points, dst_points)
+    h_matrix, _ = cv.findHomography(src_points, dst_points, cv.RANSAC, 5.0)
     georef_image_array = cv.warpPerspective(img_arry, h_matrix, (img_arry.shape[1], img_arry.shape[0]),
                                             borderMode=cv.BORDER_CONSTANT, borderValue=(0, 0, 0))
     return georef_image_array
