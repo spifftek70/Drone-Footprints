@@ -30,6 +30,15 @@ sudo apt-get install libgdal-dev
 
 Installation via pip
 
+First, you probably want to install into a virtual environment or similar, for example:
+
+```
+python3 -m venv env
+source env/bin/activate
+```
+
+The we install using the requirements list as follows:
+
 ```
 pip install -r requirements.txt
 ```
