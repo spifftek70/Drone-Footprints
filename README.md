@@ -33,7 +33,7 @@ Installation via pip
 First, you probably want to install into a virtual environment or similar, for example:
 
 ```
-python3 -m venv env
+python3.10 -m venv env # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
 source env/bin/activate
 ```
 
