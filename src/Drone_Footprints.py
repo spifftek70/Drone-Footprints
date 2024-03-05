@@ -1,172 +1,317 @@
-#  Copyright (c) 2024.
-#  __author__ = "Dean Hand"
-#  __license__ = "AGPL"
-#  __version__ = "1.0"
+# Copyright (c) 2024
+# Author: Dean Hand
+# License: AGPL
+# Version: 1.0
 
-#### Created / written by Dean E. Hand (dean.e.hand@me.com).
 import os
-import exiftool
 import argparse
 import datetime
-from geospatial_calculations_nadir import *
-from create_geotiffs import *
-from Color_Class import Color
-from operator import itemgetter
+from pathlib import Path
+import exiftool
 import geojson
 from geojson_rewind import rewind
 from shapely.geometry import Polygon
-from os.path import splitext
 from progress.bar import Bar
-from PPK_Process import find_MTK
+from fov_calculations import calculate_fov
+from create_geotiffs import set_raster_extents
+from Utils.utils import read_sensor_dimensions_from_csv, Color
+from pprint import pprint
+
+# Constants for image file extensions and the sensor information CSV file path
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
+SENSOR_INFO_CSV = "drone_sensors.csv"
 
 
-parser = argparse.ArgumentParser(description="Input Mission JSON File")
-parser.add_argument("-i", "--indir", help="Input directory", required=True)
-parser.add_argument("-o", "--dest", help="Output directory", required=True)
-parser.add_argument("-w", "--sensorWidth", help="Sensor Width", required=False)
-parser.add_argument("-d", "--sensorHeight", help="Sensor Height", required=False)
-args = parser.parse_args()
-indir = args.indir
-outdir = args.dest
-sensorWidth = args.sensorWidth
-sensorHeight = args.sensorHeight
-now = datetime.datetime.now()
-geojson_file = "M_" + now.strftime("%Y-%m-%d_%H-%M") + ".json"
+def is_valid_directory(arg):
+    if not os.path.isdir(arg):
+        print(Color.RED, "\"" + arg + "\"""  is not a valid directory" + Color.END)
+        exit()
+    else:
+        return arg
+
+
+def parse_arguments():
+    """
+    Parse command-line arguments for processing drone imagery.
+
+    Returns:
+        argparse.Namespace: The parsed arguments with input directory, output directory, sensor width, and sensor height.
+    """
+    parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
+    parser.add_argument("-i", "--indir", type=is_valid_directory, help="Path to the input directory with images.",
+                        required=True)
+    parser.add_argument("-o", "--dest", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
+    parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
+                        required=False)
+    parser.add_argument("-d", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).",
+                        required=False)
+    return parser.parse_args()
+
+
+def get_image_files(directory):
+    """
+    Retrieve image files from the specified directory that match the defined extensions.
+
+    Args:
+        directory (str): The directory to scan for image files.
+
+    Returns:
+        List[Path]: A list of Path objects for each image file found.
+    """
+    return sorted(
+        [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS],
+        key=lambda x: int("".join(filter(str.isdigit, str(x.name))))
+    )
 
 
 def get_metadata(files):
+    """
+    Extract metadata from a list of image files using ExifTool.
+
+    Args:
+        files (List[Path]): Paths to the image files from which to extract metadata.
+
+    Returns:
+        List[dict]: A list of metadata dictionaries for each file.
+    """
     exif_array = []
     with exiftool.ExifToolHelper() as et:
         metadata = iter(et.get_metadata(files))
-    for d in metadata:
-        exif_array.append(d)
-    return exif_array
+        for d in metadata:
+            exif_array.append(d)
+    if exif_array is None or len(exif_array) == 0:
+        print(Color.RED + "Failed to extract metadata from image files." + Color.END)
+        exit()
+    else:
+        return exif_array
 
 
-def format_data(indir_path, geotff, metadata):
-    bar = Bar('Creating GeoTIFF', max=len(metadata))
-    metadata.sort(key=itemgetter('EXIF:DateTimeOriginal'))
-    feature_coll = dict(type="FeatureCollection", features=[])
-    linecoords = []
-    img_stuff = []
-    sensor_model = ''
-    sensor_make = ''
-    datetime = ''
+def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
+    """
+    Process and convert image metadata into GeoJSON features and create GeoTIFFs.
+
+    Args:
+        metadata (List[dict]): Metadata from each image file.
+        indir_path (Path): Input directory path containing the original images.
+        geotiff_dir (Path): Output directory path for saving generated GeoTIFFs.
+        sensor_dimensions (dict): A dictionary with sensor model keys and dimension values.
+
+    Returns:
+        dict: A GeoJSON FeatureCollection comprising features derived from the image metadata.
+    """
+    feature_collection = {"type": "FeatureCollection", "features": []}
+    line_coordinates = []
+    bar = Bar(Color.BLUE + "Images Processed" + Color.END, max=len(metadata))
+    datetime_original = ""
+    sensor_make = ""
+    sensor_model = ""
     i = 0
-    # ppk_meta = find_MTK(indir_path, metadata)
-    for tags in iter(metadata):
-        # print(tags)
-        # exit()
+    # pprint(metadata)
+    # exit()
+    for data in metadata:
+        try:
+            Drone_Lat = float(data.get("Composite:GPSLatitude") or data.get("EXIF:GPSLatitude"))
+            Drone_Lon = float(data.get("Composite:GPSLongitude") or data.get("EXIF:GPSLongitude"))
+            re_altitude = float(data.get("XMP:RelativeAltitude") or data.get("Composite:GPSAltitude"))
+            GimbalRollDegree = float(
+                data.get("XMP:GimbalRollDegree") or data.get("MakerNotes:Roll") or data.get("XMP:Roll"))
+            GimbalPitchDegree = float(
+                data.get("XMP:GimbalPitchDegree") or data.get("MakerNotes:Pitch") or data.get("XMP:Pitch"))
+            GimbalYawDegree = float(
+                data.get("XMP:GimbalYawDegree") or data.get("MakerNotes:Yaw") or data.get("XMP:Yaw"))
+            FlightPitchDegree = float(data.get("XMP:FlightPitchDegree") or data.get("MakerNotes:Pitch") or 999)
+            FlightRollDegree = float(data.get("XMP:FlightRollDegree") or data.get("MakerNotes:Roll") or 999)
+            FlightYawDegree = float(data.get("XMP:FlightYawDegree") or data.get("MakerNotes:Yaw") or 999)
+            image_width = int(data.get("EXIF:ImageWidth") or data.get("EXIF:ExifImageWidth"))
+            image_height = int(data.get("EXIF:ImageHeight") or data.get("EXIF:ExifImageHeight"))
+            focal_length = float(data.get("EXIF:FocalLength"))
+            file_Name = data.get("File:FileName")
+            datetime_original = data.get("EXIF:DateTimeOriginal", "Unknown")
+            sensor_model = data.get("EXIF:Model", "default")  # Fallback to 'default' if not found
+            sensor_make = data.get("EXIF:Make", "default")  # Fallback to 'default' if not found
+            sensor_width, sensor_height, drone_make, drone_model = (
+                sensor_dimensions.get(sensor_model, sensor_dimensions.get("default"))
+            )
+            if drone_model and drone_make is None:
+                drone_model = ""
+                drone_make = "Unknown Drone"
+            output_file = Path(file_Name).stem + ".tif"
+            geotiff_file = Path(geotiff_dir) / output_file
+
+            image_path = os.path.join(indir_path, file_Name)
+            # print(file_Name)
+            gsd = (sensor_width * re_altitude) / (focal_length * image_width)
+            if FlightPitchDegree == 999:
+                properties = dict(
+                    File_Name=file_Name,
+                    Focal_Length=focal_length,
+                    Image_Width=image_width,
+                    Image_Height=image_height,
+                    Sensor_Model=sensor_model,
+                    Sensor_Make=sensor_make,
+                    relativeAltitude=round(re_altitude, 2),
+                    FlightYawDegree=GimbalYawDegree,
+                    FlightPitchDegree=GimbalPitchDegree,
+                    FlightRollDegree=GimbalRollDegree,
+                    DateTimeOriginal=datetime_original,
+                    GimbalPitchDegree=GimbalPitchDegree,
+                    GimbalYawDegree=GimbalYawDegree,
+                    GimbalRollDegree=GimbalRollDegree,
+                    DroneCoordinates=[Drone_Lon, Drone_Lat],
+                    Sensor_Width=sensor_width,
+                    Sensor_Height=sensor_height,
+                    GSD=gsd
+                )
+            else:
+                properties = dict(
+                    File_Name=file_Name,
+                    Focal_Length=focal_length,
+                    Image_Width=image_width,
+                    Image_Height=image_height,
+                    Sensor_Model=sensor_model,
+                    Sensor_Make=sensor_make,
+                    relativeAltitude=round(re_altitude, 2),
+                    FlightYawDegree=FlightYawDegree,
+                    FlightPitchDegree=FlightPitchDegree,
+                    FlightRollDegree=FlightRollDegree,
+                    DateTimeOriginal=datetime_original,
+                    GimbalPitchDegree=GimbalPitchDegree,
+                    GimbalYawDegree=GimbalYawDegree,
+                    GimbalRollDegree=GimbalRollDegree,
+                    DroneCoordinates=[Drone_Lon, Drone_Lat],
+                    Sensor_Width=sensor_width,
+                    Sensor_Height=sensor_height,
+                    GSD=gsd
+                )
+            coord_array = calculate_fov(
+                re_altitude,
+                focal_length,
+                sensor_width,
+                sensor_height,
+                GimbalRollDegree,
+                GimbalPitchDegree,
+                GimbalYawDegree,
+                Drone_Lat,
+                Drone_Lon,
+                FlightRollDegree,
+                FlightPitchDegree,
+                FlightYawDegree,
+                datetime_original
+            )
+            polygon = Polygon(coord_array)
+            geojson_polygon = geojson.dumps(polygon)
+            rewound_polygon = rewind(geojson.loads(geojson_polygon))
+            array_rw = rewound_polygon["coordinates"][0]
+            fix_array = [
+                (coord_array[2]),
+                (coord_array[1]),
+                (coord_array[0]),
+                (coord_array[3]),
+            ]
+            # print(fix_array)
+            # continue
+            closed_array = [
+                (array_rw[0]),
+                (array_rw[3]),
+                (array_rw[2]),
+                (array_rw[1]),
+                (array_rw[0]),
+            ]
+            if i == 0 and (drone_make and drone_model):
+                print(Color.PURPLE + "Now processing images from -" + drone_make + " "
+                      + drone_model + " with -" + sensor_make + " " + sensor_model
+                      + " sensor" + Color.END)
+            # Create the GeoTiff from JPG files
+            try:
+                set_raster_extents(image_path, geotiff_file, fix_array)
+            except ValueError as e:
+                print(Color.RED + str(e) + Color.END)
+                return
+            # continue
+            type_point = dict(type="Point", coordinates=[Drone_Lon, Drone_Lat])
+            type_polygon = dict(type="Polygon", coordinates=[closed_array])
+            feature_point = dict(
+                type="Feature", geometry=type_point, properties=properties
+            )
+            feature_polygon = dict(
+                type="Feature", geometry=type_polygon, properties=properties
+            )
+            feature_collection["features"].append(feature_point)
+            feature_collection["features"].append(feature_polygon)
+            line_coordinates.append([Drone_Lon, Drone_Lat])
+            i = i + 1
+        except TypeError as t:
+            print(Color.RED + f"Missing metadata key: {t}" + Color.END)
+        except KeyError as k:
+            print(Color.RED + f"Missing metadata key: {k}" + Color.END)
+        except ValueError as e:
+            print(Color.RED + f"Invalid value for metadata key: {e}" + Color.END)
+
         bar.next()
-        i = i + 1
-        if tags in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote', 'MPF'):
-            metadata.pop(tags)
-        if sensorWidth is not None:
-            sensor_width = float(sensorWidth)
-            sensor_height = float(sensorHeight)
-        else:
-            sensor_width = 13.2  # Example sensor width, adjust based on your sensor
-            sensor_height = 8.8 # future non-nadir work
-        try:
-            center_lat = float(tags['Composite:GPSLatitude'])
-            center_lon = float(tags['Composite:GPSLongitude'])
-        except KeyError:
-            center_lat = float(tags['EXIF:GPSLatitude'])
-            center_lon = float(tags['EXIF:GPSLongitude'])
-        try:
-            original_width = int(tags['EXIF:ImageWidth'])
-            original_height = int(tags['EXIF:ImageHeight'])
-        except KeyError:
-            original_width = int(tags['EXIF:ExifImageWidth'])
-            original_height = int(tags['EXIF:ExifImageHeight'])
-        try:
-            altitude = float(tags['XMP:RelativeAltitude'])
-            FlightPitchDegree = float(tags['XMP:FlightPitchDegree']) # future non-nadir work
-            FlightRollDegree = float(tags['XMP:FlightRollDegree']) # future non-nadir work
-            FlightYawDegree = float(tags['XMP:FlightYawDegree'])
-            GimbalPitchDegree = float(tags['XMP:GimbalPitchDegree']) # future non-nadir work
-            GimbalRollDegree = float(tags['XMP:GimbalRollDegree']) # future non-nadir work
-            GimbalYawDegree = float(tags['XMP:GimbalYawDegree']) # future non-nadir work
-        except KeyError:
-            altitude = float(tags['Composite:GPSAltitude'])
-            FlightYawDegree = float(tags["MakerNotes:Yaw"])
-        focal_length = float(tags['EXIF:FocalLength'])
-        file_Name = tags['File:FileName']
-        image_path = os.path.join(indir_path, file_Name)
-        # if i == 1:
-        datetime = tags['EXIF:DateTimeOriginal']
-        sensor_model = tags['EXIF:Model']
-        sensor_make = tags['EXIF:Make']
-        # print('file name:', file_Name, "\tcentral Lat:", center_lat, "\tcentral Lon:", center_lon, "\tDate Time: ", datetime)
-        # continue
-        center_x, center_y, zone_number, hemisphere = decimal_degrees_to_utm(center_lat, center_lon)
-        gsd = (sensor_width * altitude) / (focal_length * original_width)
-        pixel_width = pixel_height = gsd
-        coord_array = calculate_footprints_nadir(center_x, center_y, pixel_width, pixel_height, FlightYawDegree,
-                                                 original_width, original_height, zone_number, center_lat)
-        g2 = Polygon(coord_array)
-        poly = geojson.dumps(g2)
-        polyed = geojson.loads(poly)
-        poly_r = rewind(polyed)
-        output_file = splitext(file_Name)[0] + '.tif'
-        geotiff_file = os.path.join(geotff, output_file)
-        warp_image_with_gcp(image_path, geotiff_file, coord_array)
-        coords = [float(center_lon), float(center_lat)]
-        linecoords.append(coords)
-        ptProps = dict(File_Name=tags['File:FileName'], Focal_Length=focal_length,
-                       Image_Width=original_width, Image_Height=original_height, Sensor_Model=sensor_model,
-                       Sensor_Make=sensor_make, RelativeAltitude=altitude, FlightYawDegree=FlightYawDegree,
-                       DateTimeOriginal=datetime)
-        img_over = dict(coords=coords, props=ptProps)
-        img_stuff.append(img_over)
-        ptGeom = dict(type="Point", coordinates=coords)
-        points = dict(type="Feature", geometry=ptGeom, properties=ptProps)
-        gd_feat = dict(type="Feature", geometry=poly_r, properties=ptProps)
-        feature_coll['features'].append(points)
-        feature_coll['features'].append(gd_feat)
-    lineGeom = dict(type="LineString", coordinates=linecoords)
-    mission_props = dict(date=datetime, sensor_make=sensor_make, sensor_model=sensor_model)
-    lines = dict(type="Feature", geometry=lineGeom, properties=mission_props)
-    feature_coll['features'].insert(0, lines)
+    if line_coordinates:
+        line_feature = dict(type="LineString", coordinates=line_coordinates)
+        mission_props = dict(date=datetime_original, sensor_make=sensor_make, sensor_model=sensor_model)
+        lines = dict(type="Feature", geometry=line_feature, properties=mission_props)
+        feature_collection["features"].insert(0, lines)
     bar.finish()
-    return feature_coll
+    return feature_collection
 
 
-def writeOutputtoText(geojson_file, gjsonf, b_array):
-    geojf = os.path.join(gjsonf, geojson_file)
-    with open(geojf, 'w') as outfile:
-        geojson.dump(b_array, outfile, indent=4, sort_keys=False)
-    print(Color.YELLOW + "GeoJSON File Created." + Color.END)
-    return
+def write_geojson_file(geojson_file, geojson_dir, feature_collection):
+    """
+    Write the GeoJSON feature collection to a file.
 
-
-def find_file(some_dir):
-    matches = []
-    for filename in os.listdir(some_dir):
-        if splitext(filename)[1].lower() in {'.jpg'}:
-            files = os.path.join(some_dir, filename)
-            matches.append(files)
-    if len(matches) == 0:
-        print(Color.RED + "No image files found" + Color.END)
-    matches.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
-    return matches
+    Args:
+        geojson_file (str): The filename for the GeoJSON output.
+        geojson_dir (Path): The directory where the GeoJSON file should be saved.
+        feature_collection (dict): The GeoJSON feature collection to be written.
+    """
+    file_path = Path(geojson_dir) / geojson_file
+    try:
+        with open(file_path, "w") as file:
+            geojson.dump(feature_collection, file, indent=4)
+    except Exception as e:
+        print(Color.RED + f"Error writing GeoJSON file: {e}" + Color.END)
+        return
 
 
 def main():
-    print(Color.BLUE + "Searching for Drone Images" + Color.END)
-    files = find_file(indir)
+    """
+    Main function to orchestrate the processing of drone imagery into GeoJSON and GeoTIFFs.
+    """
+    args = parse_arguments()
+    indir, outdir = args.indir, args.dest
+    sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
+
+    files = get_image_files(indir)
+    if files is None or len(files) == 0:
+        print(Color.RED + "No image files found in the specified directory." + Color.END)
+        exit()
     metadata = get_metadata(files)
-    gjsonf = outdir + '/geojsons/'
-    geotff = outdir + '/geotiffs/'
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-    if not os.path.exists(gjsonf):
-        os.makedirs(gjsonf)
-    if not os.path.exists(geotff):
-        os.makedirs(geotff)
-    b_array = format_data(indir, geotff, metadata)
-    print(Color.DARKCYAN + "All GeoTIFFs Created." + Color.END)
-    writeOutputtoText(geojson_file, gjsonf, b_array)
+    print(Color.YELLOW + "Metadata Gathered" + Color.END)
+    geojson_dir = Path(outdir) / "geojsons"
+    geotiff_dir = Path(outdir) / "geotiffs"
+    try:
+        geojson_dir.mkdir(parents=True, exist_ok=True)
+        geotiff_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print(Color.RED + f"Error creating directories: {e}" + Color.END)
+        exit()
+
+    sensor_dimensions = read_sensor_dimensions_from_csv(
+        SENSOR_INFO_CSV, sensor_width, sensor_height
+    )
+    if sensor_dimensions is None:
+        print(Color.RED + "Error reading sensor dimensions from CSV." + Color.END)
+        exit()
+    else:
+        feature_collection = process_metadata(
+            metadata, indir, geotiff_dir, sensor_dimensions
+        )
+
+    now = datetime.datetime.now()
+    geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
+    write_geojson_file(geojson_file, geojson_dir, feature_collection)
     print(Color.GREEN + "Process Complete" + Color.END)
 
 
