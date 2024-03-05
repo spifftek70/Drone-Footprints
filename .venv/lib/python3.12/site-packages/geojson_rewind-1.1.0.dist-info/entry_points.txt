@@ -1,0 +1,3 @@
+[console_scripts]
+rewind=geojson_rewind.rewind:main
+
