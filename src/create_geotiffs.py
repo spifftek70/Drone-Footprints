@@ -1,93 +1,83 @@
-#  Copyright (c) 2024.
-#  __author__ = "Dean Hand"
-#  __license__ = "AGPL"
-#  __version__ = "1.0"
+# Copyright (c) 2024.
+# Author: Dean Hand
+# License: AGPL
+# Version: 1.0
 
-from osgeo import osr, gdal
-
-
-def GetExtent(gt, cols, rows):
-    ''' Return list of corner coordinates from a geotransform
-        @type gt:   C{tuple/list}
-        @param gt: geotransform
-        @type cols:   C{int}
-        @param cols: number of columns in the dataset
-        @type rows:   C{int}
-        @param rows: number of rows in the dataset
-        @rtype:    C{[float,...,float]}
-        @return:   coordinates of each corner
-    '''
-    ext = []
-    xarr = [0, cols]
-    yarr = [0, rows]
-
-    for px in xarr:
-        for py in yarr:
-            x = gt[0] + (px * gt[1]) + (py * gt[2])
-            y = gt[3] + (px * gt[4]) + (py * gt[5])
-            ext.append([x, y])
-        yarr.reverse()
-    return ext
+from Utils.raster_utils import *
+from Utils.utils import Color
+from shapely.geometry import Polygon
+from PIL import Image
+import numpy as np
+import os
 
 
-def create_gcp_list(coords, ext):
-    pt1 = coords[0][0], coords[0][1]  # Now this is Top-right
-    pt0 = coords[1][0], coords[1][1]  # Now this is Top-left
-    pt3 = coords[2][0], coords[2][1]  # Now this is Bottom-left
-    pt2 = coords[3][0], coords[3][1]  # Now this is Bottom-right
-
-    ext1 = ext[0][0], ext[0][1]  # Assuming this is top-right
-    ext2 = ext[1][0], ext[1][1]  # Assuming this is top-left
-    ext3 = ext[2][0], ext[2][1]  # Assuming this is bottom-left
-    ext0 = ext[3][0], ext[3][1]  # Assuming this is bottom-right
-
-    # Modify the order of GCPs assignment here to correct the mirroring
-    gcp_string = '-gcp {} {} {} {} ' \
-                 '-gcp {} {} {} {} ' \
-                 '-gcp {} {} {} {} ' \
-                 '-gcp {} {} {} {}'.format(ext0[0], ext0[1], pt0[0], pt0[1],
-                                           ext1[0], ext1[1], pt1[0], pt1[1],
-                                           ext2[0], ext2[1], pt2[0], pt2[1],
-                                           ext3[0], ext3[1], pt3[0], pt3[1])
-
-    gcp_items = filter(None, gcp_string.split("-gcp"))
-    gcp_list = []
-    for item in gcp_items:
-        pixel, line, x, y = map(float, item.split())
-        z = 0
-        gcp = gdal.GCP(x, y, z, pixel, line)
-        gcp_list.append(gcp)
-    return gcp_list
-
-
-def warp_image_with_gcp(image_path, output_file, coord_array):
+def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
     """
-    Warps an image using the provided list of GCPs to align it with geographic north.
-    The output image will be saved to the specified path.
+    Sets the raster extents of an image by warping it to a specified polygon defined by coordinates.
+
+    Parameters:
+    - image_path: Path to the source image.
+    - dst_utf8_path: Destination path for the output GeoTIFF image.
+    - coordinate_array: Array of coordinates defining the target polygon.
     """
-    # Open the input dataset
-    gdal.DontUseExceptions()
-    ds = gdal.Open(image_path)
-    gt = ds.GetGeoTransform()
-    cols = ds.RasterXSize
-    rows = ds.RasterYSize
-    ext = GetExtent(gt, cols, rows)
-    gcp_list = create_gcp_list(coord_array, ext)
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
-    wkt = srs.ExportToWkt()
-    ds.SetGCPs(gcp_list, srs.ExportToWkt())
-    nodata_value = 0
-    # Define warp options
-    warp_options = gdal.WarpOptions(dstSRS='EPSG:' + str(4326),
-                                    resampleAlg=gdal.GRA_Bilinear,
-                                    format='GTiff',
-                                    srcNodata=nodata_value,
-                                    dstNodata=nodata_value,
-                                    creationOptions=['ALPHA=YES'])  # This option adds an alpha band for transparency
+    # Create a Polygon object from the coordinate array
+    fixed_polygon = Polygon(coordinate_array)
 
-    # Perform the warp
-    gdal.Warp(output_file, ds, options=warp_options)
+    # Open the image and convert it to a NumPy array
+    try:
+        jpeg_img = Image.open(image_path)
+        jpeg_img_array = np.array(jpeg_img)
+    except FileNotFoundError:
+        print(Color.RED + f"File not found: {image_path}" + Color.END)
+        return
+    except Exception as e:
+        print(Color.RED + f"Error opening or processing image: {e}" + Color.END)
+        return
 
-    # Clean up
-    ds = None
+    # Determine the number of bands based on the image array shape
+    if jpeg_img_array.ndim == 3:
+        if jpeg_img_array.shape[2] == 3:  # RGB
+            num_bands = 3
+        elif jpeg_img_array.shape[2] == 4:  # RGBA
+            num_bands = 4
+        else:
+            raise ValueError("Unsupported image format. Image must be RGB or RGBA.")
+    else:
+        raise ValueError("Unsupported image format. Image must be RGB or RGBA.")
+
+    rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array)
+
+
+def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array):
+    """
+    Warps and rectifies a JPEG image array to a GeoTIFF format based on a fixed polygon and coordinate array.
+
+    Parameters:
+    - jpeg_img_array: The NumPy array of the JPEG image.
+    - dst_utf8_path: Destination path for the output GeoTIFF image.
+    - fixed_polygon: The shapely Polygon object defining the target area.
+    - coordinate_array: Array of coordinates used for warping the image.
+    """
+    # Convert the Polygon to WKT format
+    polygon_wkt = str(fixed_polygon)
+
+    # Warp the image to the polygon using the coordinate array
+    # Turn off GDAL warnings
+    os.environ['CPL_LOG'] = '/dev/null'
+    os.environ['GDAL_DATA'] = os.getenv('GDAL_DATA', '/usr/share/gdal')
+    gdal.SetConfigOption('CPL_DEBUG', 'OFF')
+
+    try:
+        georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
+        dsArray = array2ds(georef_image_array, polygon_wkt)
+    except Exception as e:
+        print(Color.RED + f"Error during warping or dataset creation: {e}" + Color.END)
+        return
+
+    # Warp the GDAL dataset to the destination path
+    try:
+        warp_ds(dst_utf8_path, dsArray)
+    except Exception as e:
+        print(Color.RED + f"Error writing GeoTIFF: {e}" + Color.END)
+        return
+
