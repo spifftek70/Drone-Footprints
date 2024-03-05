@@ -53,19 +53,22 @@ Python 3.6 and above
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
-`python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output`
+`python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/output`
 
-`python Drone_Footprints.py -i "/Path/To/Dataset/images" -o "/Path/To/Dataset/output" -w 6.16 -d 4.62`
+`python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62`
 
 ----------------------------------------------------------------------------------------------------------------
 
 ### :warning: The accuracy of this process depends highly on a number of factors.
-1. IMU calibration - Do this prior to needing a high accuracy dataset
-2. Gimbal calibration - Do this prior to needing a high accuracy dataset
-3. Compass Calibration - Do this prior to needing a high accuracy dataset
-4. Shooting angle - for best results, select `Parallel to Main Path`
-5. Capture Mode - for best results, select `Hover&Capture at Point`
-6. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
+1. IMU calibration - Do this once a month
+2. Prior to each mission:
+   - Calibration the drone's gimbal
+   - Calibration the drone's compass
+   - Restart the drone
+3. Shooting angle - for best results, select `Parallel to Main Path`
+4. Capture Mode - for best results, select `Hover&Capture at Point`
+5. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
+6. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
 
 ### :memo: Sort into Datasets
 It is highly recommended that you sort the images you want processed into corresponding datasets
@@ -135,7 +138,10 @@ Tested and works with:
 - EVO II
 
 ## known Issues
-Not currently working with older drones (i.e. Phantom 3 Series).  The differences in
+1. Not currently working with older drones (i.e. Phantom 3 Series).  The differences in
 how telemetry is processed and translated into metadata is.... troublesome. 
+2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the 
+drone's compass is highly susceptible to electromagnetic interference.  Therefore, Datasets collected in areas of high
+magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
 
 ----------------------------------------------------------------------------------------------------------------
