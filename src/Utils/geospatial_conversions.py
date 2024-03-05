@@ -6,6 +6,7 @@
 import math
 import utm
 from pyproj import Transformer, CRS, Geod
+from .utils import Color
 
 
 def decimal_degrees_to_utm(latitude, longitude):
@@ -19,7 +20,12 @@ def decimal_degrees_to_utm(latitude, longitude):
     Returns:
     tuple: Easting, northing, zone number, and hemisphere of the UTM coordinates.
     """
-    easting, northing, zone, hemisphere = utm.from_latlon(latitude, longitude)
+    try:
+        easting, northing, zone, hemisphere = utm.from_latlon(latitude, longitude)
+    except Exception as e:
+        print(f"{Color.RED}Error converting to UTM: {e}{Color.END}")
+        return None
+
     return easting, northing, zone, hemisphere
 
 
@@ -95,9 +101,15 @@ def proj_stuff(center_latitude, zone_number):
     Transformer: A transformer object for coordinate conversion.
     """
     is_southern = center_latitude < 0
-    utm_crs = CRS(proj="utm", zone=zone_number, ellps="WGS84", datum="WGS84", south=is_southern)
-    wgs84_crs = CRS(proj="latlong", datum="WGS84")
-    transformer = Transformer.from_crs(utm_crs, wgs84_crs, always_xy=True)
+
+    try:
+        utm_crs = CRS(proj="utm", zone=zone_number, ellps="WGS84", datum="WGS84", south=is_southern)
+        wgs84_crs = CRS(proj="latlong", datum="WGS84")
+        transformer = Transformer.from_crs(utm_crs, wgs84_crs, always_xy=True)
+    except Exception as e:
+        print(f"{Color.RED}Error initializing transformer: {e}{Color.END}")
+        return None
+
     return transformer
 
 
@@ -131,6 +143,48 @@ def calculate_geographic_offset(latitude, longitude, distance_meters, bearing_de
     Returns:
     tuple: Latitude and longitude coordinates after the offset.
     """
-    geod = Geod(ellps="WGS84")
-    new_longitude, new_latitude, _ = geod.fwd(longitude, latitude, bearing_degrees, distance_meters)
+    try:
+        geod = Geod(ellps="WGS84")
+        new_longitude, new_latitude, _ = geod.fwd(longitude, latitude, bearing_degrees, distance_meters)
+    except Exception as e:
+        print(f"{Color.RED}Error calculating geographic offset: {e}{Color.END}")
+        return None
+
     return new_latitude, new_longitude
+
+
+def translate_to_geographic(bbox, drone_lon, drone_lat):
+    """
+    Translates a bounding box to geographic coordinates based on the drone's location.
+
+    Parameters:
+    - bbox (list): List of bounding box coordinates in UTM.
+    - drone_lon (float): Drone's longitude in decimal degrees.
+    - drone_lat (float): Drone's latitude in decimal degrees.
+
+    Returns:
+    List of tuples containing translated bounding box points in geographic coordinates.
+    """
+    # Determine UTM zone and hemisphere from drone's coordinates
+    utm_zone = int((drone_lon + 180) / 6) + 1
+    hemisphere = "north" if drone_lat >= 0 else "south"
+    crs_geo = "epsg:4326"
+    crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+
+    # Initialize transformers for coordinate conversion
+    transformer_to_utm = Transformer.from_crs(crs_geo, crs_utm, always_xy=True)
+    transformer_to_geo = Transformer.from_crs(crs_utm, crs_geo, always_xy=True)
+
+    # Convert drone's location to UTM coordinates
+    drone_easting, drone_northing = transformer_to_utm.transform(drone_lon, drone_lat)
+
+    translated_bbox = []
+    for point in bbox:
+        # Translate and rotate bounding box points
+        point_easting, point_northing = drone_easting + point.x, drone_northing + point.y
+
+        # Convert points back to geographic coordinates
+        point_lon, point_lat = transformer_to_geo.transform(point_easting, point_northing)
+        translated_bbox.append((point_lon, point_lat))
+
+    return translated_bbox
