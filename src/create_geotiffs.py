@@ -4,6 +4,7 @@
 # Version: 1.0
 
 from Utils.raster_utils import *
+from Utils.utils import Color
 from shapely.geometry import Polygon
 from PIL import Image
 import numpy as np
@@ -23,8 +24,15 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
     fixed_polygon = Polygon(coordinate_array)
 
     # Open the image and convert it to a NumPy array
-    jpeg_img = Image.open(image_path)
-    jpeg_img_array = np.array(jpeg_img)
+    try:
+        jpeg_img = Image.open(image_path)
+        jpeg_img_array = np.array(jpeg_img)
+    except FileNotFoundError:
+        print(Color.RED + f"File not found: {image_path}" + Color.END)
+        return
+    except Exception as e:
+        print(Color.RED + f"Error opening or processing image: {e}" + Color.END)
+        return
 
     # Determine the number of bands based on the image array shape
     if jpeg_img_array.ndim == 3:
@@ -54,15 +62,22 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, co
     polygon_wkt = str(fixed_polygon)
 
     # Warp the image to the polygon using the coordinate array
-    georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
-
     # Turn off GDAL warnings
     os.environ['CPL_LOG'] = '/dev/null'
     os.environ['GDAL_DATA'] = os.getenv('GDAL_DATA', '/usr/share/gdal')
     gdal.SetConfigOption('CPL_DEBUG', 'OFF')
 
-    # Convert the array to a GDAL dataset
-    dsArray = array2ds(georef_image_array, polygon_wkt)
+    try:
+        georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
+        dsArray = array2ds(georef_image_array, polygon_wkt)
+    except Exception as e:
+        print(Color.RED + f"Error during warping or dataset creation: {e}" + Color.END)
+        return
 
     # Warp the GDAL dataset to the destination path
-    warp_ds(dst_utf8_path, dsArray)
+    try:
+        warp_ds(dst_utf8_path, dsArray)
+    except Exception as e:
+        print(Color.RED + f"Error writing GeoTIFF: {e}" + Color.END)
+        return
+
