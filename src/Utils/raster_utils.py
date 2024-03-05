@@ -7,6 +7,7 @@ from osgeo import gdal, osr
 import numpy as np
 import cv2 as cv
 from shapely.wkt import loads
+from .utils import Color
 
 
 def gdal_dataset_to_numpy_array(dataset):
@@ -19,7 +20,12 @@ def gdal_dataset_to_numpy_array(dataset):
     Returns:
     - NumPy array representing the dataset image, with all bands stacked.
     """
-    bands = [dataset.GetRasterBand(i).ReadAsArray() for i in range(1, dataset.RasterCount + 1)]
+
+    try:
+        bands = [dataset.GetRasterBand(i).ReadAsArray() for i in range(1, dataset.RasterCount + 1)]
+    except Exception as e:
+        print(f"{Color.RED}Error converting GDAL dataset to NumPy array: {e}{Color.END}")
+        return None
     img = np.dstack(bands)  # Stack bands to create an image array
     return img
 
@@ -53,9 +59,13 @@ def warp_image_to_polygon(img_arry, polygon, coordinate_array):
     dst_points = np.float32([gps_to_pixel(coord, minx, maxy, resolution_x, resolution_y) for coord in coordinate_array])
 
     # Calculate the homography matrix and apply warping
-    h_matrix, _ = cv.findHomography(src_points, dst_points, cv.RANSAC, 5.0)
-    georef_image_array = cv.warpPerspective(img_arry, h_matrix, (img_arry.shape[1], img_arry.shape[0]),
-                                            borderMode=cv.BORDER_CONSTANT, borderValue=(0, 0, 0))
+    try:
+        h_matrix, _ = cv.findHomography(src_points, dst_points, cv.RANSAC, 5.0)
+        georef_image_array = cv.warpPerspective(img_arry, h_matrix, (img_arry.shape[1], img_arry.shape[0]),
+                                                borderMode=cv.BORDER_CONSTANT, borderValue=(0, 0, 0))
+    except Exception as e:
+        print(f"{Color.RED}Error warping image to polygon: {e}{Color.END}")
+        return None
     return georef_image_array
 
 
@@ -72,8 +82,13 @@ def gps_to_pixel(gps_coord, x_min, y_max, resolution_x, resolution_y):
     - Tuple of pixel coordinates (x, y).
     """
     lon, lat = gps_coord
-    Px = (lon - x_min) / resolution_x
-    Py = (y_max - lat) / resolution_y
+    try:
+        Px = (lon - x_min) / resolution_x
+        Py = (y_max - lat) / resolution_y
+    except Exception as e:
+        print(f"{Color.RED}Error converting GPS to pixel: {e}{Color.END}")
+        return None
+
     return int(Px), int(Py)
 
 

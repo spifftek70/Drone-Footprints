@@ -3,9 +3,6 @@
 # __license__ = "AGPL"
 # __version__ = "1.0"
 
-import pandas as pd
-
-
 class Color:
     """Defines color codes for console output."""
     PURPLE = "\033[95m"
@@ -34,6 +31,8 @@ class Color:
         self.color = self.DARKMAGENTA
 
 
+import pandas as pd  # Ensure pandas is imported
+
 def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None):
     """
     Reads sensor dimensions from a CSV file, returning a dictionary with sensor models as keys
@@ -61,14 +60,15 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
             sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model)
 
     except FileNotFoundError:
-        print(f"Error: The file {csv_filepath} was not found.")
+        print(Color.RED + f"Error: The file {csv_filepath} was not found." + Color.END)
     except pd.errors.EmptyDataError:
-        print("Error: The CSV file is empty.")
+        print(Color.RED + "Error: The CSV file is empty." + Color.END)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(Color.RED + f"An unexpected error occurred: {e}" + Color.END)
 
     # Use default values as a fallback for any sensor model not in the CSV
     if default_sensor_width is not None and default_sensor_height is not None:
-        sensor_dimensions["default"] = (default_sensor_width, default_sensor_height)
-
+        sensor_dimensions["default"] = (default_sensor_width, default_sensor_height, "Unknown", "Unknown")
+        print(Color.YELLOW + f"No sensor information avaiable. Using Defaults: {e}" + Color.END)
     return sensor_dimensions
+

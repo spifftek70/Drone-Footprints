@@ -2,7 +2,9 @@
 .idea/
 src/__pycache__/
 Drone_Footprints.egg-info
-Test_Files
+Drone_Footprints.spec
 build/
 qodana.yaml
-venv
+.venv/
+src/build/
+src/dist/
