@@ -1,0 +1,43 @@
+Metadata-Version: 2.0
+Name: Geometry
+Version: 0.0.23
+Summary: Geometry the python way.
+Home-page: https://github.com/JnyJny/Geometry
+Author: Erik O'Shaughnessy
+Author-email: erik.oshaughnessy@gmail.com
+License: MIT
+Download-URL: https://github.com/JnyJny/Geometry/archive/0.0.23.tar.gz
+Keywords: geometry point circle line segment triangle rectangle graph
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+
+
+Geometry is python3 package which implements a variety of geometric objects:
+
+- point
+- ellipse
+- circle
+- line
+- segment
+- ray
+- triangle
+- rectangle
+
+Install with pip::
+
+ $ sudo pip3 install Geometry
+
+Install from git repository::
+
+ $ git clone https://github.com/JnyJny/Geometry.git
+ $ cd Geometry
+ $ sudo python3 setup.py install
+
+
+
