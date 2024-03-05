@@ -66,9 +66,8 @@ Python 3.6 and above
    - Calibration the drone's compass
    - Restart the drone
 3. Shooting angle - for best results, select `Parallel to Main Path`
-4. Capture Mode - for best results, select `Hover&Capture at Point`
-5. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
-6. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
+4. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
+5. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
 
 ### :memo: Sort into Datasets
 It is highly recommended that you sort the images you want processed into corresponding datasets
