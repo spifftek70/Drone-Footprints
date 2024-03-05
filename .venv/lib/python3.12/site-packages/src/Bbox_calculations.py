@@ -36,10 +36,10 @@ class CameraCalculator:
 
         # Define camera rays based on field of view
         rays = [
-            Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),  # Bottom left
-            Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), -1).normalize(),  # Top left
-            Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),  # Top right
-            Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), -1).normalize(),  # Bottom right
+            Vector(math.tan(FOVv / 2), -math.tan(FOVh / 2), 1).normalize(),  # Bottom left
+            Vector(-math.tan(FOVv / 2), -math.tan(FOVh / 2), 1).normalize(),  # Top left
+            Vector(-math.tan(FOVv / 2), math.tan(FOVh / 2), 1).normalize(),  # Top right
+            Vector(math.tan(FOVv / 2), math.tan(FOVh / 2), 1).normalize(),  # Bottom right
         ]
 
         # Rotate rays according to camera orientation
