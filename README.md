@@ -62,9 +62,13 @@ Python 3.6 and above
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
-`python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/output`
-
-`python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62`
+From the `src` directory, run the following commands:
+```
+python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/output
+```
+```
+python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62
+```
 
 ----------------------------------------------------------------------------------------------------------------
 
