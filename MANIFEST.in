@@ -1,2 +1,2 @@
 include README.md requirements.txt CHANGES.md
-recursive-include drone_fp *.py
+recursive-include scr *.py

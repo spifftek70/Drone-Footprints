@@ -1,22 +1,25 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility. 
 
 > Author: Dean Hand \
-> Date Created: 09/07/2019
+> Date Created: 09/07/2019 \
+> Name: Drone_Footprints.py 
 
-Name: Drone_Footprints.py \
-The purpose of this module is to calculate imagery footprints of individual drone images.  There is no stitching of 
- images, so the process is actually quite fast. The output is geo-rectified GeoTiff image file and a GeoJSON file 
- with:
-* Drone Flightpath (LineString)
-* Drone location at point of photo (Point)
-* Individual Image Footprints (Polygons)
+The purpose of this application is to accurately calculate the geographic footprints of individual drone images. 
+Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV). 
+Following this, the application performs a series of calculations to establish the geospatial reference of each image. 
+Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise 
+geolocation without the need for stitching images together. This results in a remarkably efficient process. 
+The final output includes a geo-rectified GeoTiff image file, accompanied by a GeoJSON file detailing:
+
+- The Drone's Flight Path (as a LineString),
+- The Drone's Location at the moment the photo was taken (as a Point),
+- The Footprints of Individual Images (as Polygons).
 
 ----------------------------------------------------------------------------------------------------------------
 
 ## Installation
 
-You'll need a ready made gdal version 3.8.3 or later.
-
+- Ready-made gdal version 3.8.3 or later.
 On Ubuntu, you can install as follows:
 
 ```
@@ -27,9 +30,21 @@ sudo apt-get install libgdal-dev
 
 Installation via pip
 
+First, you probably want to install into a virtual environment or similar, for example:
+
+```
+python3.10 -m venv env # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
+source env/bin/activate
+```
+
+The we install using the requirements list as follows:
+
 ```
 pip install -r requirements.txt
 ```
+
+## Requirements
+Python 3.6 and above
 
 ----------------------------------------------------------------------------------------------------------------
 
@@ -47,28 +62,32 @@ pip install -r requirements.txt
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
-`python Drone_Footprints.py -i '/Users/<user>/Downloads/flight2/images' -o '/Users/<user>/Downloads/flight2/output`
-
-`python Drone_Footprints.py -i "/Path/To/Dataset/images" -o "/Path/To/Dataset/output" -w 6.16 -d 4.62`
+From the `src` directory, run the following commands:
+```
+python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/output
+```
+```
+python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62
+```
 
 ----------------------------------------------------------------------------------------------------------------
 
 ### :warning: The accuracy of this process depends highly on a number of factors.
-1. IMU calibration
-2. Gimbal calibration
-3. Compass Calibration
-4. Shooting angle (for best results - `Parallel to Main Path`)
-5. Capture Mode (for best results - `Hover&Capture at Point`)
-6. Gimbal Roll Angle (for best results - NADIR aka -90° aka straight down)
-7. Yaw Degrees - I've found the GimbalYawDegree data from the files to be unreliable at best,
-so the code calculates the GSD and FOV using the FlightYawDegree.
+1. IMU calibration - Do this once a month
+2. Prior to each mission:
+   - Calibration the drone's gimbal
+   - Calibration the drone's compass
+   - Restart the drone
+3. Shooting angle - for best results, select `Parallel to Main Path`
+4. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
+5. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
 
 ### :memo: Sort into Datasets
 It is highly recommended that you sort the images you want processed into corresponding datasets
 
 - Separate Images by flight mission
-  - Create a mission folder for each flight mission
-  - Create an image folder within the mission folder
+- Create a mission folder for each flight mission
+- Create an image folder within the mission folder
 
 ``````
 ├── /Path/to/mission_folder
@@ -95,13 +114,9 @@ Geojson name is constructed using the date/time of processing like so:
 
 ## :boom: Future Builds
 
-### Sensor Size DB
-The file [drone_sensors.csv](drone_fp%2Fdrone_sensors.csv) is the start of autoprocessing for 
-senosr width and height.  It is incomplete, but once finshed, I'll incomporate that code into the 
-process.
-
-### RTK Processing
-Should add much better accuracy to any RTK dataset that's processed.
+### Sensor Size checks
+There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that
+information becomes available.
 
 ----------------------------------------------------------------------------------------------------------------
 ## :star: Sample Outputs
@@ -126,5 +141,19 @@ Should add much better accuracy to any RTK dataset that's processed.
 <img src="samples%2Fscreenshots%2Fscreenshot2.png" alt="drawing" width="600"/>
 
 [![IMAGE ALT TEXT HERE](samples%2Fscreenshots%2Fezgif-2-5968847bb5.gif)](https://youtu.be/eaPfwUOpPlo)
+
+----------------------------------------------------------------------------------------------------------------
+## Drone Compatibility
+Tested and works with:
+- Phantom 4 Series
+- Mavic 2 Series
+- EVO II
+
+## known Issues
+1. Not currently working with older drones (i.e. Phantom 3 Series).  The differences in
+how telemetry is processed and translated into metadata is.... troublesome. 
+2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the 
+drone's compass is highly susceptible to electromagnetic interference.  Therefore, Datasets collected in areas of high
+magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
 
 ----------------------------------------------------------------------------------------------------------------
