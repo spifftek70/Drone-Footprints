@@ -7,4 +7,4 @@ build
 qodana.yaml
 src/build/
 src/dist/
-/.venv/
+.venv/
