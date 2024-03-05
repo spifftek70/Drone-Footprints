@@ -46,7 +46,8 @@ setup(
         'GDAL',
         'datetime',
         'opencv-python',
-        'pillow',
+        'pillow',,
+        'magnetic_field_calculator'
         'vector3d'],
     zip_safe=False
 )
