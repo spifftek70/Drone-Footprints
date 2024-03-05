@@ -1,32 +1,37 @@
+# Copyright (c) 2024
 # Author: Dean Hand
 # License: AGPL
 # Version: 1.0
 
-import numpy as np
 from Bbox_calculations import CameraCalculator
-from Utils.geospatial_conversions import *
-
+import math
+import numpy as np
+from Utils.geospatial_conversions import translate_to_geographic
+from magnetic_field_calculator import MagneticFieldCalculator
+import magnetismi.magnetismi as api
+from datetime import datetime
 
 def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_roll_deg,
-                  gimbal_pitch_deg, gimbal_yaw_deg, drone_lat, drone_lon):
+                  gimbal_pitch_deg, gimbal_yaw_deg, drone_latitude, drone_longitude, drone_roll_deg,
+                  drone_pitch_deg, drone_yaw_deg, datetime_original):
     """
     Calculates the Field of View (FOV) for a given altitude and camera specifications,
-    taking into account the gimbal orientation and the drone's geographic coordinates.
-
-    Parameters:
-    - altitude (float): Altitude of the drone in meters.
-    - focal_length (float): Camera's focal length in meters.
-    - sensor_width (float): Width of the camera sensor in meters.
-    - sensor_height (float): Height of the camera sensor in meters.
-    - gimbal_roll_deg (float): Gimbal roll in degrees.
-    - gimbal_pitch_deg (float): Gimbal pitch in degrees.
-    - gimbal_yaw_deg (float): Gimbal yaw in degrees.
-    - drone_lat (float): Drone's latitude in decimal degrees.
-    - drone_lon (float): Drone's longitude in decimal degrees.
-
-    Returns:
-    Tuple containing the translated bounding box in geographic coordinates, horizontal FOV, and vertical FOV.
+    taking into account the adjusted orientations of the drone and gimbal.
     """
+    str_date = datetime.strptime(datetime_original, '%Y:%m:%d %H:%M:%S')
+
+    if str(str_date.year) > str(2019):
+        mag_date = api.dti.date(str_date.year, str_date.month, str_date.day)
+        # Find the magnetic declination reference
+        model = api.Model(mag_date.year)
+        field_point = model.at(lat_dd=drone_latitude, lon_dd=drone_longitude, alt_ft=altitude, date=mag_date)
+        declination = field_point.dec
+    else:
+        calculator = MagneticFieldCalculator()
+        model = calculator.calculate(latitude=drone_latitude, longitude=drone_longitude)
+        dec = model['field-value']['declination']
+        declination = dec['value']
+
     if altitude < 0 or focal_length <= 0:
         raise ValueError("Altitude and focal length must be positive.")
 
@@ -38,51 +43,19 @@ def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_ro
     camera_calculator = CameraCalculator()
 
     # Convert gimbal orientation angles from degrees to radians
+    adjusted_pitch_deg = 90 - gimbal_pitch_deg
+    adjusted_yaw_deg = 90 - gimbal_yaw_deg
+    # adjusted_declination = 90 - declination
     cal_roll_rad = np.radians(gimbal_roll_deg)
-    cal_pitch_rad = np.radians(gimbal_pitch_deg % 90)
-    cal_yaw_rad = np.radians((gimbal_yaw_deg + 90) * -1)
-
+    cal_pitch_rad = np.radians(adjusted_pitch_deg)
+    cal_yaw_rad = np.radians(adjusted_yaw_deg)
+    declination_rad = np.radians(declination)
+    # offset = 90
+    adj_yaw_rad = (cal_yaw_rad - declination_rad) % (2 * math.pi)
     # Determine bounding box based on camera and gimbal orientation
     bbox = camera_calculator.getBoundingPolygon(FOVh, FOVv, altitude, cal_roll_rad,
-                                                cal_pitch_rad, cal_yaw_rad)
+                                                cal_pitch_rad, adj_yaw_rad)
 
     # Convert bounding box to geographic coordinates
-    translated_bbox = translate_to_geographic(bbox, drone_lon, drone_lat)
-    return translated_bbox, FOVh, FOVv
-
-
-def translate_to_geographic(bbox, drone_lon, drone_lat):
-    """
-    Translates a bounding box to geographic coordinates based on the drone's location.
-
-    Parameters:
-    - bbox (list): List of bounding box coordinates in UTM.
-    - drone_lon (float): Drone's longitude in decimal degrees.
-    - drone_lat (float): Drone's latitude in decimal degrees.
-
-    Returns:
-    List of tuples containing translated bounding box points in geographic coordinates.
-    """
-    # Determine UTM zone and hemisphere from drone's coordinates
-    utm_zone = int((drone_lon + 180) / 6) + 1
-    hemisphere = "north" if drone_lat >= 0 else "south"
-    crs_geo = "epsg:4326"
-    crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-
-    # Initialize transformers for coordinate conversion
-    transformer_to_utm = Transformer.from_crs(crs_geo, crs_utm, always_xy=True)
-    transformer_to_geo = Transformer.from_crs(crs_utm, crs_geo, always_xy=True)
-
-    # Convert drone's location to UTM coordinates
-    drone_easting, drone_northing = transformer_to_utm.transform(drone_lon, drone_lat)
-
-    translated_bbox = []
-    for point in bbox:
-        # Translate and rotate bounding box points
-        point_easting, point_northing = drone_easting + point.x, drone_northing + point.y
-
-        # Convert points back to geographic coordinates
-        point_lon, point_lat = transformer_to_geo.transform(point_easting, point_northing)
-        translated_bbox.append((point_lon, point_lat))
-
+    translated_bbox = translate_to_geographic(bbox, drone_longitude, drone_latitude)
     return translated_bbox
