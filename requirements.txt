@@ -19,3 +19,5 @@ pandas~=2.1.4
 opencv-python~=4.9.0.80
 geopandas~=0.14.2
 pillow~=10.2.0
+magnetic_field_calculator
+magnetismi~=2022.10.9

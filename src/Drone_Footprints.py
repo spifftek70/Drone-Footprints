@@ -284,6 +284,9 @@ def main():
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
 
     files = get_image_files(indir)
+    if files is None or len(files) == 0:
+        print(Color.RED + "No image files found in the specified directory." + Color.END)
+        exit()
     metadata = get_metadata(files)
     print(Color.YELLOW + "Metadata Gathered" + Color.END)
     geojson_dir = Path(outdir) / "geojsons"
