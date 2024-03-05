@@ -1,0 +1,117 @@
+Metadata-Version: 2.1
+Name: geojson-rewind
+Version: 1.1.0
+Summary: A Python library for enforcing polygon ring winding order in GeoJSON
+Home-page: https://github.com/chris48s/geojson-rewind
+License: MIT
+Author: chris48s
+Requires-Python: >=3.8
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Project-URL: Repository, https://github.com/chris48s/geojson-rewind
+Description-Content-Type: text/markdown
+
+# geojson-rewind
+
+[![Run tests](https://github.com/chris48s/geojson-rewind/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/chris48s/geojson-rewind/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/chris48s/geojson-rewind/branch/master/graph/badge.svg?token=0WGM3W8ULH)](https://codecov.io/gh/chris48s/geojson-rewind)
+![PyPI Version](https://img.shields.io/pypi/v/geojson-rewind.svg)
+![License](https://img.shields.io/pypi/l/geojson-rewind.svg)
+![Python Compatibility](https://img.shields.io/badge/dynamic/json?query=info.requires_python&label=python&url=https%3A%2F%2Fpypi.org%2Fpypi%2Fgeojson-rewind%2Fjson)
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+
+A Python library for enforcing polygon ring winding order in GeoJSON
+
+The [GeoJSON](https://tools.ietf.org/html/rfc7946) spec mandates the [right hand rule](https://tools.ietf.org/html/rfc7946#section-3.1.6):
+
+> A linear ring MUST follow the right-hand rule with respect to the area it bounds, i.e., exterior rings are counterclockwise, and holes are clockwise.
+
+This helps you generate compliant Polygon and MultiPolygon geometries.
+
+Note: Co-ordinates in the input data are assumed to be WGS84 with (lon, lat) ordering, [as per RFC 7946](https://tools.ietf.org/html/rfc7946#section-3.1.1). Input with co-ordinates using any other CRS may lead to unexpected results.
+
+## Installation
+
+```
+pip install geojson-rewind
+```
+
+## Usage
+
+### As a Library
+
+Enforce RFC 7946 ring winding order (input/output is a GeoJSON string):
+
+```py
+>>> from geojson_rewind import rewind
+
+>>> input = """{
+...      "geometry": {   "coordinates": [   [   [100, 0],
+...                                             [100, 1],
+...                                             [101, 1],
+...                                             [101, 0],
+...                                             [100, 0]]],
+...                      "type": "Polygon"},
+...      "properties": {"foo": "bar"},
+...      "type": "Feature"}"""
+
+>>> output = rewind(input)
+
+>>> output
+'{"geometry": {"coordinates": [[[100, 0], [101, 0], [101, 1], [100, 1], [100, 0]]], "type": "Polygon"}, "properties": {"foo": "bar"}, "type": "Feature"}'
+
+>>> type(output)
+<class 'str'>
+```
+
+Enforce RFC 7946 ring winding order (input/output is a python dict):
+
+```py
+>>> from geojson_rewind import rewind
+
+>>> input = {
+...     'geometry': {   'coordinates': [   [   [100, 0],
+...                                            [100, 1],
+...                                            [101, 1],
+...                                            [101, 0],
+...                                            [100, 0]]],
+...                     'type': 'Polygon'},
+...     'properties': {'foo': 'bar'},
+...     'type': 'Feature'}
+
+>>> output = rewind(input)
+
+>>> output
+{'geometry': {'coordinates': [[[100, 0], [101, 0], [101, 1], [100, 1], [100, 0]]], 'type': 'Polygon'}, 'properties': {'foo': 'bar'}, 'type': 'Feature'}
+
+>>> type(output)
+<class 'dict'>
+```
+
+## On the Console
+
+```sh
+# Enforce ring winding order on a GeoJSON file
+$ rewind in.geojson > out.geojson
+
+# fetch GeoJSON from the web and enforce ring winding order
+$ curl "https://myserver.com/in.geojson" | rewind
+```
+
+## Versioning
+
+geojson-rewind follows [semantic versioning](https://semver.org/). For this project, the "API" also includes:
+
+- CLI flags and options
+- CLI exit codes
+
+In line with common practice in the python community, geojson-rewind will drop compatibility with unsupported python versions without incrementing the major version.
+
+## Acknowledgements
+
+`geojson-rewind` is a python port of Mapbox's javascript [geojson-rewind](https://github.com/mapbox/geojson-rewind) package. Credit to [Tom MacWright](https://github.com/tmcw) and [contributors](https://github.com/mapbox/geojson-rewind/graphs/contributors).
+

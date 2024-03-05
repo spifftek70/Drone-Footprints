@@ -1,0 +1,3 @@
+[console_scripts]
+magnetic-field-calculator = magnetic_field_calculator.__main__:main
+
