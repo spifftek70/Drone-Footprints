@@ -47,7 +47,7 @@ setup(
         'datetime',
         'opencv-python',
         'pillow',
-        'magnetic_field_calculator'
+        'magnetic_field_calculator',
         'vector3d'],
     zip_safe=False
 )
