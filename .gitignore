@@ -5,6 +5,6 @@ Drone_Footprints.egg-info
 Drone_Footprints.spec
 build
 qodana.yaml
-.venv
-src/build
-src/dist
+src/build/
+src/dist/
+/.venv/
