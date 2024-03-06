@@ -9,6 +9,12 @@ src/build/
 src/dist/
 .venv/
 .venv
-/.venv/bin
-/.venv/lib
-/.venv/include
+.venv/bin
+.venv/lib
+.venv/include
+venv/
+venv
+venv/bin
+venv/lib
+venv/include
+/.venv/
