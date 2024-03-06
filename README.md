@@ -156,12 +156,13 @@ information becomes available.
 
 <img src="samples%2Fscreenshots%2Fscreenshot1.png" alt="drawing" width="600"/>
 <img src="samples%2Fscreenshots%2Fscreenshot2.png" alt="drawing" width="600"/>
+<img src="samples%2Fscreenshots%2Fsingle_geotiff_compare.gif" alt="drawing" width="600"/>
 
 [![IMAGE ALT TEXT HERE](samples%2Fscreenshots%2Fezgif-2-5968847bb5.gif)](https://youtu.be/eaPfwUOpPlo)
 
 ----------------------------------------------------------------------------------------------------------------
 
-## Drone Compatibility
+## Drone Compatibility```
 
 Tested and works with:
 
