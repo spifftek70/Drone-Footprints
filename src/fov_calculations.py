@@ -10,6 +10,8 @@ from Utils.geospatial_conversions import translate_to_geographic
 from magnetic_field_calculator import MagneticFieldCalculator
 import magnetismi.magnetismi as api
 from datetime import datetime
+import Utils.config as config
+
 
 def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_roll_deg,
                   gimbal_pitch_deg, gimbal_yaw_deg, drone_latitude, drone_longitude, drone_roll_deg,
@@ -57,5 +59,5 @@ def calculate_fov(altitude, focal_length, sensor_width, sensor_height, gimbal_ro
                                                 cal_pitch_rad, adj_yaw_rad)
 
     # Convert bounding box to geographic coordinates
-    translated_bbox = translate_to_geographic(bbox, drone_longitude, drone_latitude)
+    translated_bbox = translate_to_geographic(bbox, drone_longitude, drone_latitude, config.epsg_code)
     return translated_bbox

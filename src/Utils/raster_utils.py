@@ -92,7 +92,7 @@ def gps_to_pixel(gps_coord, x_min, y_max, resolution_x, resolution_y):
     return int(Px), int(Py)
 
 
-def array2ds(cv2_array, polygon_wkt, epsg_code=4326):
+def array2ds(cv2_array, polygon_wkt, epsg_c=4326):
     """
     Converts an OpenCV image array to a GDAL dataset with geospatial data.
 
@@ -123,7 +123,7 @@ def array2ds(cv2_array, polygon_wkt, epsg_code=4326):
     ds = driver.Create("", width, height, bands, gdal.GDT_Byte)
 
     srs = osr.SpatialReference()
-    srs.ImportFromEPSG(epsg_code)
+    srs.ImportFromEPSG(epsg_c)
     ds.SetProjection(srs.ExportToWkt())
     ds.SetGeoTransform((minx, pixel_size_x, 0, maxy, 0, -pixel_size_y))
 
@@ -139,7 +139,7 @@ def array2ds(cv2_array, polygon_wkt, epsg_code=4326):
     return ds
 
 
-def warp_ds(dst_utf8_path, georef_image_array):
+def warp_ds(dst_utf8_path, georef_image_array, epsg_code):
     """
     Warps a georeferenced image array into a GeoTIFF file.
 
@@ -150,7 +150,7 @@ def warp_ds(dst_utf8_path, georef_image_array):
     No return value.
     """
     srs = osr.SpatialReference()
-    srs.ImportFromEPSG(4326)
+    srs.ImportFromEPSG(epsg_code)
     translate_options = gdal.TranslateOptions(noData=0)
     vrt_ds = gdal.Translate(dst_utf8_path, georef_image_array, format='GTiff', outputSRS=srs.ExportToWkt(),
                             options=translate_options)
