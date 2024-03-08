@@ -30,6 +30,7 @@ setup(
     author='Dean Hand',
     author_email='dean.e.hand@me.com',
     install_requires=[
+        'setuptools',
         'geojson',
         'argparse',
         'geopandas',
@@ -40,7 +41,6 @@ setup(
         'GDAL',
         'progress',
         'shapely',
-        'numpy',
         'progressbar',
         'pyexiftool',
         'GDAL',
