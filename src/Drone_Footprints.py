@@ -15,6 +15,7 @@ from progress.bar import Bar
 from fov_calculations import calculate_fov
 from create_geotiffs import set_raster_extents
 from Utils.utils import read_sensor_dimensions_from_csv, Color
+from Utils.config import *
 from pprint import pprint
 
 # Constants for image file extensions and the sensor information CSV file path
@@ -44,6 +45,8 @@ def parse_arguments():
     parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
                         required=False)
     parser.add_argument("-d", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).",
+                        required=False)
+    parser.add_argument("-e", "--epsg", type=int, help="Desired EPSG for output files (optional).",
                         required=False)
     return parser.parse_args()
 
@@ -114,11 +117,11 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             Drone_Lon = float(data.get("Composite:GPSLongitude") or data.get("EXIF:GPSLongitude"))
             re_altitude = float(data.get("XMP:RelativeAltitude") or data.get("Composite:GPSAltitude"))
             GimbalRollDegree = float(
-                data.get("XMP:GimbalRollDegree") or data.get("MakerNotes:Roll") or data.get("XMP:Roll"))
+                data.get("XMP:GimbalRollDegree") or data.get("MakerNotes:CameraRoll") or data.get("XMP:Roll"))
             GimbalPitchDegree = float(
-                data.get("XMP:GimbalPitchDegree") or data.get("MakerNotes:Pitch") or data.get("XMP:Pitch"))
+                data.get("XMP:GimbalPitchDegree") or data.get("MakerNotes:CameraPitch") or data.get("XMP:Pitch"))
             GimbalYawDegree = float(
-                data.get("XMP:GimbalYawDegree") or data.get("MakerNotes:Yaw") or data.get("XMP:Yaw"))
+                data.get("XMP:GimbalYawDegree") or data.get("MakerNotes:CameraYaw") or data.get("XMP:Yaw"))
             FlightPitchDegree = float(data.get("XMP:FlightPitchDegree") or data.get("MakerNotes:Pitch") or 999)
             FlightRollDegree = float(data.get("XMP:FlightRollDegree") or data.get("MakerNotes:Roll") or 999)
             FlightYawDegree = float(data.get("XMP:FlightYawDegree") or data.get("MakerNotes:Yaw") or 999)
@@ -257,6 +260,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     return feature_collection
 
 
+
 def write_geojson_file(geojson_file, geojson_dir, feature_collection):
     """
     Write the GeoJSON feature collection to a file.
@@ -282,11 +286,16 @@ def main():
     args = parse_arguments()
     indir, outdir = args.indir, args.dest
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-
+    epsg_pass = args.epsg
+    if epsg_pass is None:
+        update_epsg(4326)
+    else:
+        update_epsg(epsg_pass)
     files = get_image_files(indir)
     if files is None or len(files) == 0:
         print(Color.RED + "No image files found in the specified directory." + Color.END)
         exit()
+
     metadata = get_metadata(files)
     print(Color.YELLOW + "Metadata Gathered" + Color.END)
     geojson_dir = Path(outdir) / "geojsons"
