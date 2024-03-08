@@ -61,6 +61,8 @@ Python 3.6 and above
 
 `-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
 
+`-e` - EPSG (default is `4326`) Not Required
+
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
@@ -73,6 +75,10 @@ python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/o
 
 ```
 python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62
+```
+
+```
+python Drone_Footprints.py -i "/Path/To/Dataset3/images" -o "/Path/To/Dataset3/output" -e 3857
 ```
 
 ----------------------------------------------------------------------------------------------------------------
