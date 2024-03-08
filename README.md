@@ -132,18 +132,22 @@ information becomes available.
 
 ----------------------------------------------------------------------------------------------------------------
 
+## :star: Sample datatsets
+
+### Raw zipped Datasets
+
+- <a href="https://drive.google.com/uc?export=download&id=15WzT_V9unsGuAp_I2M4PaBOkFC2unkq_" download>dataset 1</a>
+- <a href="https://drive.google.com/uc?export=download&id=15UVtXf0tpiCSDObSIc62UPv0Kabq_5Ks" download>dataset 2</a>
+- <a href="https://drive.google.com/uc?export=download&id=15UivtQ-YccOu4GXBrb7BtEvaeLi-JwW7" download>dataset 3</a>
+- <a href="https://drive.google.com/uc?export=download&id=15U6Uvwv2c1s4MeIhNIwW6mPMW4xdwOnO" download>dataset 4</a>
+- <a href="https://drive.google.com/uc?export=download&id=15P_G8sRB2AssxfrWul4VAyyBZpRIT2Ys" download>dataset 5</a>
+- <a href="https://drive.google.com/uc?export=download&id=15RICP1BA8HvVUVMd4TXiOQ3fswzwMmkY" download>dataset 6</a>
+
 ## :star: Sample Outputs
-
-### Sample Dataset
-
-- [Mesa 02-04-2024](https://drive.google.com/drive/folders/16BR0h04ATS6uYavgXros031j8kfbCZJp?usp=share_link)
-- [mesa_5_mar](https://drive.google.com/drive/folders/1cnvCM1qGLrU0Ivv3Me6rtacP_k7GnaNl?usp=share_link)
-- [mesa_mar_03](https://drive.google.com/drive/folders/1gUj9gP-946S5IdnwBYl7Y4B8OqeNqI5G?usp=share_link)
-- [mesa_mar_04](https://drive.google.com/drive/folders/1u_ZHJbda2PsAxeKa4onBZP9kdABzdn2G?usp=share_link)
 
 ### Sample JSON Output
 
-[M_2024-02-04_07-03.json](samples%2Fgeojson%2FM_2024-02-04_07-03.json)
+- [M_2024-02-04_07-03.json](samples%2Fgeojson%2FM_2024-02-04_07-03.json)
 
 ### Sample GeoTIFFs
 

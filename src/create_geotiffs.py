@@ -9,6 +9,7 @@ from shapely.geometry import Polygon
 from PIL import Image
 import numpy as np
 import os
+import Utils.config as config
 
 
 def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
@@ -69,14 +70,14 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, co
 
     try:
         georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
-        dsArray = array2ds(georef_image_array, polygon_wkt)
+        dsArray = array2ds(georef_image_array, polygon_wkt, config.epsg_code)
     except Exception as e:
         print(Color.RED + f"Error during warping or dataset creation: {e}" + Color.END)
         return
 
     # Warp the GDAL dataset to the destination path
     try:
-        warp_ds(dst_utf8_path, dsArray)
+        warp_ds(dst_utf8_path, dsArray, config.epsg_code)
     except Exception as e:
         print(Color.RED + f"Error writing GeoTIFF: {e}" + Color.END)
         return
