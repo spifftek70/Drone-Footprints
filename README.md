@@ -61,7 +61,7 @@ Python 3.6 and above
 
 `-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
 
-`-e` - EPSG (default is `4326`) Not Required
+`-e` - Desired EPSG for output GeoTiffs (default is `4326`) Not Required
 
 ----------------------------------------------------------------------------------------------------------------
 
