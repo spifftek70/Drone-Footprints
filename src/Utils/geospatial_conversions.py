@@ -153,7 +153,7 @@ def calculate_geographic_offset(latitude, longitude, distance_meters, bearing_de
     return new_latitude, new_longitude
 
 
-def translate_to_geographic(bbox, drone_lon, drone_lat):
+def translate_to_geographic(bbox, drone_lon, drone_lat, epsg_code):
     """
     Translates a bounding box to geographic coordinates based on the drone's location.
 
@@ -168,12 +168,13 @@ def translate_to_geographic(bbox, drone_lon, drone_lat):
     # Determine UTM zone and hemisphere from drone's coordinates
     utm_zone = int((drone_lon + 180) / 6) + 1
     hemisphere = "north" if drone_lat >= 0 else "south"
-    crs_geo = "epsg:4326"
+    crs_geo_out = "epsg:" + str(epsg_code)
+    crs_geo_in = "epsg:4326"
     crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
     # Initialize transformers for coordinate conversion
-    transformer_to_utm = Transformer.from_crs(crs_geo, crs_utm, always_xy=True)
-    transformer_to_geo = Transformer.from_crs(crs_utm, crs_geo, always_xy=True)
+    transformer_to_utm = Transformer.from_crs(crs_geo_in, crs_utm, always_xy=True)
+    transformer_to_geo = Transformer.from_crs(crs_utm, crs_geo_out, always_xy=True)
 
     # Convert drone's location to UTM coordinates
     drone_easting, drone_northing = transformer_to_utm.transform(drone_lon, drone_lat)
