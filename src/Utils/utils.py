@@ -2,6 +2,9 @@
 # __author__ = "Dean Hand"
 # __license__ = "AGPL"
 # __version__ = "1.0"
+import pandas as pd
+from loguru import logger
+
 
 class Color:
     """Defines color codes for console output."""
@@ -11,6 +14,7 @@ class Color:
     BLUE = "\033[94m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
+    ORANGE = "\033[0;33m"
     RED = "\033[91m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
@@ -31,9 +35,7 @@ class Color:
         self.color = self.DARKMAGENTA
 
 
-import pandas as pd  # Ensure pandas is imported
-
-def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None):
+def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None, default_lens_FOVw=None, default_lens_FOVh=None):
     """
     Reads sensor dimensions from a CSV file, returning a dictionary with sensor models as keys
     and tuples of (sensor width, sensor height, drone make, drone model) as values. Provides
@@ -57,18 +59,18 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
             height = row["SensorHeight"]
             drone_make = row["DroneMake"]
             drone_model = row["DroneModel"]
-            sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model)
-
+            lens_FOVw = row["LensFOVw"]
+            lens_FOVh = row["LensFOVh"]
+            sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model, lens_FOVw, lens_FOVh)
     except FileNotFoundError:
-        print(Color.RED + f"Error: The file {csv_filepath} was not found." + Color.END)
+        logger.critical(f"Error: The file {csv_filepath} was not found.")
     except pd.errors.EmptyDataError:
-        print(Color.RED + "Error: The CSV file is empty." + Color.END)
+        logger.critical("Error: The CSV file is empty.")
     except Exception as e:
-        print(Color.RED + f"An unexpected error occurred: {e}" + Color.END)
+        logger.critical(f"An unexpected error occurred: {e}")
 
     # Use default values as a fallback for any sensor model not in the CSV
-    if default_sensor_width is not None and default_sensor_height is not None:
-        sensor_dimensions["default"] = (default_sensor_width, default_sensor_height, "Unknown", "Unknown")
-        print(Color.YELLOW + f"No sensor information avaiable. Using Defaults: {e}" + Color.END)
+    if default_sensor_width is not None and default_sensor_height is not None and default_lens_FOVw is not None and default_lens_FOVh is not None:
+        sensor_dimensions["default"] = (default_sensor_width, default_sensor_height, "Unknown", "Unknown", default_lens_FOVw, default_lens_FOVh)
+        logger.info(f"No sensor information available. Using Defaults: {sensor_dimensions['default']}")
     return sensor_dimensions
-
