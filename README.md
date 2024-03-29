@@ -4,12 +4,7 @@
 > Date Created: 09/07/2019 \
 > Name: Drone_Footprints.py
 
-The purpose of this application is to accurately calculate the geographic footprints of individual drone images.
-Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV).
-Following this, the application performs a series of calculations to establish the geospatial reference of each image.
-Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise
-geolocation without the need for stitching images together. This results in a remarkably efficient process.
-The final output includes a geo-rectified GeoTiff image file, accompanied by a GeoJSON file detailing:
+The purpose of this application is to accurately calculate the geographic footprints of individual drone images. Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV). Following this, the application performs a series of calculations to establish the geospatial reference of each image. Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise geolocation without the need for stitching images together. This results in a remarkably efficient process. The final output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON file detailing:
 
 - The Drone's Flight Path (as a LineString),
 - The Drone's Location at the moment the photo was taken (as a Point),
@@ -21,7 +16,7 @@ The final output includes a geo-rectified GeoTiff image file, accompanied by a G
 
 - Ready-made gdal version 3.8.3 or later.
   On Ubuntu, you can install as follows:
-
+ 
 ```
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
@@ -33,17 +28,17 @@ Installation via pip
 First, you probably want to install into a virtual environment or similar, for example:
 
 ```
-python3.10 -m venv env # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
-source env/bin/activate
+python3 -m venv .venv # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
+source .venv/bin/activate
 ```
 
 The we install using the requirements list as follows:
 
 ```
-pip install -r requirements.txt
+pip install --no-cache-dir --force-reinstall -r requirements.txt  # this current version of GDAL demands the extra tags
 ```
 
-## Requirements
+### Requirements
 
 Python 3.6 and above
 
@@ -53,16 +48,27 @@ Python 3.6 and above
 
 ### Arguments
 
-`-i` - The Default root folder for the mission you wish to process. Required
+`-i` - The Default root folder path for the mission you wish to process. Required
 
-`-o` - The output directory for the GeoJSON file and GeoTiffs. Required
+`-o` - The output directory path for the GeoJSON file and GeoTiffs. Required
 
-`-w` - Sensor Width (default is 13.2) Not Required (Check your Drones Specs for information)
+`-w` - Sensor Width (default is 13.2), Not Required (Check your Drones Specs for information)
 
-`-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
+`-t` - Sensor Height (default is 8.8), Not Required (Check your Drones Specs for information)
+
+`-d` - Magnetic Declination (default is "n"), Not Required.
 
 `-e` - Desired EPSG for output GeoTiffs (default is `4326`) Not Required
 
+`-m` - Path to a Digital Surface Model file to use for more accuracy. Not Required
+
+`-v` - Utilze [open_elevation.com](https://open_elevation.com) for more accuracy. (location dependent). Not Required (Extends processing time)
+
+`-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
+
+`-z` - Improves local contrast, which can make details more visible (default is "n"). Not Required (Significantly extends processing time)
+
+ :warning: _you can only select `-m` or `-v` but not both!_
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
@@ -81,9 +87,14 @@ python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/o
 python Drone_Footprints.py -i "/Path/To/Dataset3/images" -o "/Path/To/Dataset3/output" -e 3857
 ```
 
+```
+python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/output" -e 3857 -c n
+```
+
 ----------------------------------------------------------------------------------------------------------------
 
-### :warning: The accuracy of this process depends highly on a number of factors.
+### :warning: Tips for the most accurate results:
+## Preflight
 
 1. IMU calibration - Do this once a month
 2. Prior to each mission:
@@ -93,8 +104,10 @@ python Drone_Footprints.py -i "/Path/To/Dataset3/images" -o "/Path/To/Dataset3/o
 3. Shooting angle - for best results, select `Parallel to Main Path`
 4. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
 5. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
+6. Immediately after take-off, go STRAIGHT UP.  Take a photo immiedately above the homepoint to establish an elevation/altitude reference point
 
-### :memo: Sort into Datasets
+### Preprocessing
+#### Sort into Datasets
 
 It is highly recommended that you sort the images you want processed into corresponding datasets
 
@@ -106,8 +119,13 @@ It is highly recommended that you sort the images you want processed into corres
 ├── /Path/to/mission_folder
 │   ├── images
 ``````
+----------------------------------------------------------------------------------------------------------------
 
-### Outputs locations
+## Postprocessing
+- If each image appears to be off-angle by a few degrees, it could be magnetic declination.  Rerun them back through, but change the `-d` flag and see if that fixes the issue.
+Sometimes electro-magnetic fields can mess witht he aircrafts compass.
+
+#### Outputs locations
 
 It is a good practice to set your output folder `-o` location within your flight mission folder as shown in
 [Example Commands](#example-commands), but it is not required.
@@ -119,6 +137,8 @@ It is a good practice to set your output folder `-o` location within your flight
 │   │   ├── image1.tif
 │   ├── geojsons
 │   │   ├── M_2024-02-06_11-16.json
+│   ├── logfiles
+│   │   ├── L_M_2024-03-21_13-49.log
 ``````
 
 Geojson name is constructed using the date/time of processing like so:
@@ -129,12 +149,13 @@ Geojson name is constructed using the date/time of processing like so:
 
 ----------------------------------------------------------------------------------------------------------------
 
-## :boom: Future Builds
+## :boom: Future Works
 
 ### Sensor Size checks
 
-There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that
+- There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that 
 information becomes available.
+- Addition sensor and platform compatibilities 
 
 ----------------------------------------------------------------------------------------------------------------
 
@@ -148,6 +169,8 @@ information becomes available.
 - <a href="https://drive.google.com/uc?export=download&id=15U6Uvwv2c1s4MeIhNIwW6mPMW4xdwOnO" download>dataset 4</a>
 - <a href="https://drive.google.com/uc?export=download&id=15P_G8sRB2AssxfrWul4VAyyBZpRIT2Ys" download>dataset 5</a>
 - <a href="https://drive.google.com/uc?export=download&id=15RICP1BA8HvVUVMd4TXiOQ3fswzwMmkY" download>dataset 6</a>
+
+----------------------------------------------------------------------------------------------------------------
 
 ## :star: Sample Outputs
 
@@ -172,20 +195,21 @@ information becomes available.
 
 ----------------------------------------------------------------------------------------------------------------
 
-## Drone Compatibility```
+## Drone Compatibility
 
 Tested and works with:
 
-- Phantom 4 Series
+- Phantom 3 & 4 Series
 - Mavic 2 Series
+- Mavic 3 Multispectral
 - EVO II
+
+----------------------------------------------------------------------------------------------------------------
 
 ## known Issues
 
-1. Not currently working with older drones (i.e. Phantom 3 Series). The differences in
-   how telemetry is processed and translated into metadata is.... troublesome.
-2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the
-   drone's compass is highly susceptible to electromagnetic interference. Therefore, Datasets collected in areas of high
-   magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
+1. Might not work with some Drones due to difference in metadata keys/values. Older collections may not work for the same reason.
+2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the drone's compass is highly susceptible to electromagnetic interference. Therefore, Datasets collected in areas of high magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
+3. Fisheye lenses are impossible to completely compensate for.  Sorry.
 
 ----------------------------------------------------------------------------------------------------------------
