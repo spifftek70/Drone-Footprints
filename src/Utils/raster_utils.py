@@ -7,66 +7,81 @@ from osgeo import gdal, osr
 import numpy as np
 import cv2 as cv
 from shapely.wkt import loads
-from .utils import Color
-
-
-def gdal_dataset_to_numpy_array(dataset):
-    """
-    Converts a GDAL dataset to a NumPy array.
-
-    Parameters:
-    - dataset: GDAL dataset object to be converted.
-
-    Returns:
-    - NumPy array representing the dataset image, with all bands stacked.
-    """
-
-    try:
-        bands = [dataset.GetRasterBand(i).ReadAsArray() for i in range(1, dataset.RasterCount + 1)]
-    except Exception as e:
-        print(f"{Color.RED}Error converting GDAL dataset to NumPy array: {e}{Color.END}")
-        return None
-    img = np.dstack(bands)  # Stack bands to create an image array
-    return img
+from Utils.utils import Color
+from loguru import logger
+import Utils.config as config
+from skimage.exposure import equalize_adapthist
 
 
 def warp_image_to_polygon(img_arry, polygon, coordinate_array):
     """
-    Warps an image array to fit within a specified polygon using coordinates mapping.
+    Warps an image array to fit within a specified polygon using coordinates mapping
+    after applying auto-leveling for color, brightness, and contrast adjustments.
 
     Parameters:
-    - img_arry: The image array to be warped.
+    - img_arry: The image array to be auto-leveled and then warped.
     - polygon: The polygon to which the image should be warped.
     - coordinate_array: Array of coordinates defining the mapping from image to polygon.
 
     Returns:
-    - The image array warped to the polygon.
+    - The auto-leveled and then warped image array.
     """
-    # Source points from the original image
+
+    if config.image_equalize is True:
+        img_arry_equalized = equalize_adapthist(img_arry, clip_limit=0.03)
+    else:
+        img_arry_equalized = img_arry
+
+    # Continue with warping as before
     src_points = np.float32([
         [0, 0],
-        [img_arry.shape[1], 0],
-        [img_arry.shape[1], img_arry.shape[0]],
-        [0, img_arry.shape[0]]
+        [img_arry_equalized.shape[1], 0],
+        [img_arry_equalized.shape[1], img_arry_equalized.shape[0]],
+        [0, img_arry_equalized.shape[0]]
     ])
+    
+    # Calculate bounds, resolution, and destination points as before
 
-    # Calculate bounds and resolution
     minx, miny, maxx, maxy = polygon.bounds
-    resolution_x = (maxx - minx) / img_arry.shape[1]
-    resolution_y = (maxy - miny) / img_arry.shape[0]
+    resolution_x = (maxx - minx) / img_arry_equalized.shape[1]
+    resolution_y = (maxy - miny) / img_arry_equalized.shape[0]
 
-    # Destination points within the polygon, based on provided coordinates
     dst_points = np.float32([gps_to_pixel(coord, minx, maxy, resolution_x, resolution_y) for coord in coordinate_array])
 
-    # Calculate the homography matrix and apply warping
+    # Apply warping to the CLAHE-processed image
     try:
-        h_matrix, _ = cv.findHomography(src_points, dst_points, cv.RANSAC, 5.0)
-        georef_image_array = cv.warpPerspective(img_arry, h_matrix, (img_arry.shape[1], img_arry.shape[0]),
+        h_matrix, _ = cv.findHomography(src_points, dst_points, cv.RANSAC, 5)
+        georef_image_array = cv.warpPerspective(img_arry_equalized, h_matrix, (img_arry_equalized.shape[1], img_arry_equalized.shape[0]),
                                                 borderMode=cv.BORDER_CONSTANT, borderValue=(0, 0, 0))
     except Exception as e:
-        print(f"{Color.RED}Error warping image to polygon: {e}{Color.END}")
+        logger.opt(exception=True).warning(f"Error warping image to polygon: {e}")
         return None
+
     return georef_image_array
+
+
+def equalize_images(image_array):
+    """
+    Equalizes the brightness and contrast of an image array.
+
+    Parameters:
+    - image_array: The image array to be equalized.
+
+    Returns:
+    - The equalized image array.
+    """
+    # Normalize the image if necessary
+    if image_array.dtype == np.float32: # Assuming the image is in float32 format
+        image_array_normalized = image_array / 255
+    else: # Assuming the image is in uint8 format
+        image_array_normalized = image_array.astype(np.float32) / 255
+    
+    # Apply CLAHE
+    image_array_equalized = equalize_adapthist(image_array_normalized) * 255
+    if image_array.dtype == np.uint8:
+        image_array_equalized = image_array_equalized.astype(np.uint8)
+
+    return image_array_equalized
 
 
 def gps_to_pixel(gps_coord, x_min, y_max, resolution_x, resolution_y):
@@ -86,13 +101,11 @@ def gps_to_pixel(gps_coord, x_min, y_max, resolution_x, resolution_y):
         Px = (lon - x_min) / resolution_x
         Py = (y_max - lat) / resolution_y
     except Exception as e:
-        print(f"{Color.RED}Error converting GPS to pixel: {e}{Color.END}")
-        return None
-
+        logger.opt(exception=True).warning(f"Error converting GPS to pixel: {e}")
     return int(Px), int(Py)
 
 
-def array2ds(cv2_array, polygon_wkt, epsg_c=4326):
+def array2ds(cv2_array, polygon_wkt):
     """
     Converts an OpenCV image array to a GDAL dataset with geospatial data.
 
@@ -104,6 +117,14 @@ def array2ds(cv2_array, polygon_wkt, epsg_c=4326):
     Returns:
     - GDAL dataset object with the image and geospatial data.
     """
+    # Check input parameters
+    if not isinstance(cv2_array, np.ndarray):
+        logger.opt(exception=True).warning(f"cv2_array must be a numpy array.")
+    if not isinstance(polygon_wkt, str):
+        logger.opt(exception=True).warning(f"polygon_wkt must be a string.")
+    if not isinstance(config.epsg_code, int):
+        logger.opt(exception=True).warning(f"epsg_code must be an integer.")
+    
     polygon = loads(polygon_wkt)
     minx, miny, maxx, maxy = polygon.bounds
 
@@ -117,29 +138,51 @@ def array2ds(cv2_array, polygon_wkt, epsg_c=4326):
     pixel_size_x = (maxx - minx) / width
     pixel_size_y = (maxy - miny) / height
 
-    # Create and configure the GDAL dataset
+    # Determine GDAL data type based on cv2_array data type
     gdal.DontUseExceptions()
+    if cv2_array.dtype == np.uint8:
+        gdal_dtype = gdal.GDT_Byte
+    elif cv2_array.dtype == np.int16:
+        gdal_dtype = gdal.GDT_Int16
+    elif cv2_array.dtype == np.int32:
+        gdal_dtype = gdal.GDT_Int32
+    elif cv2_array.dtype == np.float32:
+        gdal_dtype = gdal.GDT_Float32
+    elif cv2_array.dtype == np.float64:
+        gdal_dtype = gdal.GDT_Float64
+    else:
+        logger.opt(exception=True).warning(f"Unsupported data type: {str(cv2_array.dtype)}")
+        # print(ValueError("Unsupported data type: " + str(cv2_array.dtype))
+    
+    # Create and configure the GDAL dataset
     driver = gdal.GetDriverByName("MEM")
-    ds = driver.Create("", width, height, bands, gdal.GDT_Byte)
-
+    if config.cog is True:
+        gdal.SetConfigOption("COMPRESS_OVERVIEW", "DEFLATE")
+    ds = driver.Create("", width, height, bands, gdal_dtype)
+    if config.cog is True:
+        ds.BuildOverviews("AVERAGE", [2,4,8,16,32,64,128,256])
     srs = osr.SpatialReference()
-    srs.ImportFromEPSG(epsg_c)
+    srs.ImportFromEPSG(config.epsg_code)
     ds.SetProjection(srs.ExportToWkt())
     ds.SetGeoTransform((minx, pixel_size_x, 0, maxy, 0, -pixel_size_y))
 
     # Write image data to the dataset
-    for i in range(1, bands + 1):
-        band = ds.GetRasterBand(i)
-        band.WriteArray(cv2_array[:, :, i - 1])
-        # Set color interpretation for each band if applicable
-        if bands == 3 or bands == 4:
-            color_interpretations = [gdal.GCI_RedBand, gdal.GCI_GreenBand, gdal.GCI_BlueBand, gdal.GCI_AlphaBand]
-            band.SetColorInterpretation(color_interpretations[i - 1])
+    if len(cv2_array.shape) == 3:  # For color images
+        for i in range(1, bands + 1):
+            band = ds.GetRasterBand(i)
+            band.WriteArray(cv2_array[:, :, i - 1])
+            # Set color interpretation for each band if applicable
+            if bands == 3 or bands == 4:
+                color_interpretations = [gdal.GCI_RedBand, gdal.GCI_GreenBand, gdal.GCI_BlueBand, gdal.GCI_AlphaBand]
+                band.SetColorInterpretation(color_interpretations[i - 1])
+    else:  # For grayscale images
+        band = ds.GetRasterBand(1)
+        band.WriteArray(cv2_array)
 
     return ds
 
 
-def warp_ds(dst_utf8_path, georef_image_array, epsg_code):
+def warp_ds(dst_utf8_path, ds):
     """
     Warps a georeferenced image array into a GeoTIFF file.
 
@@ -150,9 +193,17 @@ def warp_ds(dst_utf8_path, georef_image_array, epsg_code):
     No return value.
     """
     srs = osr.SpatialReference()
-    srs.ImportFromEPSG(epsg_code)
-    translate_options = gdal.TranslateOptions(noData=0)
-    vrt_ds = gdal.Translate(dst_utf8_path, georef_image_array, format='GTiff', outputSRS=srs.ExportToWkt(),
-                            options=translate_options)
-    # Clean up to release resources
-    del vrt_ds, georef_image_array
+    srs.ImportFromEPSG(config.epsg_code)
+
+    if config.cog is False:
+        translate_options = gdal.TranslateOptions(noData=0)
+        vrt_ds = gdal.Translate(dst_utf8_path, ds, format='GTiff', COMPRESS='LZW', outputSRS=srs.ExportToWkt(),
+                                options=translate_options)
+        # Clean up to release resources
+        del vrt_ds, ds
+    else:
+        warp_options = gdal.WarpOptions(creationOptions=["COPY_SRC_OVERVIEWS=YES", "TILED=YES", "COMPRESS=LZW"])
+        vrt_ds = gdal.Translate('', ds, format='VRT', noData=0, outputSRS=srs.ExportToWkt())
+        vs = gdal.Warp(dst_utf8_path, vrt_ds, format='GTiff', options=warp_options, dstSRS=srs.ExportToWkt())
+        # Clean up to release resources
+        del vrt_ds, ds, vs
