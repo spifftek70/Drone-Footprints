@@ -35,7 +35,8 @@ class Color:
         self.color = self.DARKMAGENTA
 
 
-def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None, default_lens_FOVw=None, default_lens_FOVh=None):
+def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, default_sensor_height=None,
+                                    default_lens_FOVw=None, default_lens_FOVh=None):
     """
     Reads sensor dimensions from a CSV file, returning a dictionary with sensor models as keys
     and tuples of (sensor width, sensor height, drone make, drone model) as values. Provides
@@ -71,6 +72,7 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
 
     # Use default values as a fallback for any sensor model not in the CSV
     if default_sensor_width is not None and default_sensor_height is not None and default_lens_FOVw is not None and default_lens_FOVh is not None:
-        sensor_dimensions["default"] = (default_sensor_width, default_sensor_height, "Unknown", "Unknown", default_lens_FOVw, default_lens_FOVh)
+        sensor_dimensions["default"] = (
+        default_sensor_width, default_sensor_height, "Unknown", "Unknown", default_lens_FOVw, default_lens_FOVh)
         logger.info(f"No sensor information available. Using Defaults: {sensor_dimensions['default']}")
     return sensor_dimensions
