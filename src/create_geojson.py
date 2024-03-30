@@ -23,7 +23,7 @@ def create_geojson_feature(coord_array, Drone_Lon, Drone_Lat, properties):
     """
     # Properties setup and other related processing goes here.
     # This is simplified to focus on structure. Implement as needed based on the original function.
-    
+
     polygon = Polygon(coord_array)
     geojson_polygon = geojson.dumps(polygon)
     rewound_polygon = rewind(geojson.loads(geojson_polygon))
@@ -35,7 +35,7 @@ def create_geojson_feature(coord_array, Drone_Lon, Drone_Lat, properties):
         (array_rw[1]),
         (array_rw[0]),
     ]
-    
+
     type_point = dict(type="Point", coordinates=[Drone_Lon[0], Drone_Lat[0]])
     type_polygon = dict(type="Polygon", coordinates=[closed_array])
     feature_point = dict(
@@ -44,5 +44,5 @@ def create_geojson_feature(coord_array, Drone_Lon, Drone_Lat, properties):
     feature_polygon = dict(
         type="Feature", geometry=type_polygon, properties=properties
     )
-    
+
     return feature_point, feature_polygon

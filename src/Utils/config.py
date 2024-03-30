@@ -5,7 +5,6 @@
 
 from tqdm import tqdm
 
-
 epsg_code = 4326
 rtk = False
 decl = False
@@ -18,7 +17,7 @@ global_target_delta = 0.0
 image_equalize = False
 im_file_name = ""
 rel_altitude = 0.0
-abso_altitude = 0.0 
+abso_altitude = 0.0
 dsm = None
 pbar = tqdm(total=0, position=1, bar_format='{desc}')
 crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
@@ -33,12 +32,12 @@ def init():
     rtk = False
     cog = False
     dtm_path = ""
-    global_elevation = False    
+    global_elevation = False
     global_target_delta = 0.0
     image_equalize = False
     im_file_name = ""
     rel_altitude = 0.0
-    abso_altitude = 0.0 
+    abso_altitude = 0.0
     dsm = None
     pbar = tqdm(total=0, position=1, bar_format='{desc}')
     crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
@@ -82,6 +81,7 @@ def update_elevation(h):
 def update_target_delta(l):
     global global_target_delta
     global_target_delta = l
+
 
 def update_equalize(u):
     global image_equalize

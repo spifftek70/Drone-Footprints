@@ -9,11 +9,12 @@ import datetime
 from pathlib import Path
 import exiftool
 import geojson
-from meta_data import process_metadata  
+from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
 from loguru import logger
 from Utils.logger_config import init_logger
 import warnings
+
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 import Utils.config as config
 
@@ -32,7 +33,7 @@ def is_valid_directory(arg):
         return
     else:
         return arg
-    
+
 
 def is_valid_file(arg):
     if not os.path.isfile(arg):
@@ -40,7 +41,7 @@ def is_valid_file(arg):
         return
     else:
         return arg
-    
+
 
 parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
 parser.add_argument("-o", "--dest", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
@@ -52,17 +53,21 @@ parser.add_argument("-t", "--sensorHeight", type=float, help="Sensor height in m
                     required=False)
 parser.add_argument("-e", "--epsg", type=int, help="Desired EPSG for output files (optional).",
                     required=False)
-parser.add_argument("-d", "--declin", choices=['y', 'n'], default='n', help="Adjust for magnetic declination \"Y\" or \"N\" (optional).",
+parser.add_argument("-d", "--declin", choices=['y', 'n'], default='n',
+                    help="Adjust for magnetic declination \"Y\" or \"N\" (optional).",
                     required=False)
-parser.add_argument("-c", "--COG", choices=['y', 'n'], default='n', help="Geotiff format as COG? \"Y\" or \"N\" (optional).",
+parser.add_argument("-c", "--COG", choices=['y', 'n'], default='n',
+                    help="Geotiff format as COG? \"Y\" or \"N\" (optional).",
                     required=False)
-parser.add_argument("-z", "--image_equalize", choices=['y', 'n'], default='n', help="Improve local contrast, which can make details more visible"
-                    "\"Y\" or \"N\" (optional).", required=False)
+parser.add_argument("-z", "--image_equalize", choices=['y', 'n'], default='n',
+                    help="Improve local contrast, which can make details more visible"
+                         "\"Y\" or \"N\" (optional).", required=False)
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-v", "--dtm", type=is_valid_file, help="Path to DTM or DEM file (optional).",
-                    required=False)
-group.add_argument("-m", "--elevation_service", choices=['y', 'n'], default='n', help="Use elevation services APIs \"Y\" or \"N\" (optional).",
-                    required=False)
+                   required=False)
+group.add_argument("-m", "--elevation_service", choices=['y', 'n'], default='n',
+                   help="Use elevation services APIs \"Y\" or \"N\" (optional).",
+                   required=False)
 
 args = parser.parse_args()
 # Access the arguments
@@ -79,7 +84,7 @@ log_path = Path(outer_path) / "logfiles" / log_file
 init_logger(log_path=log_path)
 for x in prelog:
     logger.opt(exception=True).warning(f"{x}")
-    
+
 
 def get_image_files(directory):
     """
@@ -152,7 +157,7 @@ def main():
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
     epsg_pass, image_equalize = args.epsg, args.image_equalize
     elevation_service = args.elevation_service
-    dtm =args.dtm
+    dtm = args.dtm
     declin = args.declin
     argcog = args.COG
     logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
@@ -174,7 +179,8 @@ def main():
     if image_equalize == 'y':
         config.update_equalize(True)
     files = get_image_files(indir)
-    logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory." + Color.END)
+    logger.info(
+        f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory." + Color.END)
     if files is None or len(files) == 0:
         logger.critical("No image files found in the specified directory.")
         exit()
