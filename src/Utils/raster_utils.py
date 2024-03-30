@@ -39,7 +39,7 @@ def warp_image_to_polygon(img_arry, polygon, coordinate_array):
         [img_arry_equalized.shape[1], img_arry_equalized.shape[0]],
         [0, img_arry_equalized.shape[0]]
     ])
-    
+
     # Calculate bounds, resolution, and destination points as before
 
     minx, miny, maxx, maxy = polygon.bounds
@@ -51,7 +51,8 @@ def warp_image_to_polygon(img_arry, polygon, coordinate_array):
     # Apply warping to the CLAHE-processed image
     try:
         h_matrix, _ = cv.findHomography(src_points, dst_points, cv.RANSAC, 5)
-        georef_image_array = cv.warpPerspective(img_arry_equalized, h_matrix, (img_arry_equalized.shape[1], img_arry_equalized.shape[0]),
+        georef_image_array = cv.warpPerspective(img_arry_equalized, h_matrix,
+                                                (img_arry_equalized.shape[1], img_arry_equalized.shape[0]),
                                                 borderMode=cv.BORDER_CONSTANT, borderValue=(0, 0, 0))
     except Exception as e:
         logger.opt(exception=True).warning(f"Error warping image to polygon: {e}")
@@ -71,11 +72,11 @@ def equalize_images(image_array):
     - The equalized image array.
     """
     # Normalize the image if necessary
-    if image_array.dtype == np.float32: # Assuming the image is in float32 format
+    if image_array.dtype == np.float32:  # Assuming the image is in float32 format
         image_array_normalized = image_array / 255
-    else: # Assuming the image is in uint8 format
+    else:  # Assuming the image is in uint8 format
         image_array_normalized = image_array.astype(np.float32) / 255
-    
+
     # Apply CLAHE
     image_array_equalized = equalize_adapthist(image_array_normalized) * 255
     if image_array.dtype == np.uint8:
@@ -124,7 +125,7 @@ def array2ds(cv2_array, polygon_wkt):
         logger.opt(exception=True).warning(f"polygon_wkt must be a string.")
     if not isinstance(config.epsg_code, int):
         logger.opt(exception=True).warning(f"epsg_code must be an integer.")
-    
+
     polygon = loads(polygon_wkt)
     minx, miny, maxx, maxy = polygon.bounds
 
@@ -153,14 +154,14 @@ def array2ds(cv2_array, polygon_wkt):
     else:
         logger.opt(exception=True).warning(f"Unsupported data type: {str(cv2_array.dtype)}")
         # print(ValueError("Unsupported data type: " + str(cv2_array.dtype))
-    
+
     # Create and configure the GDAL dataset
     driver = gdal.GetDriverByName("MEM")
     if config.cog is True:
         gdal.SetConfigOption("COMPRESS_OVERVIEW", "DEFLATE")
     ds = driver.Create("", width, height, bands, gdal_dtype)
     if config.cog is True:
-        ds.BuildOverviews("AVERAGE", [2,4,8,16,32,64,128,256])
+        ds.BuildOverviews("AVERAGE", [2, 4, 8, 16, 32, 64, 128, 256])
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(config.epsg_code)
     ds.SetProjection(srs.ExportToWkt())

@@ -4,7 +4,12 @@
 > Date Created: 09/07/2019 \
 > Name: Drone_Footprints.py
 
-The purpose of this application is to accurately calculate the geographic footprints of individual drone images. Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV). Following this, the application performs a series of calculations to establish the geospatial reference of each image. Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise geolocation without the need for stitching images together. This results in a remarkably efficient process. The final output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON file detailing:
+The purpose of this application is to accurately calculate the geographic footprints of individual drone images.
+Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV).
+Following this, the application performs a series of calculations to establish the geospatial reference of each image.
+Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise
+geolocation without the need for stitching images together. This results in a remarkably efficient process. The final
+output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON file detailing:
 
 - The Drone's Flight Path (as a LineString),
 - The Drone's Location at the moment the photo was taken (as a Point),
@@ -16,7 +21,7 @@ The purpose of this application is to accurately calculate the geographic footpr
 
 - Ready-made gdal version 3.8.3 or later.
   On Ubuntu, you can install as follows:
- 
+
 ```
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
@@ -62,13 +67,15 @@ Python 3.6 and above
 
 `-m` - Path to a Digital Surface Model file to use for more accuracy. Not Required
 
-`-v` - Utilze [open_elevation.com](https://open_elevation.com) for more accuracy. (location dependent). Not Required (Extends processing time)
+`-v` - Utilze [open_elevation.com](https://open_elevation.com) for more accuracy. (location dependent). Not Required (
+Extends processing time)
 
 `-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
 
-`-z` - Improves local contrast, which can make details more visible (default is "n"). Not Required (Significantly extends processing time)
+`-z` - Improves local contrast, which can make details more visible (default is "n"). Not Required (Significantly
+extends processing time)
 
- :warning: _you can only select `-m` or `-v` but not both!_
+:warning: _you can only select `-m` or `-v` but not both!_
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
@@ -94,6 +101,7 @@ python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/o
 ----------------------------------------------------------------------------------------------------------------
 
 ### :warning: Tips for the most accurate results:
+
 ## Preflight
 
 1. IMU calibration - Do this once a month
@@ -104,9 +112,11 @@ python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/o
 3. Shooting angle - for best results, select `Parallel to Main Path`
 4. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
 5. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
-6. Immediately after take-off, go STRAIGHT UP.  Take a photo immiedately above the homepoint to establish an elevation/altitude reference point
+6. Immediately after take-off, go STRAIGHT UP. Take a photo immiedately above the homepoint to establish an
+   elevation/altitude reference point
 
 ### Preprocessing
+
 #### Sort into Datasets
 
 It is highly recommended that you sort the images you want processed into corresponding datasets
@@ -119,11 +129,14 @@ It is highly recommended that you sort the images you want processed into corres
 ├── /Path/to/mission_folder
 │   ├── images
 ``````
+
 ----------------------------------------------------------------------------------------------------------------
 
 ## Postprocessing
-- If each image appears to be off-angle by a few degrees, it could be magnetic declination.  Rerun them back through, but change the `-d` flag and see if that fixes the issue.
-Sometimes electro-magnetic fields can mess witht he aircrafts compass.
+
+- If each image appears to be off-angle by a few degrees, it could be magnetic declination. Rerun them back through, but
+  change the `-d` flag and see if that fixes the issue.
+  Sometimes electro-magnetic fields can mess witht he aircrafts compass.
 
 #### Outputs locations
 
@@ -153,9 +166,9 @@ Geojson name is constructed using the date/time of processing like so:
 
 ### Sensor Size checks
 
-- There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that 
-information becomes available.
-- Addition sensor and platform compatibilities 
+- There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that
+  information becomes available.
+- Addition sensor and platform compatibilities
 
 ----------------------------------------------------------------------------------------------------------------
 
@@ -208,8 +221,11 @@ Tested and works with:
 
 ## known Issues
 
-1. Might not work with some Drones due to difference in metadata keys/values. Older collections may not work for the same reason.
-2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the drone's compass is highly susceptible to electromagnetic interference. Therefore, Datasets collected in areas of high magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
-3. Fisheye lenses are impossible to completely compensate for.  Sorry.
+1. Might not work with some Drones due to difference in metadata keys/values. Older collections may not work for the
+   same reason.
+2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the
+   drone's compass is highly susceptible to electromagnetic interference. Therefore, Datasets collected in areas of high
+   magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
+3. Fisheye lenses are impossible to completely compensate for. Sorry.
 
 ----------------------------------------------------------------------------------------------------------------
