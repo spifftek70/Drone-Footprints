@@ -7,7 +7,7 @@
 import numpy as np
 import quaternion
 from Utils.geospatial_conversions import *
-from mpmath import mp, radians
+from mpmath import mp, radians, sqrt
 from vector3d.vector import Vector
 from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open
 import Utils.config as config
@@ -121,7 +121,7 @@ class HighAccuracyFOVCalculator:
                 new_altitude = get_altitude_from_open(latitude, longitude)
             if config.rel_altitude == 0.0:
                 new_altitude = config.abso_altitude
-            if new_altitude is None and not config.dtm_path and not config.global_elevation:
+            if new_altitude is None and not config.dtm_path and not config.global_elevation or config.rtk:
                 logger.warning(f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
                 new_altitude = config.rel_altitude
 
