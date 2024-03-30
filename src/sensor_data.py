@@ -26,7 +26,8 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sens
         data.get("XMP:GimbalRollDegree") or data.get("MakerNotes:CameraRoll") or data.get("XMP:Roll"))
     gimbal_pitch_degree = float(
         data.get("XMP:GimbalPitchDegree") or data.get("MakerNotes:CameraPitch") or data.get("XMP:Pitch"))
-    gimbal_yaw_degree = float(data.get("XMP:GimbalYawDegree") or data.get("MakerNotes:CameraYaw") or data.get("XMP:Yaw"))
+    gimbal_yaw_degree = float(
+        data.get("XMP:GimbalYawDegree") or data.get("MakerNotes:CameraYaw") or data.get("XMP:Yaw"))
     flight_pitch_degree = float(data.get("XMP:FlightPitchDegree") or data.get("MakerNotes:Pitch") or 999)
     flight_roll_degree = float(data.get("XMP:FlightRollDegree") or data.get("MakerNotes:Roll") or 999)
     flight_yaw_degree = float(data.get("XMP:FlightYawDegree") or data.get("MakerNotes:Yaw") or 999)
@@ -35,7 +36,6 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sens
     image_width = int(data.get("EXIF:ImageWidth") or data.get("EXIF:ExifImageWidth"))
     image_height = int(data.get("EXIF:ImageHeight") or data.get("EXIF:ExifImageHeight"))
     focal_length = float(data.get("EXIF:FocalLength"))
-    
 
     # Sensor model and make
     sensor_model = data.get("EXIF:Model", "default")  # Fallback to 'default' if not found
