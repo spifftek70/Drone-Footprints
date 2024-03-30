@@ -13,6 +13,8 @@ from Utils.utils import Color
 from tqdm import tqdm
 from loguru import logger
 from Utils.config import update_file_name, update_abso_altitude, update_rel_altitude
+
+
 # from pprint
 
 def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
@@ -44,33 +46,36 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             pbar.set_description_str(Color.YELLOW + f'Current file: {file_Name}' + Color.END)
 
             # Extract detailed sensor and drone info for the current image
-            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, sensor_model, lens_FOVw, lens_FOVh)
+            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, sensor_model, lens_FOVw,
+                                             lens_FOVh)
 
-            re_altitude=float(properties['RelativeAltitude']) if 'RelativeAltitude' in properties else None,
-            ab_altitude=float(properties['AbsoluteAltitude']) if 'AbsoluteAltitude' in properties else None,
-            focal_length=float(properties['Focal_Length']) if 'Focal_Length' in properties else None,
-            sensor_width=int(properties['Sensor_Width']) if 'Sensor_Width' in properties else None,
-            sensor_height=int(properties['Sensor_Height']) if 'Sensor_Height' in properties else None,
-            gimbal_roll_deg=float(properties['GimbalRollDegree']) if 'GimbalRollDegree' in properties else None,
-            gimbal_pitch_deg=float(properties['GimbalPitchDegree']) if 'GimbalPitchDegree' in properties else None,
-            gimbal_yaw_deg=float(properties['GimbalYawDegree']) if 'GimbalYawDegree' in properties else None,
-            flight_roll_deg=float(properties['FlightRollDegree']) if 'FlightRollDegree' in properties else None,
-            flight_pitch_deg=float(properties['FlightPitchDegree']) if 'FlightPitchDegree' in properties else None,
-            flight_yaw_deg=float(properties['FlightYawDegree']) if 'FlightYawDegree' in properties else None,
-            drone_latitude=float(properties['DroneCoordinates'][1]) if 'DroneCoordinates' in properties and properties['DroneCoordinates'] else None,
-            drone_longitude=float(properties['DroneCoordinates'][0]) if 'DroneCoordinates' in properties and properties['DroneCoordinates'] else None,
+            re_altitude = float(properties['RelativeAltitude']) if 'RelativeAltitude' in properties else None,
+            ab_altitude = float(properties['AbsoluteAltitude']) if 'AbsoluteAltitude' in properties else None,
+            focal_length = float(properties['Focal_Length']) if 'Focal_Length' in properties else None,
+            sensor_width = int(properties['Sensor_Width']) if 'Sensor_Width' in properties else None,
+            sensor_height = int(properties['Sensor_Height']) if 'Sensor_Height' in properties else None,
+            gimbal_roll_deg = float(properties['GimbalRollDegree']) if 'GimbalRollDegree' in properties else None,
+            gimbal_pitch_deg = float(properties['GimbalPitchDegree']) if 'GimbalPitchDegree' in properties else None,
+            gimbal_yaw_deg = float(properties['GimbalYawDegree']) if 'GimbalYawDegree' in properties else None,
+            flight_roll_deg = float(properties['FlightRollDegree']) if 'FlightRollDegree' in properties else None,
+            flight_pitch_deg = float(properties['FlightPitchDegree']) if 'FlightPitchDegree' in properties else None,
+            flight_yaw_deg = float(properties['FlightYawDegree']) if 'FlightYawDegree' in properties else None,
+            drone_latitude = float(properties['DroneCoordinates'][1]) if 'DroneCoordinates' in properties and \
+                                                                         properties['DroneCoordinates'] else None,
+            drone_longitude = float(properties['DroneCoordinates'][0]) if 'DroneCoordinates' in properties and \
+                                                                          properties['DroneCoordinates'] else None,
             lens_FOVw = properties['lens_FOVw1'] if 'lens_FOVw1' in properties else 1.0
             lens_FOVh = properties['lens_FOV1h'] if 'lens_FOV1h' in properties else 1.0
-            datetime_original=properties['DateTimeOriginal'] if 'DateTimeOriginal' in properties else None,
+            datetime_original = properties['DateTimeOriginal'] if 'DateTimeOriginal' in properties else None,
             drone_make = properties['Drone_Model'] if 'Drone_Model' in properties else None,
             drone_model = properties['Drone_Model'] if 'Drone_Model' in properties else None,
-            i=i 
-            file_Names=properties['file_name'] if 'file_name' in properties else None
+            i = i
+            file_Names = properties['file_name'] if 'file_name' in properties else None
             update_file_name(file_Name)
             update_abso_altitude(ab_altitude[0])
             update_rel_altitude(re_altitude[0])
-            image_width=int(properties['Image_Width'])
-            image_height=int(properties['Image_Height'])
+            image_width = int(properties['Image_Width'])
+            image_height = int(properties['Image_Height'])
             # Calculate Field of View (FOV) or any other necessary geometric calculations
             # Assume calculate_fov() returns an array of coordinates for the image footprint
             coord_array, polybox = calculate_fov(
@@ -94,7 +99,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 lens_FOVh,
                 i
             )
- 
+
             # Create GeoJSON features for the current image
             feature_point, feature_polygon = create_geojson_feature(polybox, drone_longitude, drone_latitude,
                                                                     properties)
@@ -111,7 +116,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             generate_geotiff(image_path, geotiff_file, coord_array)
 
             outer.update(1)
-    
+
         except TypeError as t:
             logger.opt(exception=True).warning(f"Missing metadata key: {t} for image: {file_Name}")
         except KeyError as k:

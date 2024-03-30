@@ -20,8 +20,10 @@ lens_FOVh = 0.0
 lens_FOVw = 0.0
 mp.dps = 50  # set a higher precision
 
+
 class HighAccuracyFOVCalculator:
-    def __init__(self, drone_gps, drone_altitude, camera_info, gimbal_orientation, flight_orientation, datetime_original, i):
+    def __init__(self, drone_gps, drone_altitude, camera_info, gimbal_orientation, flight_orientation,
+                 datetime_original, i):
         global latitude, longitude, lens_FOVh, lens_FOVw
         self.drone_gps = drone_gps
         latitude = drone_gps[0]
@@ -35,7 +37,6 @@ class HighAccuracyFOVCalculator:
         self.flight_orientation = flight_orientation
         self.i = i
 
-
     def calculate_fov_dimensions(self):
         FOVw = 2 * mp.atan(mp.mpf(self.camera_info['sensor_width']) / (2 * self.camera_info['focal_length']))
         FOVh = 2 * mp.atan(mp.mpf(self.camera_info['sensor_height']) / (2 * self.camera_info['focal_length']))
@@ -43,7 +44,6 @@ class HighAccuracyFOVCalculator:
         adj_FOVw, adj_FOVh = HighAccuracyFOVCalculator._sensor_lens_correction(FOVw, FOVh)
 
         return adj_FOVw, adj_FOVh
-
 
     @staticmethod
     def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, declination):
@@ -60,7 +60,6 @@ class HighAccuracyFOVCalculator:
         else:
             adj_yaw_rad = (mp.pi / 2) - yaw_rad
         return adj_yaw_rad, cal_pitch_rad
-
 
     def getBoundingPolygon(self, FOVh, FOVv):
         """
@@ -93,9 +92,11 @@ class HighAccuracyFOVCalculator:
 
     def rotateRays(self, rays):
         # Calculate adjusted angles for gimbal and flight orientations
-        declination = find_declination(self.drone_altitude, self.camera_info['focal_length'], *self.drone_gps, self.datetime_original)
-        adj_yaw, adj_pitch = self.calculate_rads_from_angles(self.gimbal_orientation['yaw'], self.gimbal_orientation['pitch'], declination)
-        
+        declination = find_declination(self.drone_altitude, self.camera_info['focal_length'], *self.drone_gps,
+                                       self.datetime_original)
+        adj_yaw, adj_pitch = self.calculate_rads_from_angles(self.gimbal_orientation['yaw'],
+                                                             self.gimbal_orientation['pitch'], declination)
+
         # Create quaternion for combined adjustments
         # Make sure to pass angles in the correct order based on your system's convention
         q = quaternion.from_euler_angles(adj_yaw, adj_pitch, self.gimbal_orientation['roll'])
@@ -106,7 +107,6 @@ class HighAccuracyFOVCalculator:
         # Apply rotation to each ray
         rotated_rays = [Vector(*(q * np.quaternion(0, ray.x, ray.y, ray.z) * q.inverse()).vec) for ray in rays]
         return rotated_rays
-
 
     def get_fov_bbox(self):
         try:
@@ -126,7 +126,8 @@ class HighAccuracyFOVCalculator:
                 new_altitude = config.rel_altitude
 
             corrected_altitude = self._atmospheric_refraction_correction(new_altitude)
-            elevation_bbox = HighAccuracyFOVCalculator.getRayGroundIntersections(rotated_vectors, Vector(0, 0, float(corrected_altitude)))
+            elevation_bbox = HighAccuracyFOVCalculator.getRayGroundIntersections(rotated_vectors, Vector(0, 0, float(
+                corrected_altitude)))
             translated_bbox = find_geodetic_intersections(elevation_bbox, longitude, latitude)
             # translated_bbox = translated_bbox[2:] + translated_bbox[:2]
             if not translated_bbox:
@@ -141,12 +142,13 @@ class HighAccuracyFOVCalculator:
                     return translate_to_wgs84(translated_bbox, longitude, latitude)
 
                 # Calculate the ratios of distances to check the 5 times condition
-                distances = [sqrt((translated_bbox[(i + 1) % len(translated_bbox)][0] - box[0])**2 +
-                                (translated_bbox[(i + 1) % len(translated_bbox)][1] - box[1])**2)
-                            for i, box in enumerate(translated_bbox)]
+                distances = [sqrt((translated_bbox[(i + 1) % len(translated_bbox)][0] - box[0]) ** 2 +
+                                  (translated_bbox[(i + 1) % len(translated_bbox)][1] - box[1]) ** 2)
+                             for i, box in enumerate(translated_bbox)]
                 for dist in distances:
                     if any(other_dist * 6 < dist for other_dist in distances if other_dist != dist):
-                        logger.warning(f"One side of the polygon for {config.im_file_name} is at least 5 times longer than another.")
+                        logger.warning(
+                            f"One side of the polygon for {config.im_file_name} is at least 5 times longer than another.")
                         return translate_to_wgs84(translated_bbox, longitude, latitude)
 
             if config.global_elevation is True:
@@ -157,12 +159,13 @@ class HighAccuracyFOVCalculator:
                     return translate_to_wgs84(translated_bbox, longitude, latitude)
 
                 # Calculate the ratios of distances to check the 5 times condition
-                distances = [sqrt((translated_bbox[(i + 1) % len(translated_bbox)][0] - box[0])**2 +
-                                (translated_bbox[(i + 1) % len(translated_bbox)][1] - box[1])**2)
-                            for i, box in enumerate(translated_bbox)]
+                distances = [sqrt((translated_bbox[(i + 1) % len(translated_bbox)][0] - box[0]) ** 2 +
+                                  (translated_bbox[(i + 1) % len(translated_bbox)][1] - box[1]) ** 2)
+                             for i, box in enumerate(translated_bbox)]
                 for dist in distances:
                     if any(other_dist * 5 < dist for other_dist in distances if other_dist != dist):
-                        logger.warning(f"One side of the polygon for {config.im_file_name} is at least 5 times longer than another.")
+                        logger.warning(
+                            f"One side of the polygon for {config.im_file_name} is at least 5 times longer than another.")
                         return translate_to_wgs84(translated_bbox, longitude, latitude)
 
             # If no special conditions are met, process normally
@@ -172,14 +175,12 @@ class HighAccuracyFOVCalculator:
             logger.opt(exception=True).warning(f"Error in get_fov_bbox: {e}")
             return None, None
 
-
     def _sensor_lens_correction(fov_width, fov_height):
         # Placeholder for sensor and lens correction
         corrected_fov_width = fov_width * lens_FOVw  # Example correction factor
         corrected_fov_height = fov_height * lens_FOVh
         return corrected_fov_width, corrected_fov_height
 
-    
     @staticmethod
     def getRayGroundIntersections(rays, origin):
         """
@@ -192,12 +193,11 @@ class HighAccuracyFOVCalculator:
         Returns:
             list: A list of Vector objects representing the intersection points on the ground.
         """
-        
+
         intersections = [HighAccuracyFOVCalculator.findRayGroundIntersection(ray, origin) for ray in rays if
                          HighAccuracyFOVCalculator.findRayGroundIntersection(ray, origin) is not None]
 
         return intersections
-    
 
     @staticmethod
     def findRayGroundIntersection(ray, origin):
@@ -216,15 +216,8 @@ class HighAccuracyFOVCalculator:
             return None
 
         # Calculate intersection parameter t
-        # try:
         t = -origin.z / ray.z
         return Vector(origin.x + ray.x * t, origin.y + ray.y * t, 0)
-        # except AttributeError as e:
-        #     t = -origin[2] / ray.z
-        #     return Vector(origin[0] + ray.x * t, origin[1] + ray.y * t, 0)
-
 
     def _atmospheric_refraction_correction(self, altitude):
         return altitude + (altitude * 0.0001)
-    
-
