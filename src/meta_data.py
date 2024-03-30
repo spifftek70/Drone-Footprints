@@ -36,10 +36,16 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     pbar = tqdm(total=0, position=1, leave=False, bar_format='{desc}')
     sensor_make = ""
     sensor_model = ""
+    drone_make = ""
+    drone_model = ""
+    Sensor_index = ""
+    Sensor_Model = ""
+    Sensor_Make = ""
     lens_FOVw = None
     lens_FOVh = None
+    datetime_original = ""
     i = 0
-
+    file_Name = ""
     for data in metadata:
         try:
             file_Name = data.get("File:FileName")
@@ -67,8 +73,11 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             lens_FOVw = properties['lens_FOVw1'] if 'lens_FOVw1' in properties else 1.0
             lens_FOVh = properties['lens_FOV1h'] if 'lens_FOV1h' in properties else 1.0
             datetime_original = properties['DateTimeOriginal'] if 'DateTimeOriginal' in properties else None,
-            drone_make = properties['Drone_Model'] if 'Drone_Model' in properties else None,
+            drone_make = properties['Drone_Make'] if 'Drone_Make' in properties else None,
             drone_model = properties['Drone_Model'] if 'Drone_Model' in properties else None,
+            Sensor_Make = properties['Sensor_Make'] if 'Sensor_Make' in properties else None,
+            Sensor_Model = properties['Sensor_Model'] if 'Sensor_Model' in properties else None
+            Sensor_index = properties['Sensor_index'] if 'Sensor_index' in properties else None
             i = i
             file_Names = properties['file_name'] if 'file_name' in properties else None
             update_file_name(file_Name)
@@ -77,7 +86,6 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             image_width = int(properties['Image_Width'])
             image_height = int(properties['Image_Height'])
             # Calculate Field of View (FOV) or any other necessary geometric calculations
-            # Assume calculate_fov() returns an array of coordinates for the image footprint
             coord_array, polybox = calculate_fov(
                 re_altitude[0],
                 ab_altitude[0],
@@ -127,7 +135,9 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     # Add lines to the GeoJSON feature collection if necessary
     if line_coordinates:
         line_geometry = dict(type="LineString", coordinates=line_coordinates)
-        mission_props = dict(date=datetime_original, sensor_make=sensor_make, sensor_model=sensor_model)
+        mission_props = dict(date=datetime_original, sensor_make=sensor_make, sensor_model=sensor_model,
+                             drone_make=drone_make, drone_model=drone_model, Sensor_index=Sensor_index,
+                             Sensor_Model=Sensor_Model, Sensor_Make=Sensor_Make)
         line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
         feature_collection["features"].insert(0, line_feature)
     pbar.clear()
