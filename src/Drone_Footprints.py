@@ -14,6 +14,7 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 from loguru import logger
 from Utils.logger_config import init_logger
 import warnings
+import json
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 import Utils.config as config
@@ -62,6 +63,10 @@ parser.add_argument("-c", "--COG", choices=['y', 'n'], default='n',
 parser.add_argument("-z", "--image_equalize", choices=['y', 'n'], default='n',
                     help="Improve local contrast, which can make details more visible"
                          "\"Y\" or \"N\" (optional).", required=False)
+parser.add_argument("-l", "--lense_correction", choices=['y', 'n'], default='y',
+                    help="Apply lens distortion correction? \"Y\" or \"N\" (optional).",
+                    required=False)
+# Add mutually exclusive arguments
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-v", "--dtm", type=is_valid_file, help="Path to DTM or DEM file (optional).",
                    required=False)
@@ -153,10 +158,12 @@ def main():
     """
     Main function to orchestrate the processing of drone imagery into GeoJSON and GeoTIFFs.
     """
+    user_args = json.dumps(vars(args), indent=4)
+    logger.info(f"User arguments - \n{user_args}")
     indir, outdir = args.indir, args.dest
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
     epsg_pass, image_equalize = args.epsg, args.image_equalize
-    elevation_service = args.elevation_service
+    elevation_service, lense_correction = args.elevation_service, args.lense_correction
     dtm = args.dtm
     declin = args.declin
     argcog = args.COG
@@ -174,6 +181,8 @@ def main():
         config.update_cog(True)
     if elevation_service == 'y':
         config.update_elevation(True)
+    if lense_correction == 'n':
+        config.update_lense(False)
     if dtm:
         config.update_dtm(dtm)
     if image_equalize == 'y':
