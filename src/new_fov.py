@@ -13,6 +13,7 @@ from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open
 import Utils.config as config
 from Utils.declination import find_declination
 
+
 latitude = 0
 longitude = 0
 datetime_original = None
@@ -38,28 +39,45 @@ class HighAccuracyFOVCalculator:
         self.i = i
 
     def calculate_fov_dimensions(self):
-        FOVw = 2 * mp.atan(mp.mpf(self.camera_info['sensor_width']) / (2 * self.camera_info['focal_length']))
-        FOVh = 2 * mp.atan(mp.mpf(self.camera_info['sensor_height']) / (2 * self.camera_info['focal_length']))
+        FOVw = 2 * mp.atan(mp.mpf(self.camera_info['sensor_width']) / (2 * self.camera_info['Focal_Length']))
+        FOVh = 2 * mp.atan(mp.mpf(self.camera_info['sensor_height']) / (2 * self.camera_info['Focal_Length']))
 
         adj_FOVw, adj_FOVh = HighAccuracyFOVCalculator._sensor_lens_correction(FOVw, FOVh)
 
         return adj_FOVw, adj_FOVh
 
     @staticmethod
-    def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, declination):
+    def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg, declination):
         """
-        Adjusts the gimbal's yaw angle for magnetic declination based on an internal condition.
-        Assumes yaw is measured clockwise from magnetic north and declination is positive east of true north.
+        Adjusts the gimbal's angles for magnetic declination and normalizes the roll orientation.
+        - Yaw is adjusted for magnetic declination.
+        - Roll is normalized if within a specific range to handle edge cases around 90 degrees.
+        - Pitch is converted directly to radians.
+
+        Parameters:
+        - gimbal_yaw_deg (float): The gimbal's yaw angle in degrees.
+        - gimbal_pitch_deg (float): The gimbal's pitch angle in degrees.
+        - gimbal_roll_deg (float): The gimbal's roll angle in degrees.
+        - declination (float): Magnetic declination in degrees.
+
+        Returns:
+        - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
-        adjusted_pitch_deg = radians(gimbal_pitch_deg)
-        cal_pitch_rad = (mp.pi / 2) - adjusted_pitch_deg
-        yaw_rad = radians(gimbal_yaw_deg)
+        yaw_rad = np.radians(gimbal_yaw_deg)
+
+        # Normalize yaw for magnetic declination
         if config.decl:
-            declination_rad = radians(declination)
-            adj_yaw_rad = (mp.pi / 2) - (yaw_rad + declination_rad)
+            declination_rad = np.radians(declination)
+            yaw_rad = (mp.pi / 2) - (yaw_rad - declination_rad) if yaw_rad < 0 else (mp.pi / 2) - (
+                yaw_rad + declination_rad)
         else:
-            adj_yaw_rad = (mp.pi / 2) - yaw_rad
-        return adj_yaw_rad, cal_pitch_rad
+            yaw_rad = (mp.pi / 2) - yaw_rad
+        # Convert pitch to radians and calculate as deviation from vertical
+        pitch_rad = (mp.pi / 2) - radians(gimbal_pitch_deg)
+        roll_rad = radians(gimbal_roll_deg)
+
+        return yaw_rad, pitch_rad, roll_rad
+    
 
     def getBoundingPolygon(self, FOVh, FOVv):
         """
@@ -79,12 +97,11 @@ class HighAccuracyFOVCalculator:
 
         # Define camera rays based on field of view
         rays = [
-            Vector(-mp.tan(FOVv / 2), mp.tan(FOVh / 2), 1).normalize(),
-            Vector(-mp.tan(FOVv / 2), -mp.tan(FOVh / 2), 1).normalize(),  # Top right
-            Vector(mp.tan(FOVv / 2), -mp.tan(FOVh / 2), 1).normalize(),  # Top left
-            Vector(mp.tan(FOVv / 2), mp.tan(FOVh / 2), 1).normalize()  # Bottom left
+            Vector(-mp.tan(FOVv / 2), mp.tan(FOVh / 2), 1).normalize(),  # Flip horizontally
+            Vector(-mp.tan(FOVv / 2), -mp.tan(FOVh / 2), 1).normalize(),   # Flip horizontally
+            Vector(mp.tan(FOVv / 2), -mp.tan(FOVh / 2), 1).normalize(),  # Flip horizontally
+            Vector(mp.tan(FOVv / 2), mp.tan(FOVh / 2), 1).normalize()  # Flip horizontally
         ]
-
         # Rotate rays according to camera orientation
         rotated_vectors = self.rotateRays(rays)
 
@@ -92,15 +109,14 @@ class HighAccuracyFOVCalculator:
 
     def rotateRays(self, rays):
         # Calculate adjusted angles for gimbal and flight orientations
-        declination = find_declination(self.drone_altitude, self.camera_info['focal_length'], *self.drone_gps,
+        declination = find_declination(self.drone_altitude, self.camera_info['Focal_Length'], *self.drone_gps,
                                        self.datetime_original)
-        adj_yaw, adj_pitch = self.calculate_rads_from_angles(self.gimbal_orientation['yaw'],
-                                                             self.gimbal_orientation['pitch'], declination)
+        adj_yaw, adj_pitch, adj_roll = self.calculate_rads_from_angles(self.gimbal_orientation['yaw'],
+                                                             self.gimbal_orientation['pitch'],
+                                                             self.gimbal_orientation['roll'],
+                                                             declination)
 
-        # Create quaternion for combined adjustments
-        # Make sure to pass angles in the correct order based on your system's convention
-        q = quaternion.from_euler_angles(adj_yaw, adj_pitch, self.gimbal_orientation['roll'])
-        # q = quaternion.from_euler_angles(self.gimbal_orientation['roll'], adj_pitch, adj_yaw)
+        q = quaternion.from_euler_angles(adj_yaw, adj_pitch, adj_roll)
         # Normalize the quaternion
         q = q.normalized()
 
@@ -121,55 +137,55 @@ class HighAccuracyFOVCalculator:
                 new_altitude = get_altitude_from_open(latitude, longitude)
             if config.rel_altitude == 0.0:
                 new_altitude = config.abso_altitude
-            if new_altitude is None and not config.dtm_path and not config.global_elevation or config.rtk:
-                logger.warning(f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
+            if new_altitude and abs(new_altitude - config.rel_altitude) > 20:
                 new_altitude = config.rel_altitude
+            if new_altitude is None: # and not config.dtm_path or not config.global_elevation is False or config.rtk:
+                new_altitude = config.rel_altitude
+                if config.global_elevation is True or config.dtm_path:
+                    logger.opt(exception=False).warning(f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
 
             corrected_altitude = self._atmospheric_refraction_correction(new_altitude)
+
             elevation_bbox = HighAccuracyFOVCalculator.getRayGroundIntersections(rotated_vectors, Vector(0, 0, float(
                 corrected_altitude)))
             translated_bbox = find_geodetic_intersections(elevation_bbox, longitude, latitude)
-            # translated_bbox = translated_bbox[2:] + translated_bbox[:2]
-            if not translated_bbox:
-                logger.error("Failed to translate bbox to geographic coordinates.")
-                return None, None
-
-            # Check for altitude at each point if necessary and collect altitudes
+            drone_distance_to_polygon_center(translated_bbox, (utmx, utmy), corrected_altitude)
+            new_translated_bbox = translated_bbox
             if config.dtm_path:
-                altitudes = [get_altitude_at_point(*box[:2]) for box in translated_bbox]
+                altitudes = [get_altitude_at_point(*box[:2]) for box in new_translated_bbox]
                 if None in altitudes:
-                    logger.warning(f"Failed to get elevation at point for {config.im_file_name}.")
-                    return translate_to_wgs84(translated_bbox, longitude, latitude)
-
+                    logger.opt(exception=False).warning(f"Failed to get elevation for image {config.im_file_name}. See log for details.")
+                    return translate_to_wgs84(new_translated_bbox, longitude, latitude)
+            
                 # Calculate the ratios of distances to check the 5 times condition
-                distances = [sqrt((translated_bbox[(i + 1) % len(translated_bbox)][0] - box[0]) ** 2 +
-                                  (translated_bbox[(i + 1) % len(translated_bbox)][1] - box[1]) ** 2)
-                             for i, box in enumerate(translated_bbox)]
+                distances = [sqrt((new_translated_bbox[(i + 1) % len(new_translated_bbox)][0] - box[0]) ** 2 +
+                                  (new_translated_bbox[(i + 1) % len(new_translated_bbox)][1] - box[1]) ** 2)
+                             for i, box in enumerate(new_translated_bbox)]
                 for dist in distances:
                     if any(other_dist * 6 < dist for other_dist in distances if other_dist != dist):
-                        logger.warning(
+                        logger.opt(exception=False).warning(
                             f"One side of the polygon for {config.im_file_name} is at least 5 times longer than another.")
-                        return translate_to_wgs84(translated_bbox, longitude, latitude)
+                        return translate_to_wgs84(new_translated_bbox, longitude, latitude)
 
             if config.global_elevation is True:
-                trans_utmbox = [utm_to_latlon(box[0], box[1], zone_number, zone_letter) for box in translated_bbox]
+                trans_utmbox = [utm_to_latlon(box[0], box[1], zone_number, zone_letter) for box in new_translated_bbox]
                 altitudes = [get_altitude_from_open(*box[:2]) for box in trans_utmbox]
                 if None in altitudes:
-                    logger.warning(f"Failed to get elevation at point for {config.im_file_name}.")
-                    return translate_to_wgs84(translated_bbox, longitude, latitude)
+                    logger.opt(exception=False).warning(f"Failed to get elevation at point for {config.im_file_name}.")
+                    return translate_to_wgs84(new_translated_bbox, longitude, latitude)
 
                 # Calculate the ratios of distances to check the 5 times condition
-                distances = [sqrt((translated_bbox[(i + 1) % len(translated_bbox)][0] - box[0]) ** 2 +
-                                  (translated_bbox[(i + 1) % len(translated_bbox)][1] - box[1]) ** 2)
-                             for i, box in enumerate(translated_bbox)]
+                distances = [sqrt((new_translated_bbox[(i + 1) % len(new_translated_bbox)][0] - box[0]) ** 2 +
+                                  (new_translated_bbox[(i + 1) % len(new_translated_bbox)][1] - box[1]) ** 2)
+                             for i, box in enumerate(new_translated_bbox)]
                 for dist in distances:
                     if any(other_dist * 5 < dist for other_dist in distances if other_dist != dist):
-                        logger.warning(
+                        logger.opt(exception=False).warning(
                             f"One side of the polygon for {config.im_file_name} is at least 5 times longer than another.")
-                        return translate_to_wgs84(translated_bbox, longitude, latitude)
+                        return translate_to_wgs84(new_translated_bbox, longitude, latitude)
 
             # If no special conditions are met, process normally
-            return translate_to_wgs84(translated_bbox, longitude, latitude)
+            return translate_to_wgs84(new_translated_bbox, longitude, latitude)
 
         except Exception as e:
             logger.opt(exception=True).warning(f"Error in get_fov_bbox: {e}")
@@ -221,3 +237,38 @@ class HighAccuracyFOVCalculator:
 
     def _atmospheric_refraction_correction(self, altitude):
         return altitude + (altitude * 0.0001)
+
+
+def calculate_centroid(polygon_coords):
+    """Calculate the centroid of a polygon given its vertices in UTM coordinates."""
+    x_sum = 0
+    y_sum = 0
+    for (x, y) in polygon_coords:
+        x_sum += x
+        y_sum += y
+    centroid = (x_sum / len(polygon_coords), y_sum / len(polygon_coords))
+    return centroid
+
+def distance_3d(point1, point2):
+    """Calculate the 3D distance between two points in UTM coordinates."""
+    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
+
+def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitude):
+    """
+    Calculate the distance from a drone to the center of a polygon in UTM coordinates.
+    
+    Parameters:
+    - polygon_coords: List of tuples, each representing the (x, y) UTM coordinates of a polygon's vertex.
+    - drone_coords: Tuple representing the (x, y) UTM coordinates of the drone's location.
+    - drone_altitude: Float representing the drone's altitude in meters above the ground.
+    
+    Returns:
+    - Float: The distance from the drone to the centroid of the polygon.
+    """
+    # Calculate the centroid of the polygon
+    centroid = calculate_centroid(polygon_coords)
+    centroid_3d = (centroid[0], centroid[1], 0)
+    drone_position_3d = (drone_coords[0], drone_coords[1], drone_altitude)
+    config.update_center_distance(distance_3d(centroid_3d, drone_position_3d))
+    # Calculate and return the 3D distance
+    return

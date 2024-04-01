@@ -2,9 +2,10 @@
 # Author: Dean Hand
 # License: AGPL
 # Version: 1.0
+import Utils.config as config
 
 
-def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sensor_model, lens_FOVw, lens_FOVh):
+def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh):
     """
     Extract sensor, drone information, and other metadata from a single metadata entry.
 
@@ -36,10 +37,12 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sens
     image_width = int(data.get("EXIF:ImageWidth") or data.get("EXIF:ExifImageWidth"))
     image_height = int(data.get("EXIF:ImageHeight") or data.get("EXIF:ExifImageHeight"))
     focal_length = float(data.get("EXIF:FocalLength"))
+    MaxApertureValue = data.get("EXIF:MaxApertureValue")
 
     # Sensor model and make
     sensor_model = data.get("EXIF:Model", "default")  # Fallback to 'default' if not found
     rig_camera_idx = data.get("XMP:RigCameraIndex") or data.get('XMP:SensorIndex') or 5
+   
 
     # date/time of original image capture
     datetime_original = data.get("EXIF:DateTimeOriginal", "Unknown")
@@ -47,9 +50,27 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sens
     # Getting sensor dimensions
     if sensor_model == "M3M":
         sensor_model = str(rig_camera_idx)
-    sensor_width, sensor_height, drone_make, drone_model, lens_FOVw, lens_FOVh = (
+    drone_make, drone_model, camera_make, sensor_model, sensor_width, sensor_height, lens_FOVw, lens_FOVh = (
         sensor_dimensions.get(sensor_model, sensor_dimensions.get("default"))
     )
+    my_list = ["FC2103", "FC220", "FC300X", "FC200"]
+    if sensor_model in my_list:
+        sensor_model = drone_model + " " + sensor_model
+
+    drone_info = dict(DroneMake=drone_make, 
+                  DroneModel=drone_model, 
+                  CameraMake=camera_make, 
+                  SensorModel=sensor_model, 
+                  SensorWidth=sensor_width, 
+                  SensorHeight=sensor_height, 
+                  Lens_FOVw=lens_FOVw, 
+                  Lens_FOVh=lens_FOVh,
+                  FocalLength=focal_length,
+                  MaxApertureValue=MaxApertureValue)
+    config.update_drone_properties(drone_info)
+    # print("\ndrone_make", drone_make, "\ndrone_model", drone_model, "\ncamera_make", camera_make, "\nsensor_model", 
+    #       sensor_model, "\nsensor_width", sensor_width, "\nsensor_height", sensor_height, "\nlens_FOVw", lens_FOVw, "\nlens_FOVh", lens_FOVw)
+    # exit()
     # print("camera stuff and shit", sensor_width, sensor_height, drone_make, drone_model, lens_FOVw, lens_FOVh)
     if sensor_model and drone_make is None:
         drone_model = ""
@@ -79,6 +100,8 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sens
             DroneCoordinates=[Drone_Lon, Drone_Lat],
             Sensor_Width=sensor_width,
             Sensor_Height=sensor_height,
+            CameraMake=camera_make,
+            MaxApertureValue = MaxApertureValue,
             lens_FOVh1=lens_FOVh,
             lens_FOVw1=lens_FOVw,
             GSD=gsd
@@ -104,10 +127,13 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, sens
             DroneCoordinates=[Drone_Lon, Drone_Lat],
             Sensor_Width=sensor_width,
             Sensor_Height=sensor_height,
+            CameraMake=camera_make,
             Drone_Make=drone_make,
             Drone_Model=drone_model,
+            MaxApertureValue = MaxApertureValue,
             lens_FOV1h=lens_FOVh,
             lens_FOVw1=lens_FOVw,
             GSD=gsd
         )
+
     return properties

@@ -55,14 +55,15 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=None, def
     try:
         df = pd.read_csv(csv_filepath)  # Read the CSV file into a DataFrame
         for index, row in df.iterrows():  # Iterate through each row and populate the dictionary
+            drone_make = row["DroneMake"]
+            drone_model = row["DroneModel"]
+            camera_make = row["CameraMake"]
             sensor_model = row["SensorModel"]
             width = row["SensorWidth"]
             height = row["SensorHeight"]
-            drone_make = row["DroneMake"]
-            drone_model = row["DroneModel"]
             lens_FOVw = row["LensFOVw"]
             lens_FOVh = row["LensFOVh"]
-            sensor_dimensions[sensor_model] = (width, height, drone_make, drone_model, lens_FOVw, lens_FOVh)
+            sensor_dimensions[sensor_model] = (drone_make, drone_model, camera_make, sensor_model, width, height, lens_FOVw, lens_FOVh)
     except FileNotFoundError:
         logger.critical(f"Error: The file {csv_filepath} was not found.")
     except pd.errors.EmptyDataError:

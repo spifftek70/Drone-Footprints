@@ -27,22 +27,26 @@ class ElevationAdjuster:
                 0]
             return interpolated_elevation
         except Exception as e:
-            logger.warning(
+            logger.info(
                 f"Error calculating interpolated elevation: {e} for {config.im_file_name}. Switching to Default Altitudes.")
             return config.abso_altitude
 
 
 def load_elevation_data_and_crs():
     if config.dtm_path is not None:
-        with rasterio.open(config.dtm_path) as dsm:
-            elevation_data = dsm.read(1)
-            crs = dsm.crs  # Get the CRS directly
-            affine_transform = dsm.transform  # Get the affine transform
-            return elevation_data, crs, affine_transform
+        dsm = ''
+        crs = ''
+        src = ''
+        affine_transform = ''
+        with rasterio.open(config.dtm_path) as src:
+            dsm = src.read(1)
+            crs = src.crs  # Get the CRS directly
+            affine_transform = src.transform  # Get the affine transform
+        return dsm, crs, src, affine_transform
 
 
 def translate_geo_to_utm(drone_longitude, drone_latitude):
-    elevation_data, crs, affine_transform = load_elevation_data_and_crs()
+    elevation_data, crs, _, affine_transform = load_elevation_data_and_crs()
     adjuster = ElevationAdjuster(elevation_data, crs, affine_transform)
 
     # Initialize transformer to convert from geographic coordinates to the CRS of the raster
@@ -55,14 +59,14 @@ def translate_geo_to_utm(drone_longitude, drone_latitude):
 
 
 def get_altitude_at_point(x, y):
-    elevation_data, _, affine_transform = load_elevation_data_and_crs()
+    elevation_data, _, _, affine_transform = load_elevation_data_and_crs()
     row, col = rowcol(affine_transform, x, y)
     if 0 <= row < elevation_data.shape[0] and 0 <= col < elevation_data.shape[1]:
         elevation = elevation_data[row, col]
         new_altitude = config.abso_altitude - elevation
         return new_altitude
     else:
-        logger.warning(
+        logger.exception(
             f"Point ({x}, {y}) is outside the elevation data bounds for file {config.im_file_name}. Switching to default elevation.")
         return None
 
@@ -75,14 +79,13 @@ def get_altitude_from_open(lat, long):
         data = response.read().decode('utf-8')
         elevation = json.loads(data)['results'][0]['elevation']
         new_altitude = config.abso_altitude - elevation
-        # print(f"New Altitude: {new_altitude}", "Absolute Altitude: ", config.abso_altitude, "Elevation: ", elevation)
-        # exit()
+
         return new_altitude
     except HTTPError as err:
-        logger.warning(
+        logger.exception(
             f"Unable to Connect to OpenElevation for file {config.im_file_name}. Switching to Default Altitudes. Error: {err}")
         yy += 1
         if yy > 20:
-            logger.warning("Too many failures. Switching to default elevation.")
+            logger.opt(exception=True).info("Too many failures in this dataset. Switching to default elevation.")
             config.update_elevation(False)
         return None

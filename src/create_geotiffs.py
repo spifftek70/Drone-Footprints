@@ -7,44 +7,61 @@ from Utils.raster_utils import *
 from shapely.geometry import Polygon
 import os
 import cv2
+import Utils.config as config
 from Utils.geospatial_conversions import *
 from loguru import logger
+import lensfunpy
 
 
 def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
-    """
-    Sets the raster extents of an image by warping it to a specified polygon defined by coordinates.
-
-    Parameters:
-    - image_path: Path to the source image.
-    - dst_utf8_path: Destination path for the output GeoTIFF image.
-    - coordinate_array: Array of coordinates defining the target polygon.
-    """
-    # Create a Polygon object from the coordinate array
-    fixed_polygon = Polygon(coordinate_array)
-
-    # Open the image and convert it to a NumPy array
     try:
         jpeg_img = cv2.imread(image_path)
-        if jpeg_img.ndim == 2:  # Single band image
-            jpeg_img_array = cv2.cvtColor(jpeg_img, cv2.COLOR_BGR2GRAY)
-        elif jpeg_img.ndim == 3:  # Multiband image
-            jpeg_img_array = cv2.cvtColor(jpeg_img, cv2.COLOR_BGR2RGB)
-        else:
-            jpeg_img_array = cv2.cvtColor(jpeg_img, cv2.COLOR_BGR2RGBA)
-    except FileNotFoundError:
-        logger.opt(exception=True).warning("File not found: {image_path}")
-    except Exception as e:
-        logger.opt(exception=True).warning(f"Error opening or processing image: {e}")
+        if jpeg_img is None:
+            logger.warning(f"File not found: {image_path}")
+            return
+        fixed_polygon = Polygon(coordinate_array)
+        if config.lense_correction is True:
+            try:
+                focal_length = config.drone_properties['FocalLength']
+                distance = config.center_distance
+                cam_maker = config.drone_properties['CameraMake']
+                cam_model = config.drone_properties['SensorModel']
+                aperture = config.drone_properties['MaxApertureValue']
 
-    # Determine the number of bands based on the image array shape
-    if jpeg_img_array.ndim == 2:
-        num_bands = 1  # Single band image
-    elif jpeg_img_array.ndim == 3:
-        num_bands = jpeg_img_array.shape[2]  # Multiband image
-    else:
-        logger.critical(f"Error: Unexpected image array shape: {jpeg_img_array.shape}")
-    rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array)
+                # Load camera and lens from lensfun database
+                db = lensfunpy.Database()
+                cam = db.find_cameras(cam_maker, cam_model, True)[0]
+                lens = db.find_lenses(cam, cam_maker, cam_model, True)[0]
+
+                height, width = jpeg_img.shape[:2]
+                mod = lensfunpy.Modifier(lens, cam.crop_factor, width, height)
+                mod.initialize(focal_length, aperture, distance, pixel_format=np.uint8)
+
+                # Apply geometry distortion correction and obtain distortion maps
+                maps = mod.apply_geometry_distortion()
+                map_x = maps[:, :, 0]
+                map_y = maps[:, :, 1]
+
+                img_undistorted = cv2.remap(jpeg_img, map_x, map_y, interpolation=cv2.INTER_LANCZOS4)
+            except IndexError as e:
+                config.update_lense(False)
+                img_undistorted = np.array(jpeg_img)
+                logger.info(f"Cannot correct lens distortion. Camera properties not found in database.")
+                logger.exception(f"Index error: {e} for {image_path}")
+        else:
+            img_undistorted = np.array(jpeg_img)
+        if jpeg_img.ndim == 2:  # Single band image
+            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2GRAY)
+        elif jpeg_img.ndim == 3:  # Multiband image
+            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGB)
+        else:
+            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGBA)
+
+        rectify_and_warp_to_geotiff(adjImg, dst_utf8_path, fixed_polygon, coordinate_array)
+    except FileNotFoundError as e:
+        logger.exception(f"File not found: {image_path}. {e}")
+    except Exception as e:
+        logger.exception(f"Error opening or processing image: {e}")
 
 
 def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array):
