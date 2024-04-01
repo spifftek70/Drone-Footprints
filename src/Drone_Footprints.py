@@ -52,7 +52,7 @@ parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in mil
                     required=False)
 parser.add_argument("-t", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).",
                     required=False)
-parser.add_argument("-e", "--EPSG", type=int, help="Desired EPSG for output files (optional).",
+parser.add_argument("-e", "--EPSG", type=int, default=4326, help="Desired EPSG for output files (optional).",
                     required=False)
 parser.add_argument("-d", "--declination", choices=['y', 'n'], default='n',
                     help="Adjust for magnetic declination \"Y\" or \"N\" (optional).",
@@ -161,17 +161,19 @@ def main():
     user_args = dict(vars(args))
     args_list = []
     for arg, value in user_args.items():
-        args_list.append(f"     {Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {Color.BOLD}{value}{Color.END}")
+        if value != parser.get_default(arg):
+            args_list.append(f"     {Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {Color.BOLD}{value}{Color.END}")
 
     # Joining all the elements in the list into a single string with newline characters
     args_str = "\n".join(args_list)
     logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - \n{args_str}")
+    logger.exception(f"User arguments - {user_args}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
     epsg_pass, image_equalize = args.EPSG, args.image_equalize
     elevation_service, lense_correction = args.elevation_service, args.lense_correction
     dsm = args.DSM
-    declin = args.output_directory
+    declin = args.declination
     argcog = args.COG
     logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
     if epsg_pass is None:
