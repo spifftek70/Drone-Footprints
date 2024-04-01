@@ -45,16 +45,16 @@ def is_valid_file(arg):
 
 
 parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
-parser.add_argument("-o", "--dest", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
-parser.add_argument("-i", "--indir", type=is_valid_directory, help="Path to the input directory with images.",
+parser.add_argument("-o", "--output_directory", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
+parser.add_argument("-i", "--input_directory", type=is_valid_directory, help="Path to the input directory with images.",
                     required=True)
 parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
                     required=False)
 parser.add_argument("-t", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).",
                     required=False)
-parser.add_argument("-e", "--epsg", type=int, help="Desired EPSG for output files (optional).",
+parser.add_argument("-e", "--EPSG", type=int, help="Desired EPSG for output files (optional).",
                     required=False)
-parser.add_argument("-d", "--declin", choices=['y', 'n'], default='n',
+parser.add_argument("-d", "--declination", choices=['y', 'n'], default='n',
                     help="Adjust for magnetic declination \"Y\" or \"N\" (optional).",
                     required=False)
 parser.add_argument("-c", "--COG", choices=['y', 'n'], default='n',
@@ -68,7 +68,7 @@ parser.add_argument("-l", "--lense_correction", choices=['y', 'n'], default='y',
                     required=False)
 # Add mutually exclusive arguments
 group = parser.add_mutually_exclusive_group()
-group.add_argument("-v", "--dtm", type=is_valid_file, help="Path to DTM or DEM file (optional).",
+group.add_argument("-v", "--DSM", type=is_valid_file, help="Path to DSM file (optional).",
                    required=False)
 group.add_argument("-m", "--elevation_service", choices=['y', 'n'], default='n',
                    help="Use elevation services APIs \"Y\" or \"N\" (optional).",
@@ -76,14 +76,14 @@ group.add_argument("-m", "--elevation_service", choices=['y', 'n'], default='n',
 
 args = parser.parse_args()
 # Access the arguments
-if args.dtm:
+if args.DSM:
     print("Option 1 is activated.")
 elif args.elevation_service == 'y':
     print("Option 2 is activated.")
 else:
     pass
 
-outer_path = args.dest
+outer_path = args.output_directory
 log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
 log_path = Path(outer_path) / "logfiles" / log_file
 init_logger(log_path=log_path)
@@ -158,14 +158,20 @@ def main():
     """
     Main function to orchestrate the processing of drone imagery into GeoJSON and GeoTIFFs.
     """
-    user_args = json.dumps(vars(args), indent=4)
-    logger.info(f"User arguments - \n{user_args}")
-    indir, outdir = args.indir, args.dest
+    user_args = dict(vars(args))
+    args_list = []
+    for arg, value in user_args.items():
+        args_list.append(f"     {Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {Color.BOLD}{value}{Color.END}")
+
+    # Joining all the elements in the list into a single string with newline characters
+    args_str = "\n".join(args_list)
+    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - \n{args_str}")
+    indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-    epsg_pass, image_equalize = args.epsg, args.image_equalize
+    epsg_pass, image_equalize = args.EPSG, args.image_equalize
     elevation_service, lense_correction = args.elevation_service, args.lense_correction
-    dtm = args.dtm
-    declin = args.declin
+    dsm = args.DSM
+    declin = args.output_directory
     argcog = args.COG
     logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
     if epsg_pass is None:
@@ -183,8 +189,8 @@ def main():
         config.update_elevation(True)
     if lense_correction == 'n':
         config.update_lense(False)
-    if dtm:
-        config.update_dtm(dtm)
+    if dsm:
+        config.update_dtm(dsm)
     if image_equalize == 'y':
         config.update_equalize(True)
     files = get_image_files(indir)
