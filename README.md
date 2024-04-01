@@ -75,6 +75,8 @@ Extends processing time)
 `-z` - Improves local contrast, which can make details more visible (default is "n"). Not Required (Significantly
 extends processing time)
 
+`-l` - Applies lens distortion correction using [lensfun](https://lensfun.github.io) api (default is "y"). Not Required.
+
 :warning: _you can only select `-m` or `-v` but not both!_
 ----------------------------------------------------------------------------------------------------------------
 
