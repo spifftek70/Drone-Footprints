@@ -12,7 +12,8 @@ from sensor_data import extract_sensor_info
 from Utils.utils import Color
 from tqdm import tqdm
 from loguru import logger
-from Utils.config import update_file_name, update_abso_altitude, update_rel_altitude
+import Utils.config as config
+# from Utils.config import update_file_name, update_abso_altitude, update_rel_altitude
 
 
 # from pprint
@@ -32,8 +33,8 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     """
     feature_collection = {"type": "FeatureCollection", "features": []}
     line_coordinates = []
-    outer = tqdm(total=len(metadata), position=0, desc=Color.CYAN + 'Image Files')
-    pbar = tqdm(total=0, position=1, leave=False, bar_format='{desc}')
+    outer = tqdm(total=len(metadata), position=0, desc=Color.CYAN + 'Image Files', leave=False)  # Removed Color for simplicity
+    pbar = tqdm(total=len(metadata), position=1, leave=False, bar_format='{desc}')
     sensor_make = ""
     sensor_model = ""
     drone_make = ""
@@ -44,6 +45,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     lens_FOVw = None
     lens_FOVh = None
     datetime_original = ""
+    camera_make = ""
     i = 0
     file_Name = ""
     for data in metadata:
@@ -52,9 +54,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             pbar.set_description_str(Color.YELLOW + f'Current file: {file_Name}' + Color.END)
 
             # Extract detailed sensor and drone info for the current image
-            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, sensor_model, lens_FOVw,
-                                             lens_FOVh)
-
+            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh)
             re_altitude = float(properties['RelativeAltitude']) if 'RelativeAltitude' in properties else None,
             ab_altitude = float(properties['AbsoluteAltitude']) if 'AbsoluteAltitude' in properties else None,
             focal_length = float(properties['Focal_Length']) if 'Focal_Length' in properties else None,
@@ -79,10 +79,10 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             Sensor_Model = properties['Sensor_Model'] if 'Sensor_Model' in properties else None
             Sensor_index = properties['Sensor_index'] if 'Sensor_index' in properties else None
             i = i
-            file_Names = properties['file_name'] if 'file_name' in properties else None
-            update_file_name(file_Name)
-            update_abso_altitude(ab_altitude[0])
-            update_rel_altitude(re_altitude[0])
+            # file_Name = properties['file_name'] if 'file_name' in properties else None
+            config.update_file_name(file_Name)
+            config.update_abso_altitude(ab_altitude[0])
+            config.update_rel_altitude(re_altitude[0])
             image_width = int(properties['Image_Width'])
             image_height = int(properties['Image_Height'])
             # Calculate Field of View (FOV) or any other necessary geometric calculations
@@ -126,11 +126,11 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             outer.update(1)
 
         except TypeError as t:
-            logger.opt(exception=True).warning(f"Missing metadata key: {t} for image: {file_Name}")
+            logger.exception(f"Missing metadata key: {t} for image: {file_Name}")
         except KeyError as k:
-            logger.opt(exception=True).warning(f"Missing metadata key: {k} for image: {file_Name}")
+           logger.exception(f"Missing metadata key: {k} for image: {file_Name}")
         except ValueError as e:
-            logger.opt(exception=True).warning(f"Invalid value for metadata key: {e} for image: {file_Name}")
+            logger.exception(f"Invalid value for metadata key: {e} for image: {file_Name}")
         i = i + 1
     # Add lines to the GeoJSON feature collection if necessary
     if line_coordinates:
@@ -140,6 +140,6 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                              Sensor_Model=Sensor_Model, Sensor_Make=Sensor_Make)
         line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
         feature_collection["features"].insert(0, line_feature)
-    pbar.clear()
-    outer.clear()
+    pbar.close()
+    outer.close()
     return feature_collection, i

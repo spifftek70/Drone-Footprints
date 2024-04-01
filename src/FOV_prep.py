@@ -14,9 +14,9 @@ def calculate_fov(re_altitude, ab_altitude, focal_length, sensor_width, sensor_h
         'sensor_height': sensor_height,  # mm (Optional if not used in calculations)
         'image_width': image_width,  # pixels
         'image_height': image_height,  # pixels
-        'focal_length': focal_length,  # mm
+        'Focal_Length': focal_length,  # mm
         'lens_FOVw': lens_FOVwm,  # lens distortion in mm
-        'lens_FOVh': lens_FOVhm,  # lens distortion in mm
+        'lens_FOVh': lens_FOVhm  # lens distortion in mm
     }
     gimbal_orientation = {
         'roll': gimbal_roll_deg,  # Gimbal roll in degrees
