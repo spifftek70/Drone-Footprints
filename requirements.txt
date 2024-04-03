@@ -16,7 +16,7 @@ gps-time
 datetime~=5.4
 vector3d~=1.1.1
 scikit-image~=0.22.0
-setuptools~=68.2.0
+wheel~=0.43.0
 pandas~=2.1.4
 opencv-python~=4.9.0.80
 geopandas~=0.14.2
