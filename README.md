@@ -67,7 +67,7 @@ Python 3.6 and above
 
 `-m` - Path to a Digital Surface Model file to use for more accuracy. Not Required
 
-`-v` - Utilze [open_elevation.com](https://open_elevation.com) for more accuracy. (location dependent). Not Required (
+`-v` - Utilze [open_elevation.com](https://open-elevation.com) for more accuracy. (location dependent). Not Required (
 Extends processing time)
 
 `-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
