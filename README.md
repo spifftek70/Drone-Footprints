@@ -69,10 +69,10 @@ Python 3.6 and above
 
 `-e` - Desired EPSG for output GeoTiffs (default is `4326`) Not Required
 
-`-m` - Path to a Digital Surface Model file to use for more accuracy. Not Required
+`-v` - Path to a Digital Surface Model file to use for more accuracy. Not Required
 
-`-v` - Utilze [open_elevation.com](https://open-elevation.com) for more accuracy. (location dependent). Not Required (
-Extends processing time)
+`-m` - Utilze [open_elevation.com](https://open-elevation.com) for more accuracy but extends processing time (location dependent). Not Required (
+(default is "n")
 
 `-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
 
