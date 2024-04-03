@@ -93,7 +93,7 @@ python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/o
 ```
 
 ```
-python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62
+python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -t 4.62
 ```
 
 ```
