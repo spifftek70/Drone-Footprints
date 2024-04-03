@@ -19,13 +19,17 @@ output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON fi
 
 ## Installation
 
-- Ready-made gdal version 3.8.3 or later.
-  On Ubuntu, you can install as follows:
-
+### GDAL requirement
+#### On Ubuntu, you can install as follows a ready-made gdal (version 3.8.3 or later) :
 ```
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
 sudo apt-get install libgdal-dev
+```
+
+#### On Macos with brew
+```
+brew install gdal
 ```
 
 Installation via pip
