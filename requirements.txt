@@ -28,3 +28,4 @@ tqdm~=4.66.2
 loguru~=0.7.2
 GDAL[numpy]~=3.8.4
 sympy~=1.9.0
+lensfunpy==1.15.0
