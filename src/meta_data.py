@@ -10,11 +10,11 @@ from create_geotiffs import generate_geotiff
 from create_geojson import create_geojson_feature
 from sensor_data import extract_sensor_info
 from Utils.utils import Color
-from tqdm import tqdm
+# from tqdm import tqdm
 from loguru import logger
+from Utils.logger_config import *
 import Utils.config as config
-# from Utils.config import update_file_name, update_abso_altitude, update_rel_altitude
-
+import datetime
 
 # from pprint
 
@@ -35,31 +35,28 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     line_coordinates = []
     outer = tqdm(total=len(metadata), position=0, desc=Color.CYAN + 'Image Files', leave=False)  # Removed Color for simplicity
     pbar = tqdm(total=len(metadata), position=1, leave=False, bar_format='{desc}')
-    sensor_make = ""
-    sensor_model = ""
-    drone_make = ""
-    drone_model = ""
-    Sensor_index = ""
-    Sensor_Model = ""
-    Sensor_Make = ""
-    lens_FOVw = None
-    lens_FOVh = None
-    datetime_original = ""
-    camera_make = ""
+    line_feature = ""
     i = 0
     file_Name = ""
+    sensor_make = ""
+    camera_make = ""
+    sensor_model = ""
+    lens_FOVw = 0.0
+    lens_FOVh = 0.0
+    logger.info("Processing images for GeoTiff and GeoJSON creation.")
     for data in metadata:
         try:
-            file_Name = data.get("File:FileName")
+            file_Name = str(data.get("File:FileName"))
             pbar.set_description_str(Color.YELLOW + f'Current file: {file_Name}' + Color.END)
 
             # Extract detailed sensor and drone info for the current image
-            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh)
+            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, camera_make, sensor_model, lens_FOVw,
+                                             lens_FOVh)
             re_altitude = float(properties['RelativeAltitude']) if 'RelativeAltitude' in properties else None,
             ab_altitude = float(properties['AbsoluteAltitude']) if 'AbsoluteAltitude' in properties else None,
             focal_length = float(properties['Focal_Length']) if 'Focal_Length' in properties else None,
-            sensor_width = int(properties['Sensor_Width']) if 'Sensor_Width' in properties else None,
-            sensor_height = int(properties['Sensor_Height']) if 'Sensor_Height' in properties else None,
+            sensor_width = str(properties['Sensor_Width']) if 'Sensor_Width' in properties else None,
+            sensor_height = str(properties['Sensor_Height']) if 'Sensor_Height' in properties else None,
             gimbal_roll_deg = float(properties['GimbalRollDegree']) if 'GimbalRollDegree' in properties else None,
             gimbal_pitch_deg = float(properties['GimbalPitchDegree']) if 'GimbalPitchDegree' in properties else None,
             gimbal_yaw_deg = float(properties['GimbalYawDegree']) if 'GimbalYawDegree' in properties else None,
@@ -73,18 +70,18 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             lens_FOVw = properties['lens_FOVw1'] if 'lens_FOVw1' in properties else 1.0
             lens_FOVh = properties['lens_FOV1h'] if 'lens_FOV1h' in properties else 1.0
             datetime_original = properties['DateTimeOriginal'] if 'DateTimeOriginal' in properties else None,
-            drone_make = properties['Drone_Make'] if 'Drone_Make' in properties else None,
-            drone_model = properties['Drone_Model'] if 'Drone_Model' in properties else None,
-            Sensor_Make = properties['Sensor_Make'] if 'Sensor_Make' in properties else None,
-            Sensor_Model = properties['Sensor_Model'] if 'Sensor_Model' in properties else None
+            drone_make = str(properties['Drone_Make']) if 'Drone_Make' in properties else None,
+            drone_model = str(properties['Drone_Model']) if 'Drone_Model' in properties else None,
+            Sensor_Make = str(properties['Sensor_Make']) if 'Sensor_Make' in properties else None,
+            Sensor_Model = str(properties['Sensor_Model']) if 'Sensor_Model' in properties else None
             Sensor_index = properties['Sensor_index'] if 'Sensor_index' in properties else None
             i = i
             # file_Name = properties['file_name'] if 'file_name' in properties else None
             config.update_file_name(file_Name)
             config.update_abso_altitude(ab_altitude[0])
             config.update_rel_altitude(re_altitude[0])
-            image_width = int(properties['Image_Width'])
-            image_height = int(properties['Image_Height'])
+            image_width = int(properties['Image_Width']) if 'Image_Width' in properties else 1.0
+            image_height = int(properties['Image_Height']) if 'Image_Height' in properties else 1.0
             # Calculate Field of View (FOV) or any other necessary geometric calculations
             coord_array, polybox = calculate_fov(
                 re_altitude[0],
@@ -134,10 +131,10 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
         i = i + 1
     # Add lines to the GeoJSON feature collection if necessary
     if line_coordinates:
+        now = datetime.datetime.now()
+        process_date = f"{now.strftime('%Y-%m-%d %H-%M')}"
         line_geometry = dict(type="LineString", coordinates=line_coordinates)
-        mission_props = dict(date=datetime_original, sensor_make=sensor_make, sensor_model=sensor_model,
-                             drone_make=drone_make, drone_model=drone_model, Sensor_index=Sensor_index,
-                             Sensor_Model=Sensor_Model, Sensor_Make=Sensor_Make)
+        mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code, cog=config.cog)
         line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
         feature_collection["features"].insert(0, line_feature)
     pbar.close()

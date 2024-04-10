@@ -3,9 +3,11 @@
 # License: AGPL
 # Version: 1.0
 import Utils.config as config
-
+from loguru import logger
+from Utils.logger_config import *
 
 def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh):
+
     """
     Extract sensor, drone information, and other metadata from a single metadata entry.
 
@@ -38,40 +40,51 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
     image_height = int(data.get("EXIF:ImageHeight") or data.get("EXIF:ExifImageHeight"))
     focal_length = float(data.get("EXIF:FocalLength"))
     MaxApertureValue = data.get("EXIF:MaxApertureValue")
-
-    # Sensor model and make
-    sensor_model = data.get("EXIF:Model", "default")  # Fallback to 'default' if not found
-    rig_camera_idx = data.get("XMP:RigCameraIndex") or data.get('XMP:SensorIndex') or 5
-   
-
     # date/time of original image capture
     datetime_original = data.get("EXIF:DateTimeOriginal", "Unknown")
+    # Get sensor model and rig camera index from metadata
+    sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
+    rig_camera_idx = str(data.get("XMP:RigCameraIndex") or data.get('XMP:SensorIndex') or 'nan')
 
-    # Getting sensor dimensions
-    if sensor_model == "M3M":
-        sensor_model = str(rig_camera_idx)
-    drone_make, drone_model, camera_make, sensor_model, sensor_width, sensor_height, lens_FOVw, lens_FOVh = (
-        sensor_dimensions.get(sensor_model, sensor_dimensions.get("default"))
-    )
+    if sensor_model_data != "default":
+        # Prioritize direct match with sensor model and rig camera index
+        key = (sensor_model_data, rig_camera_idx)
+        sensor_info = sensor_dimensions.get(key)
+
+        # If no direct match, try just with sensor model (for cases without multiple entries)
+        if not sensor_info:
+            sensor_info = next(
+                (value for (model, idx), value in sensor_dimensions.items() if model == sensor_model_data), None)
+    else:
+        # Use default when sensor_model_data is 'default'
+        sensor_info = sensor_dimensions.get(("default", 'nan'))
+
+    # Ensure we have valid sensor_info; otherwise, log error or take necessary action
+    if sensor_info:
+        drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height, lens_FOVw, lens_FOVh = sensor_info
+    else:
+        logger.error(
+            f"No sensor information found for {im_file_name} with sensor model {sensor_model_data} and rig camera index {rig_camera_idx}. Using defaults.")
+        sensor_info = sensor_dimensions.get(("default", 'nan'))
+        drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height, lens_FOVw, lens_FOVh = sensor_info
+
+
     my_list = ["FC2103", "FC220", "FC300X", "FC200"]
     if sensor_model in my_list:
         sensor_model = drone_model + " " + sensor_model
 
-    drone_info = dict(DroneMake=drone_make, 
-                  DroneModel=drone_model, 
-                  CameraMake=camera_make, 
-                  SensorModel=sensor_model, 
-                  SensorWidth=sensor_width, 
-                  SensorHeight=sensor_height, 
-                  Lens_FOVw=lens_FOVw, 
-                  Lens_FOVh=lens_FOVh,
-                  FocalLength=focal_length,
-                  MaxApertureValue=MaxApertureValue)
+    drone_info = dict(DroneMake=drone_make,
+                      DroneModel=drone_model,
+                      CameraMake=camera_make,
+                      SensorModel=sensor_model,
+                      SensorWidth=sensor_width,
+                      SensorHeight=sensor_height,
+                      Lens_FOVw=lens_FOVw,
+                      Lens_FOVh=lens_FOVh,
+                      FocalLength=focal_length,
+                      MaxApertureValue=MaxApertureValue)
     config.update_drone_properties(drone_info)
-    # print("\ndrone_make", drone_make, "\ndrone_model", drone_model, "\ncamera_make", camera_make, "\nsensor_model", 
-    #       sensor_model, "\nsensor_width", sensor_width, "\nsensor_height", sensor_height, "\nlens_FOVw", lens_FOVw, "\nlens_FOVh", lens_FOVw)
-    # exit()
-    # print("camera stuff and shit", sensor_width, sensor_height, drone_make, drone_model, lens_FOVw, lens_FOVh)
+
     if sensor_model and drone_make is None:
         drone_model = ""
         drone_make = "Unknown Drone"
@@ -101,10 +114,11 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
             Sensor_Width=sensor_width,
             Sensor_Height=sensor_height,
             CameraMake=camera_make,
-            MaxApertureValue = MaxApertureValue,
+            MaxApertureValue=MaxApertureValue,
             lens_FOVh1=lens_FOVh,
             lens_FOVw1=lens_FOVw,
-            GSD=gsd
+            GSD=gsd,
+            epsgCode=config.epsg_code
         )
     else:
         properties = dict(
@@ -130,10 +144,11 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
             CameraMake=camera_make,
             Drone_Make=drone_make,
             Drone_Model=drone_model,
-            MaxApertureValue = MaxApertureValue,
+            MaxApertureValue=MaxApertureValue,
             lens_FOV1h=lens_FOVh,
             lens_FOVw1=lens_FOVw,
-            GSD=gsd
+            GSD=gsd,
+            epsgCode=config.epsg_code
         )
 
     return properties

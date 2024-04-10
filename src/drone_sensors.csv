@@ -1,33 +1,30 @@
-DroneMake,DroneModel,CameraMake,SensorModel,SensorWidth,SensorHeight,LensFOVw,LensFOVh
-DJI,Zenmuse P1,DJI,ZenmuseP1,35.9,24,1.0,1.0
-DJI,Zenmuse X7,DJI,FC6540,23.5,15.7,1.0,1.0
-DJI,Inspire 2,DJI,Zenmuse,23.5,15.7,1.0,1.0
-DJI,Inspire 2,DJI,Zenmuse X55,17.3,13,1.0,1.0
-DJI,Inspire 1,DJI,Zenmuse X5R,17.3,13,1.0,1.0
-DJI,Mavic 3 Pro,Hasselblad,L2D-20c,17.3,13,1.0,1.0
-DJI,Mavic 3E Zoom Lens,UNK,,6.4,4.8,1.0,1.0
-DJI,Mavic 3T Zoom Lens,UNK,,6.4,4.8,1.0,1.0
-DJI,Mavic 3T Thermal Lens,UNK,,7.68,6.144,1.0,1.0
-DJI,Mavic 3T Wide Lens,UNK,,6.4,4.8,1.0,1.0
-DJI,Mavic  3M Vision lens,UNK,,17.4,13,1.0,1.0
-DJI,Mavic 3 MS_G_CAMERA,M3M,1,5.2,3.9,1.0,1.0
-DJI,Mavic 3 MS_R_CAMERA,M3M,2,5.2,3.9,1.0,1.0
-DJI,Mavic 3 MS_RE_CAMERA,M3M,3,5.2,3.9,1.0,1.0
-DJI,Mavic 3 MS_NIR_CAMERA,M3M,4,5.2,3.9,1.0,1.0
-DJI,Mavic 3 MS_O_CAMERA,M3M,5,17.4,13,1.0,1.0
-DJI,DJI Air 2S,UNK,,13.2,8.8,1.0,1.0
-DJI,Mavic 2 Pro,Hasselblad,L1D-20c,13.2,8.8,0.98,1.02
-DJI,Mavic Pro,DJI,FC220,6.16,4.55,1.0,1.0
-DJI,Phantom 3 Pro,DJI,FC300X,6.16,4.62,1.0,1.0
-DJI,Phantom 4 Pro,DJI,FC6310,13.2,8.8,1.0,1.0
-DJI,Phantom 4 Advanced,DJI,WM331A,13.2,8.8,1.0,1.0
-DJI,Phantom 4 Pro v 2.0,UNK,,13.2,8.8,1.0,1.0
-DJI,Phantom 4 RTK,DJI,FC6310R,13.2,8.8,1.0,1.0
-DJI,Zenmuse X4S (Inspire 2),UNK,,13.2,8.8,1.0,1.0
-DJI,Mini Pro 3,UNK,,9.7,7.3,1.0,1.0
-DJI,Mavic Air 2,UNK,,6.4,4.8,1.0,1.0
-DJI,Mavic Air,DJI,FC2103,,,,
-DJI,Spark,UNK,,6.3,4.7,1.0,1.0
-DJI,Phantom Vision FC200,DJI,FC200,,,,
-Autel Robotics,EVO II,Autel,XT705,12.8,9.6,1.0,1.0
-GoPro,UNK,UNK,HERO4 Black,6.17,4.55,1.0,1.0
+DroneMake,DroneModel,CameraMake,SensorModel,RigCameraIndex,SensorWidth,SensorHeight,LensFOVw,LensFOVh
+DJI,Zenmuse P1,DJI,ZenmuseP1,,35.9,24,1.0,1.0
+DJI,Zenmuse X7,DJI,FC6540,,23.5,15.7,1.0,1.0
+DJI,Inspire 2,DJI,Zenmuse,,23.5,15.7,1.0,1.0
+DJI,Inspire 2,DJI,Zenmuse X55,,17.3,13,1.0,1.0
+DJI,Inspire 1,DJI,Zenmuse X5R,,17.3,13,1.0,1.0
+DJI,Mavic 3 Pro,Hasselblad,L2D-20c,,17.3,13,1.0,1.0
+DJI,Mavic 3E Zoom Lens,UNK,,,6.4,4.8,1.0,1.0
+DJI,Mavic 3T Zoom Lens,UNK,,,6.4,4.8,1.0,1.0
+DJI,Mavic 3T Thermal Lens,UNK,,,7.68,6.144,1.0,1.0
+DJI,Mavic 3T Wide Lens,UNK,,,6.4,4.8,1.0,1.0
+DJI,Mavic  3M Vision lens,UNK,,,17.4,13,1.0,1.0
+DJI,Mavic 3 MS,DJI,M3M,1,5.2,3.9,1.0,1.0
+DJI,Mavic 3 MS_O_CAMERA,DJI,M3M,5,17.4,13,1.0,1.0
+DJI,DJI Air 2S,UNK,,,13.2,8.8,1.0,1.0
+DJI,Mavic 2 Pro,Hasselblad,L1D-20c,,13.2,8.8,0.98,1.02
+DJI,Mavic Pro,DJI,FC220,,6.16,4.55,1.0,1.0
+DJI,Phantom 3 Pro,DJI,FC300X,,6.16,4.62,1.0,1.0
+DJI,Phantom 4 Pro,DJI,FC6310,,13.2,8.8,1.0,1.0
+DJI,Phantom 4 Advanced,DJI,WM331A,,13.2,8.8,1.0,1.0
+DJI,Phantom 4 Pro v 2.0,UNK,,,13.2,8.8,1.0,1.0
+DJI,Phantom 4 RTK,DJI,FC6310R,,13.2,8.8,1.0,1.0
+DJI,Zenmuse X4S (Inspire 2),UNK,,,13.2,8.8,1.0,1.0
+DJI,Mini Pro 3,UNK,,,9.7,7.3,1.0,1.0
+DJI,Mavic Air 2,UNK,,,6.4,4.8,1.0,1.0
+DJI,Mavic Air,DJI,FC2103,,0.0,0.0,0.0,0.0
+DJI,Spark,UNK,,,6.3,4.7,1.0,1.0
+DJI,Phantom Vision FC200,DJI,FC200,,0.0,0.0,0.0,0.0
+Autel Robotics,EVO II,Autel,XT705,,12.8,9.6,1.0,1.0
+GoPro,UNK,UNK,HERO4 Black,,6.17,4.55,1.0,1.0

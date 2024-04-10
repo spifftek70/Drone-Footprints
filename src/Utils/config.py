@@ -22,12 +22,13 @@ dsm = None
 drone_properties = None
 lense_correction = True
 center_distance = 0.0
+nodejs = False
 pbar = tqdm(total=0, position=1, bar_format='{desc}')
 crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
 
 def init():
-    global epsg_code, rtk, decl, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, rel_altitude, abso_altitude, dsm, drone_properties, center_distance, lense_correction
+    global epsg_code, rtk, decl, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, rel_altitude, abso_altitude, dsm, drone_properties, center_distance, lense_correction, nodejs
     decl = False
     epsg_code = 4326
     utm_zone = ""
@@ -45,6 +46,7 @@ def init():
     dsm = None
     drone_properties = None
     lense_correction = True
+    nodejs = False
     pbar = tqdm(total=0, position=1, bar_format='{desc}')
     crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
@@ -57,6 +59,11 @@ def update_epsg(a):
 def update_center_distance(a):
     global center_distance
     center_distance = a
+
+
+def update_nodejs(n):
+    global nodejs
+    nodejs = n
 
 
 def update_decl(b):
