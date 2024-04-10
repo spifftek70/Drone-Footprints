@@ -2,6 +2,9 @@
 from loguru import logger
 from tqdm import tqdm
 from pathlib import Path
+import json
+import sys
+import Utils.config as config
 
 script_path = Path(__file__).resolve()
 script_dir = script_path.parent
@@ -21,15 +24,27 @@ def init_logger(log_path=None):
     if current_log_path is None:
         raise ValueError("Log path must be provided and cannot be None.")
 
-
     logger.remove()  # Clear existing configuration
 
-    # Setup console logging specifically for lower-severity messages
-    # Using a condition function to explicitly filter out higher levels from console
-    logger.add(lambda msg: tqdm.write(msg, end=""), 
-               colorize=True, level="INFO",
-               filter=lambda record: record["level"].name in ["INFO", "SUCCESS", "WARNING"])
+    if config.nodejs is True:
+        logger.add(lambda msg: tqdm.write(msg, end=""),
+                   colorize=True, level="INFO", format="{time} {level} {message}",
+                   filter=lambda record: record["level"].name in ["INFO", "SUCCESS", "WARNING"])
 
-    # Setup file logging for all messages, including detailed traceback for DEBUG and above
-    logger.add(current_log_path, format="{time} | {level} | {message}",
-               level="DEBUG", backtrace=True, diagnose=True)
+        # logger.add(sys.stdout, format="{time} {level} {message}", level="INFO")
+
+    else:
+
+        logger.add(lambda msg: tqdm.write(msg, end=""),
+                   colorize=True, level="INFO",
+                   filter=lambda record: record["level"].name in ["INFO", "SUCCESS", "WARNING"])
+
+        # Setup file logging for all messages, including detailed traceback for DEBUG and above
+        logger.add(current_log_path, format="{time} | {level} | {message}",
+                   level="DEBUG", backtrace=True, diagnose=True)
+
+    logger.remove()  # Remove all other handlers to prevent interference
+    # Add a handler specifically for tqdm compatibility
+    logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True, diagnose=True)
+    # If logging to a file, add that handler as well
+    logger.add(log_path, format="{time} | {level} | {message}", backtrace=True, diagnose=True)

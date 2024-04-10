@@ -10,7 +10,7 @@ from scipy.ndimage import map_coordinates
 from urllib.request import urlopen
 from urllib.error import HTTPError
 import json
-from loguru import logger
+from Utils.logger_config import *
 import Utils.config as config
 
 
