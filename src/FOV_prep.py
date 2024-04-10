@@ -4,7 +4,7 @@
 # Version: 1.0
 
 from new_fov import HighAccuracyFOVCalculator
-
+from Utils.logger_config import *
 
 def calculate_fov(re_altitude, ab_altitude, focal_length, sensor_width, sensor_height, image_width, image_height,
                   gimbal_roll_deg, gimbal_pitch_deg, gimbal_yaw_deg, flight_roll_deg, flight_pitch_deg,
