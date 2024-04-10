@@ -7,10 +7,15 @@ from osgeo import gdal, osr
 import numpy as np
 import cv2 as cv
 from shapely.wkt import loads
-from Utils.utils import Color
-from loguru import logger
+from Utils.logger_config import *
 import Utils.config as config
 from skimage.exposure import equalize_adapthist
+from PIL import Image, ImageOps
+from pathlib import Path
+import math
+
+
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 
 
 def warp_image_to_polygon(img_arry, polygon, coordinate_array):
@@ -208,3 +213,57 @@ def warp_ds(dst_utf8_path, ds):
         vs = gdal.Warp(dst_utf8_path, vrt_ds, format='GTiff', options=warp_options, dstSRS=srs.ExportToWkt())
         # Clean up to release resources
         del vrt_ds, ds, vs
+
+
+def calculate_grid(num_images):
+    """
+    Calculates grid dimensions (rows, columns) for a given number of images.
+    Tries to keep the grid as square as possible.
+    """
+    cols = math.ceil(math.sqrt(num_images))
+    rows = math.ceil(num_images / cols)
+    return rows, cols
+
+
+def create_mosaic(directory, output_base_path, mosaic_size=(400, 350), border_size=1, border_color='black'):
+    images_paths = [p for p in Path(directory).iterdir() if p.suffix.lower() in IMAGE_EXTENSIONS]
+    num_images = len(images_paths)
+    if num_images == 0:
+        return
+
+    images_per_row = math.ceil(math.sqrt(num_images))
+    images_per_column = math.ceil(num_images / images_per_row)
+
+    tile_width = mosaic_size[0] // images_per_row
+    tile_height = mosaic_size[1] // images_per_column
+
+    mosaic_image = Image.new('RGB', mosaic_size)
+    x_offset, y_offset = 0, 0
+
+    for img_path in images_paths:
+        img = Image.open(img_path)
+        img = img.convert('RGB')  # Convert image to 'L' mode
+
+        # Always scale based on the tile height to image height ratio
+        scale_factor = tile_height / img.height
+
+        new_size = (int(img.width * scale_factor), int(img.height * scale_factor))
+        img_resized = img.resize(new_size, Image.Resampling.LANCZOS)
+
+        # Add a border to the image
+        img_resized = ImageOps.expand(img_resized, border=border_size, fill=border_color)
+
+        x_pad = (tile_width - img_resized.width) // 2
+
+        mosaic_image.paste(img_resized, (x_offset + x_pad, y_offset))
+
+        x_offset += tile_width
+        if x_offset >= mosaic_size[0]:
+            x_offset = 0
+            y_offset += tile_height
+
+    # Adjusting output path to ensure it points to the correct subdirectory and file
+    output_path = Path(output_base_path) / "mosaic.jpg"
+    output_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the mosaic directory exists
+
+    mosaic_image.save(output_path, format='JPEG')

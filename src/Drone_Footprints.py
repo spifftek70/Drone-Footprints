@@ -11,13 +11,12 @@ import exiftool
 import geojson
 from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
-from loguru import logger
-from Utils.logger_config import init_logger
+from Utils.logger_config import *
 import warnings
-import json
+from Utils.raster_utils import create_mosaic
+import Utils.config as config
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
-import Utils.config as config
 
 prelog = []
 
@@ -45,7 +44,8 @@ def is_valid_file(arg):
 
 
 parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
-parser.add_argument("-o", "--output_directory", help="Path to the output directory for GeoJSON and GeoTIFFs.", required=True)
+parser.add_argument("-o", "--output_directory", help="Path to the output directory for GeoJSON and GeoTIFFs.",
+                    required=True)
 parser.add_argument("-i", "--input_directory", type=is_valid_directory, help="Path to the input directory with images.",
                     required=True)
 parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
@@ -66,29 +66,36 @@ parser.add_argument("-z", "--image_equalize", choices=['y', 'n'], default='n',
 parser.add_argument("-l", "--lense_correction", choices=['y', 'n'], default='y',
                     help="Apply lens distortion correction? \"Y\" or \"N\" (optional).",
                     required=False)
+parser.add_argument("-n", "--nodejs", choices=['y', 'n'], default='n',
+                    help="Cmd from nodejs? \"Y\" or \"N\" (optional).",
+                    required=False)
 # Add mutually exclusive arguments
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-v", "--DSM", type=is_valid_file, help="Path to DSM file (optional).",
-                   required=False)
+                   default=None, required=False)
 group.add_argument("-m", "--elevation_service", choices=['y', 'n'], default='n',
                    help="Use elevation services APIs \"Y\" or \"N\" (optional).",
                    required=False)
 
 args = parser.parse_args()
-# Access the arguments
-if args.DSM:
-    print("Option 1 is activated.")
-elif args.elevation_service == 'y':
-    print("Option 2 is activated.")
-else:
-    pass
-
 outer_path = args.output_directory
 log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
 log_path = Path(outer_path) / "logfiles" / log_file
+if args.nodejs == 'y':
+    config.update_nodejs(True)
 init_logger(log_path=log_path)
 for x in prelog:
-    logger.opt(exception=True).warning(f"{x}")
+    logger.warning(f"{x}")
+
+# Access the arguments
+if args.DSM:
+    pass
+elif args.elevation_service == 'y':
+    pass
+elif args.DSM:
+    logger.exception("")
+else:
+    pass
 
 
 def get_image_files(directory):
@@ -167,7 +174,7 @@ def main():
     # Joining all the elements in the list into a single string with newline characters
     args_str = "\n".join(args_list)
     logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - \n{args_str}")
-    logger.exception(f"User arguments - {user_args}")
+    # logger.exception(f"User arguments - {user_args}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
     epsg_pass, image_equalize = args.EPSG, args.image_equalize
@@ -175,6 +182,7 @@ def main():
     dsm = args.DSM
     declin = args.declination
     argcog = args.COG
+    nodejs = args.nodejs
     logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
     if epsg_pass is None:
         config.update_epsg(4326)
@@ -223,6 +231,11 @@ def main():
         )
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
     write_geojson_file(geojson_file, geojson_dir, feature_collection)
+    if nodejs:
+        mosaic_path = Path(outdir) / "mosaic"
+        mosaic_path.mkdir(parents=True, exist_ok=True)
+        create_mosaic(indir, mosaic_path)
+
     if config.cog is True:
         geo_type = "Cloud Optimized"
     else:
