@@ -4,48 +4,63 @@
 # Version: 1.0
 
 from Utils.raster_utils import *
-from Utils.utils import Color
 from shapely.geometry import Polygon
-from PIL import Image
-import numpy as np
 import os
+import cv2
+import Utils.config as config
+from Utils.logger_config import *
+import lensfunpy
 
 
 def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
-    """
-    Sets the raster extents of an image by warping it to a specified polygon defined by coordinates.
-
-    Parameters:
-    - image_path: Path to the source image.
-    - dst_utf8_path: Destination path for the output GeoTIFF image.
-    - coordinate_array: Array of coordinates defining the target polygon.
-    """
-    # Create a Polygon object from the coordinate array
-    fixed_polygon = Polygon(coordinate_array)
-
-    # Open the image and convert it to a NumPy array
     try:
-        jpeg_img = Image.open(image_path)
-        jpeg_img_array = np.array(jpeg_img)
-    except FileNotFoundError:
-        print(Color.RED + f"File not found: {image_path}" + Color.END)
-        return
-    except Exception as e:
-        print(Color.RED + f"Error opening or processing image: {e}" + Color.END)
-        return
+        jpeg_img = cv2.imread(image_path)
+        if jpeg_img is None:
+            logger.warning(f"File not found: {image_path}")
+            return
+        fixed_polygon = Polygon(coordinate_array)
+        if config.lense_correction is True:
+            try:
+                focal_length = config.drone_properties['FocalLength']
+                distance = config.center_distance
+                cam_maker = config.drone_properties['CameraMake']
+                cam_model = config.drone_properties['SensorModel']
+                aperture = config.drone_properties['MaxApertureValue']
 
-    # Determine the number of bands based on the image array shape
-    if jpeg_img_array.ndim == 3:
-        if jpeg_img_array.shape[2] == 3:  # RGB
-            num_bands = 3
-        elif jpeg_img_array.shape[2] == 4:  # RGBA
-            num_bands = 4
+                # Load camera and lens from lensfun database
+                db = lensfunpy.Database()
+                cam = db.find_cameras(cam_maker, cam_model, True)[0]
+                lens = db.find_lenses(cam, cam_maker, cam_model, True)[0]
+
+                height, width = jpeg_img.shape[:2]
+                mod = lensfunpy.Modifier(lens, cam.crop_factor, width, height)
+                mod.initialize(focal_length, aperture, distance, pixel_format=np.uint8)
+
+                # Apply geometry distortion correction and obtain distortion maps
+                maps = mod.apply_geometry_distortion()
+                map_x = maps[:, :, 0]
+                map_y = maps[:, :, 1]
+
+                img_undistorted = cv2.remap(jpeg_img, map_x, map_y, interpolation=cv2.INTER_LANCZOS4)
+            except IndexError as e:
+                config.update_lense(False)
+                img_undistorted = np.array(jpeg_img)
+                logger.info(f"Cannot correct lens distortion. Camera properties not found in database.")
+                logger.exception(f"Index error: {e} for {image_path}")
         else:
-            raise ValueError("Unsupported image format. Image must be RGB or RGBA.")
-    else:
-        raise ValueError("Unsupported image format. Image must be RGB or RGBA.")
+            img_undistorted = np.array(jpeg_img)
+        if jpeg_img.ndim == 2:  # Single band image
+            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2GRAY)
+        elif jpeg_img.ndim == 3:  # Multiband image
+            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGB)
+        else:
+            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGBA)
 
-    rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array)
+        rectify_and_warp_to_geotiff(adjImg, dst_utf8_path, fixed_polygon, coordinate_array)
+    except FileNotFoundError as e:
+        logger.exception(f"File not found: {image_path}. {e}")
+    except Exception as e:
+        logger.exception(f"Error opening or processing image: {e}")
 
 
 def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array):
@@ -65,19 +80,32 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, co
     # Turn off GDAL warnings
     os.environ['CPL_LOG'] = '/dev/null'
     os.environ['GDAL_DATA'] = os.getenv('GDAL_DATA', '/usr/share/gdal')
+    gdal.DontUseExceptions()
     gdal.SetConfigOption('CPL_DEBUG', 'OFF')
 
     try:
         georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
         dsArray = array2ds(georef_image_array, polygon_wkt)
     except Exception as e:
-        print(Color.RED + f"Error during warping or dataset creation: {e}" + Color.END)
-        return
+        logger.opt(exception=True).warning(f"Error during warping or dataset creation: {e}")
 
     # Warp the GDAL dataset to the destination path
     try:
         warp_ds(dst_utf8_path, dsArray)
     except Exception as e:
-        print(Color.RED + f"Error writing GeoTIFF: {e}" + Color.END)
-        return
+        logger.opt(exception=True).warning(f"Error writing GeoTIFF: {e}")
 
+
+def generate_geotiff(image_path, geotiff_file, coord_array):
+    """
+    Generate a GeoTIFF file for a single image.
+
+    Args:
+        image_path (str): The path to the original image file.
+        geotiff_file (Path): The path where the GeoTIFF should be saved.
+        coord_array (list): A list of coordinate pairs defining the image's footprint.
+    """
+    try:
+        set_raster_extents(image_path, geotiff_file, coord_array)
+    except ValueError as e:
+        logger.opt(exception=True).warning(str(e))

@@ -8,8 +8,8 @@ The purpose of this application is to accurately calculate the geographic footpr
 Initially, it extracts specific metadata from the drone image files to determine each image's Field of View (FOV).
 Following this, the application performs a series of calculations to establish the geospatial reference of each image.
 Subsequently, it adjusts the image to align accurately with the Earth's surface within that FOV, ensuring precise
-geolocation without the need for stitching images together. This results in a remarkably efficient process.
-The final output includes a geo-rectified GeoTiff image file, accompanied by a GeoJSON file detailing:
+geolocation without the need for stitching images together. This results in a remarkably efficient process. The final
+output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON file detailing:
 
 - The Drone's Flight Path (as a LineString),
 - The Drone's Location at the moment the photo was taken (as a Point),
@@ -19,13 +19,17 @@ The final output includes a geo-rectified GeoTiff image file, accompanied by a G
 
 ## Installation
 
-- Ready-made gdal version 3.8.3 or later.
-  On Ubuntu, you can install as follows:
-
+### GDAL requirement
+#### On Ubuntu, you can install as follows a ready-made gdal (version 3.8.3 or later) :
 ```
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
 sudo apt-get install libgdal-dev
+```
+
+#### On Macos with brew
+```
+brew install gdal
 ```
 
 Installation via pip
@@ -33,17 +37,17 @@ Installation via pip
 First, you probably want to install into a virtual environment or similar, for example:
 
 ```
-python3.10 -m venv env # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
-source env/bin/activate
+python3 -m venv .venv # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
+source .venv/bin/activate
 ```
 
 The we install using the requirements list as follows:
 
 ```
-pip install -r requirements.txt
+pip install --no-cache-dir --force-reinstall -r requirements.txt  # this current version of GDAL demands the extra tags
 ```
 
-## Requirements
+### Requirements
 
 Python 3.6 and above
 
@@ -53,14 +57,31 @@ Python 3.6 and above
 
 ### Arguments
 
-`-i` - The Default root folder for the mission you wish to process. Required
+`-i` - The Default root folder path for the mission you wish to process. Required
 
-`-o` - The output directory for the GeoJSON file and GeoTiffs. Required
+`-o` - The output directory path for the GeoJSON file and GeoTiffs. Required
 
-`-w` - Sensor Width (default is 13.2) Not Required (Check your Drones Specs for information)
+`-w` - Sensor Width (default is 13.2), Not Required (Check your Drones Specs for information)
 
-`-d` - Sensor Height (default is 8.8) Not Required (Check your Drones Specs for information)
+`-t` - Sensor Height (default is 8.8), Not Required (Check your Drones Specs for information)
 
+`-d` - Magnetic Declination (default is "n"), Not Required.
+
+`-e` - Desired EPSG for output GeoTiffs (default is `4326`) Not Required
+
+`-v` - Path to a Digital Surface Model file to use for more accuracy. Not Required
+
+`-m` - Utilze [open_elevation.com](https://open-elevation.com) for more accuracy but extends processing time (location dependent). Not Required (
+(default is "n")
+
+`-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
+
+`-z` - Improves local contrast, which can make details more visible (default is "n"). Not Required (Significantly
+extends processing time)
+
+`-l` - Applies lens distortion correction using [lensfun](https://lensfun.github.io) api (default is "y"). Not Required. 
+
+:warning: _you can only select `-m` or `-v` but not both!_
 ----------------------------------------------------------------------------------------------------------------
 
 ### Example Commands
@@ -72,12 +93,22 @@ python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/o
 ```
 
 ```
-python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62
+python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -t 4.62
+```
+
+```
+python Drone_Footprints.py -i "/Path/To/Dataset3/images" -o "/Path/To/Dataset3/output" -e 3857
+```
+
+```
+python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/output" -e 3857 -c n
 ```
 
 ----------------------------------------------------------------------------------------------------------------
 
-### :warning: The accuracy of this process depends highly on a number of factors.
+### :warning: Tips for the most accurate results:
+
+## Preflight
 
 1. IMU calibration - Do this once a month
 2. Prior to each mission:
@@ -87,8 +118,12 @@ python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/o
 3. Shooting angle - for best results, select `Parallel to Main Path`
 4. Gimbal Pitch Angle - for best results, capture at NADIR (aka -90° aka straight down)
 5. Wind - Plays havoc on your drone's telemetry, so plan your missions accordingly
+6. Immediately after take-off, go STRAIGHT UP. Take a photo immiedately above the homepoint to establish an
+   elevation/altitude reference point
 
-### :memo: Sort into Datasets
+### Preprocessing
+
+#### Sort into Datasets
 
 It is highly recommended that you sort the images you want processed into corresponding datasets
 
@@ -101,7 +136,15 @@ It is highly recommended that you sort the images you want processed into corres
 │   ├── images
 ``````
 
-### Outputs locations
+----------------------------------------------------------------------------------------------------------------
+
+## Postprocessing
+
+- If each image appears to be off-angle by a few degrees, it could be magnetic declination. Rerun them back through, but
+  change the `-d` flag and see if that fixes the issue.
+  Sometimes electro-magnetic fields can mess witht he aircrafts compass.
+
+#### Outputs locations
 
 It is a good practice to set your output folder `-o` location within your flight mission folder as shown in
 [Example Commands](#example-commands), but it is not required.
@@ -113,6 +156,8 @@ It is a good practice to set your output folder `-o` location within your flight
 │   │   ├── image1.tif
 │   ├── geojsons
 │   │   ├── M_2024-02-06_11-16.json
+│   ├── logfiles
+│   │   ├── L_M_2024-03-21_13-49.log
 ``````
 
 Geojson name is constructed using the date/time of processing like so:
@@ -123,27 +168,34 @@ Geojson name is constructed using the date/time of processing like so:
 
 ----------------------------------------------------------------------------------------------------------------
 
-## :boom: Future Builds
+## :boom: Future Works
 
 ### Sensor Size checks
 
-There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that
-information becomes available.
+- There still remains many empty cells in  [drone_sensors.csv](src%2Fdrone_sensors.csv), but will update it as that
+  information becomes available.
+- Addition sensor and platform compatibilities
+
+----------------------------------------------------------------------------------------------------------------
+
+## :star: Sample datatsets
+
+### Raw zipped Datasets
+
+- <a href="https://drive.google.com/uc?export=download&id=15WzT_V9unsGuAp_I2M4PaBOkFC2unkq_" download>dataset 1</a>
+- <a href="https://drive.google.com/uc?export=download&id=15UVtXf0tpiCSDObSIc62UPv0Kabq_5Ks" download>dataset 2</a>
+- <a href="https://drive.google.com/uc?export=download&id=15UivtQ-YccOu4GXBrb7BtEvaeLi-JwW7" download>dataset 3</a>
+- <a href="https://drive.google.com/uc?export=download&id=15U6Uvwv2c1s4MeIhNIwW6mPMW4xdwOnO" download>dataset 4</a>
+- <a href="https://drive.google.com/uc?export=download&id=15P_G8sRB2AssxfrWul4VAyyBZpRIT2Ys" download>dataset 5</a>
+- <a href="https://drive.google.com/uc?export=download&id=15RICP1BA8HvVUVMd4TXiOQ3fswzwMmkY" download>dataset 6</a>
 
 ----------------------------------------------------------------------------------------------------------------
 
 ## :star: Sample Outputs
 
-### Sample Dataset
-
-- [Mesa 02-04-2024](https://drive.google.com/drive/folders/16BR0h04ATS6uYavgXros031j8kfbCZJp?usp=share_link)
-- [mesa_5_mar](https://drive.google.com/drive/folders/1cnvCM1qGLrU0Ivv3Me6rtacP_k7GnaNl?usp=share_link)
-- [mesa_mar_03](https://drive.google.com/drive/folders/1gUj9gP-946S5IdnwBYl7Y4B8OqeNqI5G?usp=share_link)
-- [mesa_mar_04](https://drive.google.com/drive/folders/1u_ZHJbda2PsAxeKa4onBZP9kdABzdn2G?usp=share_link)
-
 ### Sample JSON Output
 
-[M_2024-02-04_07-03.json](samples%2Fgeojson%2FM_2024-02-04_07-03.json)
+- [M_2024-02-04_07-03.json](samples%2Fgeojson%2FM_2024-02-04_07-03.json)
 
 ### Sample GeoTIFFs
 
@@ -156,6 +208,7 @@ information becomes available.
 
 <img src="samples%2Fscreenshots%2Fscreenshot1.png" alt="drawing" width="600"/>
 <img src="samples%2Fscreenshots%2Fscreenshot2.png" alt="drawing" width="600"/>
+<img src="samples%2Fscreenshots%2Fsingle_geotiff_compare.gif" alt="drawing" width="600"/>
 
 [![IMAGE ALT TEXT HERE](samples%2Fscreenshots%2Fezgif-2-5968847bb5.gif)](https://youtu.be/eaPfwUOpPlo)
 
@@ -165,16 +218,20 @@ information becomes available.
 
 Tested and works with:
 
-- Phantom 4 Series
+- Phantom 3 & 4 Series
 - Mavic 2 Series
+- Mavic 3 Multispectral
 - EVO II
+
+----------------------------------------------------------------------------------------------------------------
 
 ## known Issues
 
-1. Not currently working with older drones (i.e. Phantom 3 Series). The differences in
-   how telemetry is processed and translated into metadata is.... troublesome.
+1. Might not work with some Drones due to difference in metadata keys/values. Older collections may not work for the
+   same reason.
 2. This accuracy of this process is highly dependent on the accuracy of the drone's telemetry. Like all compasses, the
    drone's compass is highly susceptible to electromagnetic interference. Therefore, Datasets collected in areas of high
    magnetic interference (i.e. power lines, large metal structures, etc) will have a higher margin of error.
+3. Fisheye lenses are impossible to completely compensate for. Sorry.
 
 ----------------------------------------------------------------------------------------------------------------
