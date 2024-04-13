@@ -4,7 +4,7 @@
 # Version: 1.0
 import Utils.config as config
 from loguru import logger
-from Utils.logger_config import *
+# from Utils.logger_config import *
 
 def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh):
 
