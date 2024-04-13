@@ -1,7 +1,7 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility.
 
 > Author: Dean Hand \
-> Date Created: 03/07/2020 \
+> Date Created: 09/07/2019 \
 > Name: Drone_Footprints.py
 
 The purpose of this application is to accurately calculate the geographic footprints of individual drone images.
@@ -19,13 +19,17 @@ output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON fi
 
 ## Installation
 
-- Ready-made gdal version 3.8.3 or later.
-  On Ubuntu, you can install as follows:
-
+### GDAL requirement
+#### On Ubuntu, you can install as follows a ready-made gdal (version 3.8.3 or later) :
 ```
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 sudo apt-get update
 sudo apt-get install libgdal-dev
+```
+
+#### On Macos with brew
+```
+brew install gdal
 ```
 
 Installation via pip
@@ -65,10 +69,10 @@ Python 3.6 and above
 
 `-e` - Desired EPSG for output GeoTiffs (default is `4326`) Not Required
 
-`-m` - Path to a Digital Surface Model file to use for more accuracy. Not Required
+`-v` - Path to a Digital Surface Model file to use for more accuracy. Not Required
 
-`-v` - Utilze [open_elevation.com](https://open_elevation.com) for more accuracy. (location dependent). Not Required (
-Extends processing time)
+`-m` - Utilze [open_elevation.com](https://open-elevation.com) for more accuracy but extends processing time (location dependent). Not Required (
+(default is "n")
 
 `-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
 
@@ -89,7 +93,7 @@ python Drone_Footprints.py -i '/Path/To/Dataset1/images' -o '/Path/To/Dataset1/o
 ```
 
 ```
-python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -d 4.62
+python Drone_Footprints.py -i "/Path/To/Dataset2/images" -o "/Path/To/Dataset2/output" -w 6.16 -t 4.62
 ```
 
 ```
