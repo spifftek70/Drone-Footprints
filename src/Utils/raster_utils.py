@@ -2,12 +2,20 @@
 #  Author: Dean Hand
 #  License: AGPL
 #  Version: 1.0
-
-from osgeo import gdal, osr
+import os
+import sys
+from contextlib import contextmanager
+import rasterio
+from rasterio.transform import from_bounds
+from rasterio.enums import ColorInterp
+from rasterio.warp import calculate_default_transform, reproject, Resampling
+from rio_cogeo.cogeo import cog_translate
+from rio_cogeo.profiles import cog_profiles
 import numpy as np
 import cv2 as cv
 from shapely.wkt import loads
-from Utils.logger_config import *
+from loguru import logger
+# from Utils.logger_config import *
 import Utils.config as config
 from skimage.exposure import equalize_adapthist
 from PIL import Image, ImageOps
@@ -113,7 +121,7 @@ def gps_to_pixel(gps_coord, x_min, y_max, resolution_x, resolution_y):
 
 def array2ds(cv2_array, polygon_wkt):
     """
-    Converts an OpenCV image array to a GDAL dataset with geospatial data.
+    Converts an OpenCV image array to a rasterio dataset with geospatial data.
 
     Parameters:
     - cv2_array: The OpenCV image array to convert.
@@ -121,7 +129,7 @@ def array2ds(cv2_array, polygon_wkt):
     - epsg_code: EPSG code for the spatial reference system (default: 4326 for WGS84).
 
     Returns:
-    - GDAL dataset object with the image and geospatial data.
+    - rasterio dataset object with the image and geospatial data.
     """
     # Check input parameters
     if not isinstance(cv2_array, np.ndarray):
@@ -141,52 +149,53 @@ def array2ds(cv2_array, polygon_wkt):
         height, width = cv2_array.shape
         bands = 1
 
-    pixel_size_x = (maxx - minx) / width
-    pixel_size_y = (maxy - miny) / height
-
-    # Determine GDAL data type based on cv2_array data type
-    gdal.DontUseExceptions()
+    # Determine rasterio data type based on cv2_array data type
     if cv2_array.dtype == np.uint8:
-        gdal_dtype = gdal.GDT_Byte
+        dtype = rasterio.uint8
     elif cv2_array.dtype == np.int16:
-        gdal_dtype = gdal.GDT_Int16
+        dtype = rasterio.int16
     elif cv2_array.dtype == np.int32:
-        gdal_dtype = gdal.GDT_Int32
+        dtype = rasterio.int32
     elif cv2_array.dtype == np.float32:
-        gdal_dtype = gdal.GDT_Float32
+        dtype = rasterio.float32
     elif cv2_array.dtype == np.float64:
-        gdal_dtype = gdal.GDT_Float64
+        dtype = rasterio.float64
     else:
         logger.opt(exception=True).warning(f"Unsupported data type: {str(cv2_array.dtype)}")
-        # print(ValueError("Unsupported data type: " + str(cv2_array.dtype))
 
-    # Create and configure the GDAL dataset
-    driver = gdal.GetDriverByName("MEM")
-    if config.cog is True:
-        gdal.SetConfigOption("COMPRESS_OVERVIEW", "DEFLATE")
-    ds = driver.Create("", width, height, bands, gdal_dtype)
-    if config.cog is True:
-        ds.BuildOverviews("AVERAGE", [2, 4, 8, 16, 32, 64, 128, 256])
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(config.epsg_code)
-    ds.SetProjection(srs.ExportToWkt())
-    ds.SetGeoTransform((minx, pixel_size_x, 0, maxy, 0, -pixel_size_y))
+    # Create and configure the rasterio dataset
+    transform = from_bounds(minx, miny, maxx, maxy, width, height)
+    crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
 
-    # Write image data to the dataset
-    if len(cv2_array.shape) == 3:  # For color images
-        for i in range(1, bands + 1):
-            band = ds.GetRasterBand(i)
-            band.WriteArray(cv2_array[:, :, i - 1])
-            # Set color interpretation for each band if applicable
-            if bands == 3 or bands == 4:
-                color_interpretations = [gdal.GCI_RedBand, gdal.GCI_GreenBand, gdal.GCI_BlueBand, gdal.GCI_AlphaBand]
-                band.SetColorInterpretation(color_interpretations[i - 1])
-    else:  # For grayscale images
-        band = ds.GetRasterBand(1)
-        band.WriteArray(cv2_array)
+    with rasterio.MemoryFile() as memfile:
+        with memfile.open(driver='GTiff', height=height, width=width, count=bands, dtype=dtype, crs=crs,
+                          transform=transform) as dst:
+            if len(cv2_array.shape) == 3:  # For color images
+                for i in range(1, bands + 1):
+                    dst.write(cv2_array[:, :, i - 1], i)
+                    # Set color interpretation for each band if applicable
+                    if bands == 3:
+                        color_interpretations = [ColorInterp.red, ColorInterp.green, ColorInterp.blue]
+                        dst.colorinterp = color_interpretations[:bands]
+                    elif bands == 4:
+                        color_interpretations = [ColorInterp.red, ColorInterp.green, ColorInterp.blue,
+                                                 ColorInterp.alpha]
+                        dst.colorinterp = color_interpretations[:bands]
+            else:  # For grayscale images
+                dst.write(cv2_array, 1)
+        return memfile.open()
 
-    return ds
 
+@contextmanager
+def suppress_stdout_stderr():
+    """A context manager that redirects stdout and stderr to devnull"""
+    with open(os.devnull, 'w') as null:
+        old_stdout, old_stderr = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = null, null
+        try:
+            yield
+        finally:
+            sys.stdout, sys.stderr = old_stdout, old_stderr
 
 def warp_ds(dst_utf8_path, ds):
     """
@@ -194,25 +203,40 @@ def warp_ds(dst_utf8_path, ds):
 
     Parameters:
     - dst_utf8_path: Destination path for the output GeoTIFF file.
-    - georef_image_array: The georeferenced image array to be saved.
+    - ds: rasterio dataset object to be warped.
 
     No return value.
     """
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(config.epsg_code)
+    dst_crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
 
-    if config.cog is False:
-        translate_options = gdal.TranslateOptions(noData=0)
-        vrt_ds = gdal.Translate(dst_utf8_path, ds, format='GTiff', COMPRESS='LZW', outputSRS=srs.ExportToWkt(),
-                                options=translate_options)
-        # Clean up to release resources
-        del vrt_ds, ds
-    else:
-        warp_options = gdal.WarpOptions(creationOptions=["COPY_SRC_OVERVIEWS=YES", "TILED=YES", "COMPRESS=LZW"])
-        vrt_ds = gdal.Translate('', ds, format='VRT', noData=0, outputSRS=srs.ExportToWkt())
-        vs = gdal.Warp(dst_utf8_path, vrt_ds, format='GTiff', options=warp_options, dstSRS=srs.ExportToWkt())
-        # Clean up to release resources
-        del vrt_ds, ds, vs
+    transform, width, height = calculate_default_transform(
+        ds.crs, dst_crs, ds.width, ds.height, *ds.bounds)
+
+    kwargs = ds.meta.copy()
+    kwargs.update({
+        'crs': dst_crs,
+        'transform': transform,
+        'width': width,
+        'height': height,
+        'nodata': 0  # Set nodata value to 0 (transparent)
+    })
+
+    with rasterio.open(dst_utf8_path, 'w', **kwargs) as dst:
+        for i in range(1, ds.count + 1):
+            reproject(
+                source=rasterio.band(ds, i),
+                destination=rasterio.band(dst, i),
+                src_transform=ds.transform,
+                src_crs=ds.crs,
+                dst_transform=transform,
+                dst_crs=dst_crs,
+                resampling=Resampling.nearest)
+
+    if config.cog:
+        # Convert the GeoTIFF to a Cloud Optimized GeoTIFF (COG)
+        cogeo_profile = 'deflate'
+        with suppress_stdout_stderr():
+            cog_translate(dst_utf8_path, dst_utf8_path, cog_profiles.get(cogeo_profile), in_memory=True)
 
 
 def calculate_grid(num_images):

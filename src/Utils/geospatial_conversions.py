@@ -7,7 +7,8 @@ import math
 import utm
 from pyproj import Transformer, CRS, Geod
 import Utils.config as config
-from Utils.logger_config import *
+from loguru import logger
+# from Utils.logger_config import *
 
 
 def decimal_degrees_to_utm(latitude, longitude):
