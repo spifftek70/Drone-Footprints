@@ -1,7 +1,7 @@
 # Aerial Drone (aka UAV/UAS) Imagery Footprint and GeoTIFF Utility.
 
 > Author: Dean Hand \
-> Date Created: 09/07/2019 \
+> Date Created: 03/07/2020 \
 > Name: Drone_Footprints.py
 
 The purpose of this application is to accurately calculate the geographic footprints of individual drone images.
