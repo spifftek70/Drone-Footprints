@@ -3,7 +3,6 @@
 src/__pycache__
 Drone_Footprints.egg-info
 Drone_Footprints.spec
-build
 qodana.yaml
 src/build/
 src/dist/
@@ -18,3 +17,13 @@ venv/bin
 venv/lib
 venv/include
 /.venv/
+/src/Utils/cog_check.py
+src/Utils/multispectral.py
+src/Utils/parallel_map.py
+src/Utils/process_multispectral.py
+src/Utils/projtool.py
+/src/Bbox_calculations.py
+src/Bbox_calculations.py
+/src/drone_sensors.numbers
+src/drone_sensors.numbers
+/src/Utils/lensfun_proc.py
