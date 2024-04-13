@@ -16,7 +16,7 @@ gps-time
 datetime~=5.4
 vector3d~=1.1.1
 scikit-image~=0.22.0
-setuptools~=68.2.0
+wheel~=0.43.0
 pandas~=2.1.4
 opencv-python~=4.9.0.80
 geopandas~=0.14.2
@@ -27,4 +27,7 @@ numpy-quaternion
 tqdm~=4.66.2
 loguru~=0.7.2
 GDAL[numpy]~=3.8.4
+sympy~=1.9.0
+lensfunpy~=1.15.0
+numpy-quaternion==2023.0.3
 sympy~=1.9.0
