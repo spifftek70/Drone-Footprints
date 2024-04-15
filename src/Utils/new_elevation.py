@@ -29,7 +29,7 @@ class ElevationAdjuster:
         except Exception as e:
             logger.info(
                 f"Error calculating interpolated elevation: {e} for {config.im_file_name}. Switching to Default Altitudes.")
-            return config.abso_altitude
+            return config.absolute_altitude
 
 
 def load_elevation_data_and_crs():
@@ -63,7 +63,7 @@ def get_altitude_at_point(x, y):
     row, col = rowcol(affine_transform, x, y)
     if 0 <= row < elevation_data.shape[0] and 0 <= col < elevation_data.shape[1]:
         elevation = elevation_data[row, col]
-        new_altitude = config.abso_altitude - elevation
+        new_altitude = config.absolute_altitude - elevation
         return new_altitude
     else:
         logger.exception(
@@ -78,7 +78,7 @@ def get_altitude_from_open(lat, long):
         response = urlopen(url)
         data = response.read().decode('utf-8')
         elevation = json.loads(data)['results'][0]['elevation']
-        new_altitude = config.abso_altitude - elevation
+        new_altitude = config.absolute_altitude - elevation
 
         return new_altitude
     except HTTPError as err:
