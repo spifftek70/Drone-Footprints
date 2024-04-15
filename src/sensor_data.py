@@ -44,7 +44,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
     datetime_original = data.get("EXIF:DateTimeOriginal", "Unknown")
     # Get sensor model and rig camera index from metadata
     sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
-    rig_camera_idx = str(data.get("XMP:RigCameraIndex") or data.get('XMP:SensorIndex') or 'nan')
+    rig_camera_idx = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex') or '5')
 
     if sensor_model_data != "default":
         # Prioritize direct match with sensor model and rig camera index
@@ -68,7 +68,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
         sensor_info = sensor_dimensions.get(("default", 'nan'))
         drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height, lens_FOVw, lens_FOVh = sensor_info
 
-
+    logger.info(f"Extracted sensor information for {drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height}")
     my_list = ["FC2103", "FC220", "FC300X", "FC200"]
     if sensor_model in my_list:
         sensor_model = drone_model + " " + sensor_model

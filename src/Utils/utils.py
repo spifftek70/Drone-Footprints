@@ -83,5 +83,4 @@ def read_sensor_dimensions_from_csv(csv_filepath, default_sensor_width=0, defaul
         logger.critical("Error: The CSV file is empty.")
     except Exception as e:
         logger.critical(f"An unexpected error occurred: {e}")
-
     return sensor_dimensions
