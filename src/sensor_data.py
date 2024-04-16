@@ -66,7 +66,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
         sensor_info = sensor_dimensions.get(("default", 'nan'))
     drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height, lens_FOVw, lens_FOVh = sensor_info
 
-    if sensor_model ["FC2103", "FC220", "FC300X", "FC200"]:
+    if sensor_model in ["FC2103", "FC220", "FC300X", "FC200"]:
         sensor_model = f"{drone_model} {sensor_model}"
 
     drone_info = dict(DroneMake=drone_make,
