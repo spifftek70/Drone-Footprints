@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 epsg_code = 4326
 rtk = False
-decl = False
+correct_magnetic_declinaison = False
 utm_zone = ""
 hemisphere = ""
 cog = False
@@ -16,20 +16,20 @@ global_elevation = False
 global_target_delta = 0.0
 image_equalize = False
 im_file_name = ""
-rel_altitude = 0.0
-abso_altitude = 0.0
+relative_altitude = 0.0
+absolute_altitude = 0.0
 dsm = None
 drone_properties = None
 lense_correction = True
 center_distance = 0.0
-nodejs = False
+nodejgraphical_interface = False
 pbar = tqdm(total=0, position=1, bar_format='{desc}')
 crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
 
 def init():
-    global epsg_code, rtk, decl, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, rel_altitude, abso_altitude, dsm, drone_properties, center_distance, lense_correction, nodejs
-    decl = False
+    global epsg_code, rtk, correct_magnetic_declinaison, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, relative_altitude, absolute_altitude, dsm, drone_properties, center_distance, lense_correction, nodejgraphical_interface
+    correct_magnetic_declinaison = False
     epsg_code = 4326
     utm_zone = ""
     hemisphere = ""
@@ -41,12 +41,12 @@ def init():
     global_target_delta = 0.0
     image_equalize = False
     im_file_name = ""
-    rel_altitude = 0.0
-    abso_altitude = 0.0
+    relative_altitude = 0.0
+    absolute_altitude = 0.0
     dsm = None
     drone_properties = None
     lense_correction = True
-    nodejs = False
+    nodejgraphical_interface = False
     pbar = tqdm(total=0, position=1, bar_format='{desc}')
     crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
@@ -61,14 +61,14 @@ def update_center_distance(a):
     center_distance = a
 
 
-def update_nodejs(n):
-    global nodejs
-    nodejs = n
+def update_nodejs_graphical_interface(n):
+    global nodejgraphical_interface
+    nodejgraphical_interface = n
 
 
-def update_decl(b):
-    global decl
-    decl = b
+def update_correct_magnetic_declinaison(b):
+    global correct_magnetic_declinaison
+    correct_magnetic_declinaison = b
 
 
 def update_cog(f):
@@ -112,8 +112,8 @@ def update_file_name(q):
 
 
 def update_rel_altitude(q):
-    global rel_altitude
-    rel_altitude = q
+    global relative_altitude
+    relative_altitude = q
 
 
 def update_lense(v):
@@ -122,8 +122,8 @@ def update_lense(v):
 
 
 def update_abso_altitude(q):
-    global abso_altitude
-    abso_altitude = q
+    global absolute_altitude
+    absolute_altitude = q
 
 
 def update_drone_properties(s):

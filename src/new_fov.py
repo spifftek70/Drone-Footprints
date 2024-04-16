@@ -12,7 +12,8 @@ from vector3d.vector import Vector
 from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open
 import Utils.config as config
 from Utils.declination import find_declination
-from Utils.logger_config import *
+# from Utils.logger_config import *
+from loguru import logger
 
 
 latitude = 0
@@ -65,7 +66,7 @@ class HighAccuracyFOVCalculator:
         - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
          # Normalize yaw for magnetic declination
-        if config.decl:
+        if config.correct_magnetic_declinaison:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
         else:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg)
@@ -137,12 +138,12 @@ class HighAccuracyFOVCalculator:
                 new_altitude = get_altitude_at_point(utmx, utmy)
             if config.global_elevation:
                 new_altitude = get_altitude_from_open(latitude, longitude)
-            if config.rel_altitude == 0.0:
-                new_altitude = config.abso_altitude
-            if new_altitude and abs(new_altitude - config.rel_altitude) > 20:
-                new_altitude = config.rel_altitude
+            if config.relative_altitude == 0.0:
+                new_altitude = config.absolute_altitude
+            if new_altitude and abs(new_altitude - config.relative_altitude) > 20:
+                new_altitude = config.relative_altitude
             if new_altitude is None: # and not config.dtm_path or not config.global_elevation is False or config.rtk:
-                new_altitude = config.rel_altitude
+                new_altitude = config.relative_altitude
                 if config.global_elevation is True or config.dtm_path:
                     logger.opt(exception=False).warning(f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
 
