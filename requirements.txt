@@ -11,7 +11,7 @@ shapely~=2.0.2
 geometry
 geopy~=2.4.1
 pyexiftool
-pillow~=10.2.0
+pillow~=10.3.0
 gps-time
 datetime~=5.4
 vector3d~=1.1.1
