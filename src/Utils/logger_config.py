@@ -26,7 +26,7 @@ def init_logger(log_path=None):
 
     logger.remove()  # Clear existing configuration
 
-    if config.nodejs is True:
+    if config.nodejgraphical_interface is True:
         logger.add(lambda msg: tqdm.write(msg, end=""),
                    colorize=True, level="INFO", format="{time} {level} {message}",
                    filter=lambda record: record["level"].name in ["INFO", "SUCCESS", "WARNING"])

@@ -65,21 +65,20 @@ Python 3.6 and above
 
 `-t` - Sensor Height (default is 8.8), Not Required (Check your Drones Specs for information)
 
-`-d` - Magnetic Declination (default is "n"), Not Required.
+`-d` - Correct images using local magnetic declination (optional)
 
-`-e` - Desired EPSG for output GeoTiffs (default is `4326`) Not Required
+`-e` - Desired EPSG code for output GeoTiffs (default is `4326`) (optional)
 
-`-v` - Path to a Digital Surface Model file to use for more accuracy. Not Required
+`-v` - Path to a Digital Surface Model file to use for more accuracy (optional)
 
-`-m` - Utilze [open_elevation.com](https://open-elevation.com) for more accuracy but extends processing time (location dependent). Not Required (
-(default is "n")
+`-m` - Utilize [open_elevation.com](https://open-elevation.com) for more accuracy but extends processing time (location dependent) (optional)
 
-`-c` - Format output GeoTiff as a Cloud Optimized GeoTiff (default is "n"). Not Required (Extends processing time)
+`-c` - Cloud Optimized GeoTIFF (COG) for output tiff files (optional). Extends processing time
 
-`-z` - Improves local contrast, which can make details more visible (default is "n"). Not Required (Significantly
-extends processing time)
+`-z` - Improve local contrast option to can make details more visible (optional). Significantly
+extends processing time
 
-`-l` - Applies lens distortion correction using [lensfun](https://lensfun.github.io) api (default is "y"). Not Required. 
+`-l` - Applies lens distortion correction using [lensfun](https://lensfun.github.io) api (optional)
 
 :warning: _you can only select `-m` or `-v` but not both!_
 ----------------------------------------------------------------------------------------------------------------
