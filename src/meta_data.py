@@ -10,9 +10,9 @@ from create_geotiffs import generate_geotiff
 from create_geojson import create_geojson_feature
 from sensor_data import extract_sensor_info
 from Utils.utils import Color
-# from tqdm import tqdm
+from tqdm import tqdm
 from loguru import logger
-from Utils.logger_config import *
+# from Utils.logger_config import *
 import Utils.config as config
 import datetime
 

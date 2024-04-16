@@ -4,7 +4,7 @@
 # Version: 1.0
 import Utils.config as config
 from loguru import logger
-from Utils.logger_config import *
+# from Utils.logger_config import *
 
 def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh):
 
@@ -44,7 +44,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
     datetime_original = data.get("EXIF:DateTimeOriginal", "Unknown")
     # Get sensor model and rig camera index from metadata
     sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
-    sensort_index = str(data.get("XMP:RigCameraIndex") or data.get('XMP:SensorIndex') or 'nan')
+    sensort_index = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex') or '5')
 
     if sensor_model_data != "default":
         # Prioritize direct match with sensor model and rig camera index
@@ -64,6 +64,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
         logger.error(
             f"No sensor information found for {im_file_name} with sensor model {sensor_model_data} and rig camera index {sensort_index}. Using defaults.")
         sensor_info = sensor_dimensions.get(("default", 'nan'))
+
     drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height, lens_FOVw, lens_FOVh = sensor_info
 
     if sensor_model in ["FC2103", "FC220", "FC300X", "FC200"]:

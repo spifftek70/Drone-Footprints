@@ -12,7 +12,8 @@ from vector3d.vector import Vector
 from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open
 import Utils.config as config
 from Utils.declination import find_declination
-from Utils.logger_config import *
+# from Utils.logger_config import *
+from loguru import logger
 
 
 latitude = 0
