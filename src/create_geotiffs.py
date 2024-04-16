@@ -8,7 +8,8 @@ from shapely.geometry import Polygon
 import os
 import cv2
 import Utils.config as config
-from Utils.logger_config import *
+# from Utils.logger_config import *
+from loguru import logger
 import lensfunpy
 
 
@@ -76,25 +77,17 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, co
     # Convert the Polygon to WKT format
     polygon_wkt = str(fixed_polygon)
 
-    # Warp the image to the polygon using the coordinate array
-    # Turn off GDAL warnings
-    os.environ['CPL_LOG'] = '/dev/null'
-    os.environ['GDAL_DATA'] = os.getenv('GDAL_DATA', '/usr/share/gdal')
-    gdal.DontUseExceptions()
-    gdal.SetConfigOption('CPL_DEBUG', 'OFF')
-
     try:
         georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
         dsArray = array2ds(georef_image_array, polygon_wkt)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error during warping or dataset creation: {e}")
 
-    # Warp the GDAL dataset to the destination path
+    # Warp the rasterio dataset to the destination path
     try:
         warp_ds(dst_utf8_path, dsArray)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error writing GeoTIFF: {e}")
-
 
 def generate_geotiff(image_path, geotiff_file, coord_array):
     """
