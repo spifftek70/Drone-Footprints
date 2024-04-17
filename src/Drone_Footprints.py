@@ -16,7 +16,6 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 from Utils.logger_config import *
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
-from icecream import ic
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 
