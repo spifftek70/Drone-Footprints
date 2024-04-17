@@ -124,8 +124,7 @@ class HighAccuracyFOVCalculator:
         q = q.normalized()
 
         # Apply rotation to each ray
-        rotated_rays = [Vector(*(q * np.quaternion(0, ray.x, ray.y, ray.z) * q.inverse()).vec) for ray in rays]
-        return rotated_rays
+        return [Vector(*(q * np.quaternion(0, ray.x, ray.y, ray.z) * q.inverse()).vec) for ray in rays]
 
     def get_fov_bbox(self):
         try:
