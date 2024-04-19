@@ -15,7 +15,7 @@ pillow~=10.3.0
 gps-time
 datetime~=5.4
 vector3d~=1.1.1
-scikit-image>=0.19.0,<0.22.0
+scikit-image>=0.20.0,<0.24.0
 wheel~=0.43.0
 pandas
 opencv-python~=4.9.0.80
