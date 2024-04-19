@@ -131,7 +131,6 @@ def get_altitudes_from_open(latlon_tupples:list[tuple])->list[float]:
             nb_of_failed_connection += 1
             # Sleep random time before next try
             sleep(nb_of_failed_connection)
-
     logger.info(f"Too many failures for file {config.im_file_name}. Switching to default elevation.")
     config.update_elevation(False)
     return None

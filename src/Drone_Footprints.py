@@ -40,8 +40,8 @@ def is_valid_file(arg):
     print(f'{arg}  is not a valid file.  Switching to Default elevation model')
     return
 
-
-def get_image_files(directory: str) -> list[Path]:
+  
+def get_image_files(directory:str)->list[Path]:
     """
     Retrieve image files from the specified directory that match the defined extensions.
 
@@ -57,7 +57,7 @@ def get_image_files(directory: str) -> list[Path]:
     )
 
 
-def get_metadata(files: List[Path]) -> List[dict]:
+def get_metadata(files:List[Path])->List[dict]:
     """
     Extract metadata from a list of image files using ExifTool.
 
@@ -148,6 +148,7 @@ def main():
     config.update_nodejs_graphical_interface(args.nodejs)
     init_logger(log_path=log_path)
 
+   
     # Access the arguments
     if args.DSMPATH:
         pass
