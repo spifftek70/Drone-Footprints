@@ -45,6 +45,9 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
     # Get sensor model and rig camera index from metadata
     sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
     sensort_index = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex') or '5')
+    
+    if sensor_model_data == "FC6310R":
+        sensor_model_data = "FC6310"
 
     if sensor_model_data != "default":
         # Prioritize direct match with sensor model and rig camera index

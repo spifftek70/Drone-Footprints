@@ -16,10 +16,9 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 from Utils.logger_config import *
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
+from typing import List
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
-
-prelog = []
 
 # Constants for image file extensions and the sensor information CSV file path
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
@@ -31,19 +30,19 @@ now = datetime.datetime.now()
 def is_valid_directory(arg):
     if os.path.isdir(arg):
         return arg
-    prelog.append("\"" + arg + "\""" is not a valid input directory")
+    print(f'{arg} is not a valid input directory')
     sys.exit()
 
 
 def is_valid_file(arg):
     if os.path.isfile(arg):
         return arg
-    prelog.append("\"" + arg + "\""" is not a valid file.  Switching to Default elevation model")
+    print(f'{arg}  is not a valid file.  Switching to Default elevation model')
     return
 
 
 
-def get_image_files(directory):
+def get_image_files(directory:str)->list[Path]:
     """
     Retrieve image files from the specified directory that match the defined extensions.
 
@@ -59,7 +58,7 @@ def get_image_files(directory):
     )
 
 
-def get_metadata(files):
+def get_metadata(files:List[Path])->List[dict]:
     """
     Extract metadata from a list of image files using ExifTool.
 
@@ -142,14 +141,14 @@ def main():
                     help="Use elevation services APIs (optional).")
 
     args = parser.parse_args()
+
     outer_path = args.output_directory
     log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
     log_path = Path(outer_path) / "logfiles" / log_file
     config.update_nodejs_graphical_interface(args.nodejs)
     init_logger(log_path=log_path)
-    for x in prelog:
-        logger.warning(f"{x}")
 
+   
     # Access the arguments
     if args.DSMPATH:
         pass
@@ -180,7 +179,6 @@ def main():
     config.update_equalize(args.image_equalize)
     config.update_lense(args.lense_correction)
     config.update_elevation(args.elevation_service)
-
     rtk_rtn = find_MTK(indir)
     if rtk_rtn:
         config.update_rtk(True)
