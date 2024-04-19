@@ -16,6 +16,7 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 from Utils.logger_config import *
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
+from typing import List
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 
@@ -41,7 +42,7 @@ def is_valid_file(arg):
 
 
 
-def get_image_files(directory):
+def get_image_files(directory:str)->list[Path]:
     """
     Retrieve image files from the specified directory that match the defined extensions.
 
@@ -57,7 +58,7 @@ def get_image_files(directory):
     )
 
 
-def get_metadata(files):
+def get_metadata(files:List[Path])->List[dict]:
     """
     Extract metadata from a list of image files using ExifTool.
 
@@ -107,7 +108,6 @@ def write_geojson_file(geojson_file, geojson_dir, feature_collection):
 
 @logger.catch
 def main():
-
     """
     Main function to orchestrate the processing of drone imagery into GeoJSON and GeoTIFFs.
     """

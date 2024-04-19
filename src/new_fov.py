@@ -9,7 +9,7 @@ import quaternion
 from Utils.geospatial_conversions import *
 from mpmath import mp, radians, sqrt
 from vector3d.vector import Vector
-from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open
+from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open, get_altitudes_from_open
 import Utils.config as config
 from Utils.declination import find_declination
 # from Utils.logger_config import *
@@ -171,7 +171,8 @@ class HighAccuracyFOVCalculator:
 
             if config.global_elevation is True:
                 trans_utmbox = [utm_to_latlon(box[0], box[1], zone_number, zone_letter) for box in new_translated_bbox]
-                altitudes = [get_altitude_from_open(*box[:2]) for box in trans_utmbox]
+                altitudes = get_altitudes_from_open(trans_utmbox)
+
                 if None in altitudes:
                     logger.opt(exception=False).warning(f"Failed to get elevation at point for {config.im_file_name}.")
                     return translate_to_wgs84(new_translated_bbox, longitude, latitude)
