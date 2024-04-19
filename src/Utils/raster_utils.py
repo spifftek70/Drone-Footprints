@@ -152,8 +152,8 @@ def array2ds(cv2_array, polygon_wkt):
     # Determine rasterio data type based on cv2_array data type
     if cv2_array.dtype == np.uint8:
         dtype = rasterio.uint8
-    elif cv2_array.dtype == np.int16:
-        dtype = rasterio.int16
+    elif cv2_array.dtype == np.uint16:
+        dtype = rasterio.uint16
     elif cv2_array.dtype == np.int32:
         dtype = rasterio.int32
     elif cv2_array.dtype == np.float32:
@@ -183,6 +183,8 @@ def array2ds(cv2_array, polygon_wkt):
                         dst.colorinterp = color_interpretations[:bands]
             else:  # For grayscale images
                 dst.write(cv2_array, 1)
+                color_interpretations = [ColorInterp.gray]
+                dst.colorinterp = color_interpretations[:bands]
         return memfile.open()
 
 

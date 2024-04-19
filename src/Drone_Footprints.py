@@ -30,7 +30,7 @@ now = datetime.datetime.now()
 def is_valid_directory(arg):
     if os.path.isdir(arg):
         return arg
-    print(f'{arg} is not a valid input directory')
+    # print(f'{arg} is not a valid input directory')
     sys.exit()
 
 
@@ -40,8 +40,7 @@ def is_valid_file(arg):
     print(f'{arg}  is not a valid file.  Switching to Default elevation model')
     return
 
-
-
+  
 def get_image_files(directory:str)->list[Path]:
     """
     Retrieve image files from the specified directory that match the defined extensions.
@@ -114,7 +113,8 @@ def main():
     parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
     parser.add_argument("-o", "--output_directory", help="Path to the output directory for GeoJSON and GeoTIFFs.",
                         required=True)
-    parser.add_argument("-i", "--input_directory", type=is_valid_directory, help="Path to the input directory with images.",
+    parser.add_argument("-i", "--input_directory", type=is_valid_directory,
+                        help="Path to the input directory with images.",
                         required=True)
     parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
                         required=False)
@@ -124,21 +124,21 @@ def main():
                         required=False)
     parser.add_argument("-d", "--declination", action='store_true', required=False,
                         help="Correct images using local magnetic declination (optional).")
-    parser.add_argument("-c", "--COG", action='store_true',required=False,
+    parser.add_argument("-c", "--COG", action='store_true', required=False,
                         help="Cloud Optimized GeoTIFF (COG) for output tiff files (optional).")
-    parser.add_argument("-z", "--image_equalize",  action='store_true',required=False,
+    parser.add_argument("-z", "--image_equalize", action='store_true', required=False,
                         help="Improve local contrast option to can make details more visible (optional).")
-    parser.add_argument("-l", "--lense_correction",  action='store_true',required=False,
+    parser.add_argument("-l", "--lense_correction", action='store_true', required=False,
                         help="Applies lens distortion correction using lensfun api (optional).")
-    parser.add_argument("-n", "--nodejs", action='store_true',required=False,
+    parser.add_argument("-n", "--nodejs", action='store_true', required=False,
                         help="Experimental Nodejs graphical interface (optional).")
 
     # Add mutually exclusive arguments
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--DSMPATH", type=is_valid_file, help="Path to DSM file (optional).",
-                    default="", required=False)
-    group.add_argument("-m", "--elevation_service",  action='store_true',required=False,
-                    help="Use elevation services APIs (optional).")
+                       default="", required=False)
+    group.add_argument("-m", "--elevation_service", action='store_true', required=False,
+                       help="Use elevation services APIs (optional).")
 
     args = parser.parse_args()
 
@@ -152,7 +152,7 @@ def main():
     # Access the arguments
     if args.DSMPATH:
         pass
-    elif args.elevation_service :
+    elif args.elevation_service:
         pass
     elif args.DSMPATH:
         logger.exception("")
@@ -215,8 +215,6 @@ def main():
         mosaic_path = Path(outdir) / "mosaic"
         mosaic_path.mkdir(parents=True, exist_ok=True)
         create_mosaic(indir, mosaic_path)
-
-
 
     if config.cog is True:
         geo_type = "Cloud Optimized"

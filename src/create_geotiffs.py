@@ -15,7 +15,7 @@ import lensfunpy
 
 def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
     try:
-        jpeg_img = cv2.imread(image_path)
+        jpeg_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         if jpeg_img is None:
             logger.warning(f"File not found: {image_path}")
             return
@@ -35,7 +35,24 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
 
                 height, width = jpeg_img.shape[:2]
                 mod = lensfunpy.Modifier(lens, cam.crop_factor, width, height)
-                mod.initialize(focal_length, aperture, distance, pixel_format=np.uint8)
+
+                # Determine rasterio data type based on cv2_array data type
+                if jpeg_img.dtype == np.uint8:
+                    pixel_format = np.uint8
+                elif jpeg_img.dtype == np.int16:
+                    pixel_format = np.int16
+                elif jpeg_img.dtype == np.uint16:
+                    pixel_format = np.uint16
+                elif jpeg_img.dtype == np.int32:
+                    pixel_format = np.int32
+                elif jpeg_img.dtype == np.float32:
+                    pixel_format = np.float32
+                elif jpeg_img.dtype == np.float64:
+                    pixel_format = np.float64
+                else:
+                    logger.opt(exception=True).warning(f"Unsupported data type: {str(jpeg_img.dtype)}")
+
+                mod.initialize(focal_length, aperture, distance, pixel_format=pixel_format)
 
                 # Apply geometry distortion correction and obtain distortion maps
                 maps = mod.apply_geometry_distortion()
@@ -50,8 +67,9 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
                 logger.exception(f"Index error: {e} for {image_path}")
         else:
             img_undistorted = np.array(jpeg_img)
+
         if jpeg_img.ndim == 2:  # Single band image
-            adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2GRAY)
+            adjImg = img_undistorted
         elif jpeg_img.ndim == 3:  # Multiband image
             adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGB)
         else:

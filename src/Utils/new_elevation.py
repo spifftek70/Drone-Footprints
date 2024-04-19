@@ -77,7 +77,7 @@ def get_altitude_at_point(x, y):
 def get_altitude_from_open(lat:float, long:float)->float:
     """
         Get GPS terrain altitude from open-elevation.com using input lat and long
-        Returns corrected altitude. 
+        Returns corrected altitude.
     """
 
     nb_of_failed_connection = 0
@@ -94,14 +94,14 @@ def get_altitude_from_open(lat:float, long:float)->float:
             nb_of_failed_connection += 1
             # Sleep random time before next try
             sleep(nb_of_failed_connection)
-    logger.opt(exception=True).info(f"Too many failures for file {config.im_file_name}. Switching to default elevation.")
+    logger.info(f"Too many failures for file {config.im_file_name}. Switching to default elevation.")
     config.update_elevation(False)
     return None
 
 def get_altitudes_from_open(latlon_tupples:list[tuple])->list[float]:
     """
         Get GPS terrain altitude from open-elevation.com from a list of latlon tupples [(lat1,lon1),(lat2,lon2),...]
-        Returns list of corrected altitude. 
+        Returns list of corrected altitude.
     """
     url_coordinates=""
     nb_of_coordinates=0
@@ -131,7 +131,6 @@ def get_altitudes_from_open(latlon_tupples:list[tuple])->list[float]:
             nb_of_failed_connection += 1
             # Sleep random time before next try
             sleep(nb_of_failed_connection)
-
-    logger.opt(exception=True).info(f"Too many failures for file {config.im_file_name}. Switching to default elevation.")
+    logger.info(f"Too many failures for file {config.im_file_name}. Switching to default elevation.")
     config.update_elevation(False)
     return None
