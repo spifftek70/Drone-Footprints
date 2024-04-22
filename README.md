@@ -100,7 +100,7 @@ python Drone_Footprints.py -i "/Path/To/Dataset3/images" -o "/Path/To/Dataset3/o
 ```
 
 ```
-python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/output" -e 3857 -c
+python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/output" -e 3857 -c n
 ```
 
 ----------------------------------------------------------------------------------------------------------------

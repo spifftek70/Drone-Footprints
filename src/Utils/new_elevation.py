@@ -10,7 +10,8 @@ from scipy.ndimage import map_coordinates
 from urllib.request import urlopen
 from urllib.error import HTTPError
 import json
-from Utils.logger_config import *
+# from Utils.logger_config import logging_process as logger
+from loguru import logger
 import Utils.config as config
 from numpy import random
 from time import sleep
@@ -69,7 +70,7 @@ def get_altitude_at_point(x, y):
         elevation = elevation_data[row, col]
         return config.absolute_altitude - elevation
 
-    logger.exception(
+    logger.warning(
         f"Point ({x}, {y}) is outside the elevation data bounds for file {config.im_file_name}. Switching to default elevation.")
     return None
 
@@ -131,6 +132,7 @@ def get_altitudes_from_open(latlon_tupples:list[tuple])->list[float]:
             nb_of_failed_connection += 1
             # Sleep random time before next try
             sleep(nb_of_failed_connection)
+
     logger.info(f"Too many failures for file {config.im_file_name}. Switching to default elevation.")
     config.update_elevation(False)
     return None

@@ -8,10 +8,9 @@ import utm
 from pyproj import Transformer, CRS, Geod
 import Utils.config as config
 from loguru import logger
-# from Utils.logger_config import *
 
 
-def decimal_degrees_to_utm(latitude:float, longitude:float):
+def decimal_degrees_to_utm(latitude, longitude):
     """
     Convert latitude and longitude in decimal degrees to UTM coordinates.
 
@@ -28,11 +27,11 @@ def decimal_degrees_to_utm(latitude:float, longitude:float):
     return easting, northing, zone_number, hemisphere
 
 
-def longitude_to_utm_zone(longitude:float):
+def longitude_to_utm_zone(longitude):
     return int((longitude + 180) / 6) + 1
 
 
-def gps_to_utm(latitude:float, longitude:float):
+def gps_to_utm(latitude, longitude):
     zone_number = longitude_to_utm_zone(longitude)
     hemisphere = "north" if latitude >= 0 else "south"
     is_southern = latitude < 0
@@ -43,15 +42,16 @@ def gps_to_utm(latitude:float, longitude:float):
     return float(x), float(y), zone_number, hemisphere
 
 
-def get_utm_transformer(latitude:float, longitude:float):
+def get_utm_transformer(latitude, longitude):
     zone_number = longitude_to_utm_zone(longitude)
     is_southern = latitude < 0
     utm_crs = CRS(proj="utm", zone=zone_number, ellps="WGS84", datum="WGS84", south=is_southern)
     wgs84_crs = CRS(proj="latlong", datum="WGS84")
-    return Transformer.from_crs(wgs84_crs, utm_crs, always_xy=True)
+    transformer = Transformer.from_crs(wgs84_crs, utm_crs, always_xy=True)
+    return transformer
 
 
-def find_epsg_code(utm_x:float, utm_y:float)->str:
+def find_epsg_code(utm_x, utm_y):
     """
     Determine the EPSG code for UTM coordinates based on longitude.
 
@@ -64,10 +64,11 @@ def find_epsg_code(utm_x:float, utm_y:float)->str:
     """
     utm_band = str((math.floor((utm_y + 180) / 6) % 60) + 1)
     utm_band = utm_band.zfill(2)
-    return f"326{utm_band}" if utm_x >= 0 else f"327{utm_band}"
+    epsg_code = "326" + utm_band if utm_x >= 0 else "327" + utm_band
+    return epsg_code
 
 
-def utm_to_latlon(easting:float, northing:float, zone_number:int, hemi:str)->tuple[float,float]:
+def utm_to_latlon(easting, northing, zone_number, hemi):
     """
     Convert UTM coordinates to latitude and longitude.
 
@@ -75,17 +76,13 @@ def utm_to_latlon(easting:float, northing:float, zone_number:int, hemi:str)->tup
     - easting (float): UTM easting.
     - northing (float): UTM northing.
     - zone_number (int): UTM zone number.
-    - hemisphere (str): Hemisphere indicator ('north' for north, 'south' for south).
+    - hemisphere (str): Hemisphere indicator ('N' for north, 'S' for south).
 
     Returns:
     tuple: Latitude and longitude in decimal degrees.
     """
-    if 'south' in hemi:
-        northern = False
-    elif 'north' in hemi:
-        northern = True
-    return utm.to_latlon(easting, northing, zone_number, northern=northern)
-  
+    lat, lon = utm.to_latlon(float(easting), float(northing), zone_number, hemi)
+    return lat, lon
 
 
 def hemisphere_flag(latitude):

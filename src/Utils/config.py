@@ -22,7 +22,7 @@ dsm = None
 drone_properties = None
 lense_correction = True
 center_distance = 0.0
-nodejgraphical_interface = False
+nodejs_graphical_interface = False
 pbar = tqdm(total=0, position=1, bar_format='{desc}')
 crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 

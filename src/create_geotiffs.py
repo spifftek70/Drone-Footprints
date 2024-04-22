@@ -5,10 +5,8 @@
 
 from Utils.raster_utils import *
 from shapely.geometry import Polygon
-import os
 import cv2
 import Utils.config as config
-# from Utils.logger_config import *
 from loguru import logger
 import lensfunpy
 

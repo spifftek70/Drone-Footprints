@@ -1,9 +1,6 @@
-# logger_config.py
 from loguru import logger
 from tqdm import tqdm
 from pathlib import Path
-import json
-import sys
 import Utils.config as config
 
 script_path = Path(__file__).resolve()
@@ -44,7 +41,5 @@ def init_logger(log_path=None):
                    level="DEBUG", backtrace=True, diagnose=True)
 
     logger.remove()  # Remove all other handlers to prevent interference
-    # Add a handler specifically for tqdm compatibility
     logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True, diagnose=True)
-    # If logging to a file, add that handler as well
     logger.add(log_path, format="{time} | {level} | {message}", backtrace=True, diagnose=True)

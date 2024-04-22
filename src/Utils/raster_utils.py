@@ -15,7 +15,6 @@ import numpy as np
 import cv2 as cv
 from shapely.wkt import loads
 from loguru import logger
-# from Utils.logger_config import *
 import Utils.config as config
 from skimage.exposure import equalize_adapthist
 from PIL import Image, ImageOps
@@ -268,7 +267,20 @@ def create_mosaic(directory, output_base_path, mosaic_size=(400, 350), border_si
 
     for img_path in images_paths:
         img = Image.open(img_path)
-        img = img.convert('RGB')  # Convert image to 'L' mode
+
+        # Check if the image is a single band image
+        if len(img.getbands()) == 1:
+            # Convert the image to 'L' mode if it is not already
+            if img.mode != 'L':
+                img = img.convert('L')
+            # Convert the PIL Image to a numpy array
+            img_array = np.array(img)
+            # Convert the single band image to a 3 band image using OpenCV
+            img_array = cv.cvtColor(img_array, cv.COLOR_GRAY2RGB)
+            # Convert the numpy array back to a PIL Image
+            img = Image.fromarray(img_array)
+        else:
+            img = img.convert('RGB')  # Convert image to 'RGB' mode
 
         # Always scale based on the tile height to image height ratio
         scale_factor = tile_height / img.height

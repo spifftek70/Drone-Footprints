@@ -2,9 +2,9 @@
 # Author: Dean Hand
 # License: AGPL
 # Version: 1.0
+
 import Utils.config as config
 from loguru import logger
-# from Utils.logger_config import *
 
 def extract_sensor_info(data, sensor_dimensions, im_file_name):
 
@@ -66,6 +66,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name):
     if not sensor_info:
         logger.error(
             f"No sensor information found for {im_file_name} with sensor model {sensor_model_data} and rig camera index {sensort_index}. Using defaults.")
+
         sensor_info = sensor_dimensions.get(("default", 'nan'))
 
     drone_make, drone_model, camera_make, sensor_model, cam_index, sensor_width, sensor_height, lens_FOVw, lens_FOVh = sensor_info
@@ -83,6 +84,12 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name):
                       Lens_FOVh=lens_FOVh,
                       FocalLength=focal_length,
                       MaxApertureValue=max_aperture_value)
+    if config.drone_properties is None:
+        drone_check = True
+    elif config.drone_properties['DroneModel'] == drone_info['DroneModel']:
+        drone_check = True
+    else:
+        drone_check = False
     config.update_drone_properties(drone_info)
 
     if sensor_model and drone_make is None:
@@ -151,4 +158,4 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name):
             epsgCode=config.epsg_code
         )
 
-    return properties
+    return properties, drone_check
