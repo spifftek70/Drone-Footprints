@@ -54,9 +54,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             config.update_rel_altitude(image.relative_altitude)
 
             # Calculate Field of View (FOV) or any other necessary geometric calculations
-            image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(
-            drone_gps=(image.latitude, image.longitude),
-            drone_altitude=image.relative_altitude,
+            image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(image,
             camera_info=   {
             'sensor_width': image.sensor_width,  # mm
             'sensor_height': image.sensor_height,  # mm (Optional if not used in calculations)
@@ -76,7 +74,6 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             'pitch': image.gimbal_pitch_degree,  # Flight pitch in degrees
             'yaw': image.flight_yaw_degree,  # Flight yaw in degrees (direction of flight)
             },
-            datetime_original = image.datetime_original,
             i=nb_processed_images).get_fov_bbox()
 
             image.create_geojson_feature(properties)
