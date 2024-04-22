@@ -14,6 +14,7 @@ import Utils.config as config
 from Utils.declination import find_declination
 # from Utils.logger_config import *
 from loguru import logger
+from imagedrone import ImageDrone
 
 latitude = 0
 longitude = 0
@@ -24,14 +25,16 @@ mp.dps = 50  # set a higher precision
 
 
 class HighAccuracyFOVCalculator:
-    def __init__(self, drone_gps, drone_altitude, camera_info, gimbal_orientation, flight_orientation,
-                 datetime_original, i):
+#    def __init__(self, drone_gps, drone_altitude, camera_info, gimbal_orientation, flight_orientation,
+#                 datetime_original, i):
+    def __init__(self,image:ImageDrone,  camera_info, gimbal_orientation, flight_orientation,i):
+
         global latitude, longitude, lens_FOVh, lens_FOVw
-        self.drone_gps = drone_gps
-        latitude = drone_gps[0]
-        longitude = drone_gps[1]
-        self.datetime_original = datetime_original
-        self.drone_altitude = drone_altitude
+        self.drone_gps = (image.latitude, image.longitude)
+        latitude = image.latitude
+        longitude = image.longitude
+        self.datetime_original = image.datetime_original
+        self.drone_altitude = image.relative_altitude
         self.camera_info = camera_info
         lens_FOVh = camera_info['lens_FOVh']
         lens_FOVw = camera_info['lens_FOVw']
@@ -65,18 +68,12 @@ class HighAccuracyFOVCalculator:
         - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
         # Normalize yaw for magnetic declination
+
         if config.correct_magnetic_declinaison:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
-            # yaw_rad = radians((90 - gimbal_yaw_deg) + declination)
         else:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg)
-            # yaw_rad = radians(90 - gimbal_yaw_deg)
-
-        # Normalize yaw within the range [0, 2π]
         yaw_rad = yaw_rad % (2 * mp.pi)
-
-        # Convert pitch to radians and calculate as deviation from vertical
-        # pitch_rad = (mp.pi / 2) - radians(gimbal_pitch_deg)
         pitch_rad = radians(90 - gimbal_pitch_deg)
         roll_rad = radians(gimbal_roll_deg)
 

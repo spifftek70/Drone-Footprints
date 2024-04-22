@@ -6,7 +6,7 @@ import Utils.config as config
 from loguru import logger
 # from Utils.logger_config import *
 
-def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, camera_make, sensor_model, lens_FOVw, lens_FOVh):
+def extract_sensor_info(data, sensor_dimensions, im_file_name):
 
     """
     Extract sensor, drone information, and other metadata from a single metadata entry.
@@ -45,7 +45,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name, sensor_make, came
     # Get sensor model and rig camera index from metadata
     sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
     sensort_index = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex') or '5')
-    
+    sensor_make=""
     if sensor_model_data == "FC6310R":
         sensor_model_data = "FC6310"
 
