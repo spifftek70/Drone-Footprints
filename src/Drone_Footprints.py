@@ -148,6 +148,7 @@ def main():
     config.update_nodejs_graphical_interface(args.nodejs)
     init_logger(log_path=log_path)
 
+   
     # Access the arguments
     if args.DSMPATH:
         pass
