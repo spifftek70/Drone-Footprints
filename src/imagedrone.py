@@ -14,14 +14,13 @@ class ImageDrone:
     metadata : dict
     sensor_dimensions : tuple
     config: config
-    feature_point : dict = field(default_factory=dict) 
-    feature_polygon : dict = field(default_factory=dict) 
-    coord_array : list = field(default_factory=list) 
+    feature_point : dict = field(default_factory=dict)
+    feature_polygon : dict = field(default_factory=dict)
+    coord_array : list = field(default_factory=list)
     footprint_coordinates : list = field(default_factory=list)
 
     def __post_init__(self):
         self.file_name = str(self.metadata.get("File:FileName"))
-        print(f'obj image {self.file_name}')
 
         # Extract detailed sensor and drone info for the current image
         # Extracting latitude, longitude, and altitude details
@@ -62,15 +61,15 @@ class ImageDrone:
 
         # Extracting image and sensor details
         self.image_width = int(self.metadata.get("EXIF:ImageWidth")
-                               or self.metadata.get("EXIF:ExifImageWidth")) # pixels
-        self.image_height = int(self.metadata.get("EXIF:ImageHeight")
+                               or self.metadata.get("EXIF:ExifImageWidth",1.0)) # pixels
+        self.image_height = int(self.metadata.get("EXIF:ImageHeight",1.0)
                                 or self.metadata.get("EXIF:ExifImageHeight")) # pixels
         self.focal_length = float(self.metadata.get("EXIF:FocalLength"))
         self.max_aerture_value = self.metadata.get("EXIF:MaxApertureValue")
         # date/time of original image capture
         self.datetime_original = self.metadata.get("EXIF:DateTimeOriginal")
         # Get sensor model and rig camera index from metadata
-        self.sensor_model_data = self.metadata.get("EXIF:Model")  
+        self.sensor_model_data = self.metadata.get("EXIF:Model")
         self.sensor_index = str(self.metadata.get("XMP:RigCameraIndex")
                                 or self.metadata.get('XMP:SensorIndex','nan'))
 
@@ -122,7 +121,7 @@ class ImageDrone:
          Generate GeoTIFF file image
         """
         image_path = os.path.join(indir_path, self.file_name)
-        output_file = f"obj_{Path(self.file_name).stem}.tif"
+        output_file = f"{Path(self.file_name).stem}.tif"
         geotiff_file = Path(geotiff_dir) / output_file
         generate_geotiff(image_path, geotiff_file, self.coord_array)
 
@@ -145,12 +144,7 @@ class ImageDrone:
             (array_rw[1]),
             (array_rw[0]),
         ]
-
         type_point = dict(type="Point", coordinates=[self.longitude, self.latitude])
         type_polygon = dict(type="Polygon", coordinates=[closed_array])
-        self.feature_point = dict(
-            type="Feature", geometry=type_point, properties=properties
-        )
-        self.feature_polygon = dict(
-            type="Feature", geometry=type_polygon, properties=properties
-        )
+        self.feature_point = dict(type="Feature", geometry=type_point, properties=properties)
+        self.feature_polygon = dict(type="Feature", geometry=type_polygon, properties=properties)

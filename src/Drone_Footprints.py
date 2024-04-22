@@ -17,6 +17,7 @@ from Utils.logger_config import *
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
 from typing import List
+from imagedrone import ImageDrone
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 
@@ -206,7 +207,7 @@ def main():
         logger.critical("Error reading sensor dimensions from CSV.")
         sys.exit()
     else:
-        feature_collection, idx = process_metadata(
+        feature_collection, images_array= process_metadata(
             metadata, indir, geotiff_dir, sensor_dimensions
         )
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
@@ -221,7 +222,7 @@ def main():
     else:
         geo_type = "standard"
 
-    logger.success(f"Process Complete. {idx} {geo_type} GeoTIFFs and a GeoJSON file were created.")
+    logger.success(f"Process Complete. {len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created.")
     logger.remove()  # Remove existing handlers
 
 

@@ -65,18 +65,12 @@ class HighAccuracyFOVCalculator:
         - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
         # Normalize yaw for magnetic declination
+
         if config.correct_magnetic_declinaison:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
-            # yaw_rad = radians((90 - gimbal_yaw_deg) + declination)
         else:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg)
-            # yaw_rad = radians(90 - gimbal_yaw_deg)
-
-        # Normalize yaw within the range [0, 2π]
         yaw_rad = yaw_rad % (2 * mp.pi)
-
-        # Convert pitch to radians and calculate as deviation from vertical
-        # pitch_rad = (mp.pi / 2) - radians(gimbal_pitch_deg)
         pitch_rad = radians(90 - gimbal_pitch_deg)
         roll_rad = radians(gimbal_roll_deg)
 
