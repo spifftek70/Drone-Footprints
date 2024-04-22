@@ -162,11 +162,11 @@ def main():
     args_list = []
     for arg, value in user_args.items():
         if value != parser.get_default(arg):
-            args_list.append(f"     {Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {Color.BOLD}{value}{Color.END}")
+            args_list.append(f"&emsp;{Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {value}")
 
     # Joining all the elements in the list into a single string with newline characters
-    args_str = "\n".join(args_list)
-    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - \n{args_str}")
+    args_str = "<br>".join(args_list)
+    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - <br> {args_str}")
     # logger.exception(f"User arguments - {user_args}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight

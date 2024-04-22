@@ -12,11 +12,10 @@ from sensor_data import extract_sensor_info
 from Utils.utils import Color
 from tqdm import tqdm
 from loguru import logger
-# from Utils.logger_config import *
 import Utils.config as config
 import datetime
 
-# from pprint
+# from pprint import pprint
 
 def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     """
@@ -44,14 +43,19 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     lens_FOVw = 0.0
     lens_FOVh = 0.0
     logger.info("Processing images for GeoTiff and GeoJSON creation.")
+    drone_checks = []
+    drone_model = ""
+    Sensor_Model = ""
     for data in metadata:
+        # pprint(data)clear
         try:
             file_Name = str(data.get("File:FileName"))
             pbar.set_description_str(Color.YELLOW + f'Current file: {file_Name}' + Color.END)
 
             # Extract detailed sensor and drone info for the current image
-            properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, camera_make, sensor_model, lens_FOVw,
+            properties, drone_check = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, camera_make, sensor_model, lens_FOVw,
                                              lens_FOVh)
+            drone_checks.append(drone_check)
             re_altitude = float(properties['RelativeAltitude']) if 'RelativeAltitude' in properties else None,
             ab_altitude = float(properties['AbsoluteAltitude']) if 'AbsoluteAltitude' in properties else None,
             focal_length = float(properties['Focal_Length']) if 'Focal_Length' in properties else None,
@@ -131,10 +135,21 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
         i = i + 1
     # Add lines to the GeoJSON feature collection if necessary
     if line_coordinates:
+        Drone_props = config.drone_properties
         now = datetime.datetime.now()
         process_date = f"{now.strftime('%Y-%m-%d %H-%M')}"
         line_geometry = dict(type="LineString", coordinates=line_coordinates)
-        mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code, cog=config.cog)
+        if False in drone_checks and Drone_props['SensorModel'] != "M3M":
+            logger.warning("Multiple Drone types Detected.")
+            mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
+                                 cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
+        elif False in drone_checks and Drone_props['SensorModel'] == "M3M":
+            mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
+                                 cog=config.cog, drone_model=Drone_props['DroneModel'], sensor_make=Drone_props['SensorModel'])
+        else:
+            logger.info("drone props", Drone_props, "\n", "mods", Drone_props['DroneModel'])
+            mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
+                                 cog=config.cog, drone_model=Drone_props['DroneModel'], sensor_make=Drone_props['SensorModel'])
         line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
         feature_collection["features"].insert(0, line_feature)
     pbar.close()

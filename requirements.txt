@@ -29,3 +29,5 @@ sympy~=1.9.0
 lensfunpy~=1.15.0
 numpy-quaternion~=2023.0.3
 rio_cogeo~=5.3.0
+asyncio
+websocket-client
