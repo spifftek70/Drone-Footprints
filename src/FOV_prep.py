@@ -9,10 +9,7 @@ from new_fov import HighAccuracyFOVCalculator
 def calculate_fov(re_altitude, ab_altitude, focal_length, sensor_width, sensor_height, image_width, image_height,
                   gimbal_roll_deg, gimbal_pitch_deg, gimbal_yaw_deg, flight_roll_deg, flight_pitch_deg,
                   flight_yaw_deg, drone_latitude, drone_longitude, datetime_original, lens_FOVwm, lens_FOVhm, i):
-    # if re_altitude == ab_altitude:
-    #     adjusted_altitude = ab_altitude
-    # else:
-    #     adjusted_altitude = re_altitude
+
     camera_info = {
         'sensor_width': sensor_width,  # mm
         'sensor_height': sensor_height,  # mm (Optional if not used in calculations)
