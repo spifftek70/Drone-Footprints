@@ -15,8 +15,8 @@ from loguru import logger
 # from Utils.logger_config import *
 import Utils.config as config
 import datetime
-
-# from pprint
+from imagedrone import ImageDrone
+from new_fov import HighAccuracyFOVCalculator
 
 def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     """
@@ -44,10 +44,13 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     lens_FOVw = 0.0
     lens_FOVh = 0.0
     logger.info("Processing images for GeoTiff and GeoJSON creation.")
+    images_array = []
     for data in metadata:
         try:
+            image=ImageDrone(data,sensor_dimensions,config)
+            images_array.append(image)
             file_Name = str(data.get("File:FileName"))
-            pbar.set_description_str(Color.YELLOW + f'Current file: {file_Name}' + Color.END)
+            pbar.set_description_str(f'{Color.YELLOW}Current file: {file_Name}{Color.END}')
 
             # Extract detailed sensor and drone info for the current image
             properties = extract_sensor_info(data, sensor_dimensions, file_Name, sensor_make, camera_make, sensor_model, lens_FOVw,
@@ -104,6 +107,33 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 lens_FOVh,
                 i
             )
+            image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(
+            drone_gps=(image.latitude, image.longitude),
+            drone_altitude=image.relative_altitude,
+            camera_info=   {
+            'sensor_width': image.sensor_width,  # mm
+            'sensor_height': image.sensor_height,  # mm (Optional if not used in calculations)
+            'image_width': image.image_width,  # pixels
+            'image_height': image.image_height,  # pixels
+            'Focal_Length': image.focal_length,  # mm
+            'lens_FOVw': image.lens_FOV_width,  # lens distortion in mm
+            'lens_FOVh': image.lens_FOV_height  # lens distortion in mm 
+            },
+            gimbal_orientation = {
+            'roll': image.gimbal_roll_degree,  # Gimbal roll in degrees
+            'pitch': image.gimbal_pitch_degree,  # Gimbal pitch in degrees (negative if pointing downwards)
+            'yaw': image.gimbal_yaw_degree,  # Gimbal yaw in degrees
+             },
+            flight_orientation = {
+            'roll': image.flight_roll_degree,  # Flight roll in degrees
+            'pitch': image.gimbal_pitch_degree,  # Flight pitch in degrees
+            'yaw': image.flight_yaw_degree,  # Flight yaw in degrees (direction of flight)
+            },
+            datetime_original = image.datetime_original,
+            i=i).get_fov_bbox()
+
+            image.create_geojson_feature(properties)
+            image.generate_geotiff(indir_path, geotiff_dir)
 
             # Create GeoJSON features for the current image
             feature_point, feature_polygon = create_geojson_feature(polybox, drone_longitude, drone_latitude,
@@ -116,7 +146,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
 
             # Generate GeoTIFF for the current image
             image_path = os.path.join(indir_path, file_Name)
-            output_file = Path(file_Name).stem + ".tif"
+            output_file = f"{Path(file_Name).stem}.tif"
             geotiff_file = Path(geotiff_dir) / output_file
             generate_geotiff(image_path, geotiff_file, coord_array)
 
