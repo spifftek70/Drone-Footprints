@@ -9,9 +9,9 @@ from mpmath import mp, radians, sqrt
 import quaternion
 from loguru import logger
 from vector3d.vector import Vector
-from Utils.geospatial_conversions import *
+from Utils.geospatial_conversions import find_geodetic_intersections, gps_to_utm, translate_to_wgs84, utm_to_latlon
 from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open, get_altitudes_from_open
-import Utils.config as config
+from Utils import config
 from imagedrone import ImageDrone
 
 latitude = 0
@@ -29,10 +29,9 @@ class HighAccuracyFOVCalculator:
         self.drone_gps = (image.latitude, image.longitude)
         latitude = image.latitude
         longitude = image.longitude
-        
+
         lens_FOVh = self.image.lens_FOV_height
         lens_FOVw = self.image.lens_FOV_width
-        
 
     def calculate_fov_dimensions(self):
         FOVw = 2 * mp.atan(mp.mpf(self.image.sensor_width) / (2 * self.image.focal_length))
@@ -41,7 +40,7 @@ class HighAccuracyFOVCalculator:
         # _sensor_lens_correction now inside this function
         corrected_fov_width = FOVw * lens_FOVw
         corrected_fov_height = FOVh * lens_FOVh
-        
+
         return corrected_fov_width, corrected_fov_height
 
 
@@ -109,7 +108,7 @@ class HighAccuracyFOVCalculator:
         # Calculate adjusted angles for gimbal and flight orientations
         self.image.find_declination()
         declination = self.image.declination
-        
+
         adj_yaw, adj_pitch, adj_roll = self.calculate_rads_from_angles(self.image.gimbal_yaw_degree,
                                                                        self.image.gimbal_pitch_degree,
                                                                        self.image.gimbal_roll_degree,

@@ -14,9 +14,9 @@ import exiftool
 import geojson
 from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
-from Utils.logger_config import *
+from Utils.logger_config import logger, init_logger
 from Utils.raster_utils import create_mosaic
-import Utils.config as config
+from Utils import config
 from imagedrone import ImageDrone
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
@@ -39,7 +39,7 @@ def is_valid_file(arg):
     if os.path.isfile(arg):
         return arg
     print(f'{arg}  is not a valid file.  Switching to Default elevation model')
-    return
+    return None
 
 
 def get_image_files(directory: str) -> list[Path]:
@@ -189,16 +189,18 @@ def main():
     except Exception as exception:
         logger.opt(exception=True).warning(f"Error creating directories: {exception}")
 
+
+
     sensor_dimensions = read_sensor_dimensions_from_csv(
         SENSOR_INFO_CSV, sensor_width, sensor_height
     )
     if sensor_dimensions is None:
         logger.critical("Error reading sensor dimensions from CSV.")
         sys.exit()
-    else:
-        feature_collection, images_array= process_metadata(
-            metadata, indir, geotiff_dir, sensor_dimensions
-        )
+
+    images_array = list[ImageDrone]
+    feature_collection, images_array= process_metadata(metadata, indir, geotiff_dir, sensor_dimensions)
+
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
     write_geojson_file(geojson_file, geojson_dir, feature_collection)
     if args.nodejs:
