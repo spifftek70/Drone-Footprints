@@ -9,6 +9,7 @@ import argparse
 import datetime
 from pathlib import Path
 import warnings
+from typing import List
 import exiftool
 import geojson
 from meta_data import process_metadata
@@ -16,7 +17,6 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 from Utils.logger_config import *
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
-from typing import List
 from imagedrone import ImageDrone
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
@@ -78,7 +78,7 @@ def get_metadata(files: List[Path]) -> List[dict]:
     sys.exit()
 
 
-def find_MTK(some_dir):
+def find_mtk(some_dir):
     """
     Find MTK file from input dir.
 
@@ -149,17 +149,6 @@ def main():
     config.update_nodejs_graphical_interface(args.nodejs)
     init_logger(log_path=log_path)
 
-   
-    # Access the arguments
-    if args.DSMPATH:
-        pass
-    elif args.elevation_service:
-        pass
-    elif args.DSMPATH:
-        logger.exception("")
-    else:
-        pass
-
     user_args = dict(vars(args))
     args_list = []
     for arg, value in user_args.items():
@@ -180,7 +169,7 @@ def main():
     config.update_equalize(args.image_equalize)
     config.update_lense(args.lense_correction)
     config.update_elevation(args.elevation_service)
-    rtk_rtn = find_MTK(indir)
+    rtk_rtn = find_mtk(indir)
     if rtk_rtn:
         config.update_rtk(True)
     config.update_dtm(args.DSMPATH)
