@@ -33,7 +33,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     line_feature = ""
     nb_processed_images = 0
     logger.info("Processing images for GeoTiff and GeoJSON creation.")
-    drone_checks = []
+    drone_checks_array = []
     images_array = []
     datetime_original = ""
     for data in metadata:
@@ -46,8 +46,8 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             # Extract detailed sensor and drone info for the current image
 
             properties, drone_check = extract_sensor_info(data, sensor_dimensions, image.file_name)
-            drone_checks.append(drone_check)
-            datetime_original = properties['DateTimeOriginal'] if 'DateTimeOriginal' in properties else None
+            drone_checks_array.append(drone_check)
+            datetime_original = image.datetime_original
             config.update_file_name(image.file_name)
             config.update_abso_altitude(image.absolute_altitude)
             config.update_rel_altitude(image.relative_altitude)
@@ -82,10 +82,10 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     now = datetime.datetime.now()
     process_date = f"{now.strftime('%Y-%m-%d %H-%M')}"
     line_geometry = dict(type="LineString", coordinates=line_coordinates)
-    if False in drone_checks and drone_props['SensorModel'] != "M3M":
+    if False in drone_checks_array and drone_props['SensorModel'] != "M3M":
         mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
                              cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
-    elif False in drone_checks and drone_props['SensorModel'] == "M3M":
+    elif False in drone_checks_array and drone_props['SensorModel'] == "M3M":
         mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
                              cog=config.cog, drone_model=drone_props['DroneModel'],
                              sensor_make=drone_props['SensorModel'])

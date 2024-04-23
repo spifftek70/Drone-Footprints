@@ -3,10 +3,10 @@
 # License: AGPL
 # Version: 1.0
 
-import Utils.config as config
 from loguru import logger
+from Utils import config
 
-def extract_sensor_info(data, sensor_dimensions, im_file_name):
+def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> tuple[dict,bool]:
 
     """
     Extract sensor, drone information, and other metadata from a single metadata entry.
@@ -14,7 +14,7 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name):
     Args:
         data (dict): A dictionary containing metadata for one image.
         sensor_dimensions (dict): A dictionary containing sensor dimension information.
-
+        im_file_name (str): Name of the file
     Returns:
         tuple: Contains extracted metadata including sensor width, sensor height, drone make, drone model, and additional metadata.
     """
@@ -46,6 +46,8 @@ def extract_sensor_info(data, sensor_dimensions, im_file_name):
     sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
     sensort_index = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex') or '5')
     sensor_make=""
+
+    # DJI Phantom4 and DJI Phantom4 RTK have the same sensor and lens
     if sensor_model_data == "FC6310R":
         sensor_model_data = "FC6310"
 
