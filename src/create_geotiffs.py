@@ -61,7 +61,7 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
             except IndexError as e:
                 config.update_lense(False)
                 img_undistorted = np.array(jpeg_img)
-                logger.info(f"Cannot correct lens distortion. Camera properties not found in database.")
+                logger.info("Cannot correct lens distortion. Camera properties not found in database.")
                 logger.exception(f"Index error: {e} for {image_path}")
         else:
             img_undistorted = np.array(jpeg_img)

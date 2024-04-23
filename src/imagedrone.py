@@ -152,11 +152,9 @@ class ImageDrone:
         geotiff_file = Path(geotiff_dir) / output_file
         generate_geotiff(image_path, geotiff_file, self.coord_array)
 
-
     def create_geojson_feature(self, properties):
         """
         Create GeoJSON features from image metadata.
-
         """
         # Properties setup and other related processing goes here.
         # This is simplified to focus on structure. Implement as needed based on the original function.
