@@ -40,6 +40,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
         # pprint(data)clear
         try:
             image = ImageDrone(data, sensor_dimensions, config)
+            image.create_properties()
             images_array.append(image)
             pbar.set_description_str(f'{Color.YELLOW}Current file: {image.file_name}{Color.END}')
 
@@ -55,7 +56,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             # Calculate Field of View (FOV) or any other necessary geometric calculations
             image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(image).get_fov_bbox()
 
-            image.create_geojson_feature(properties)
+            image.create_geojson_feature(image.properties)
             # Generate GeoTIFF for the current image
             image.generate_geotiff(indir_path, geotiff_dir)
 

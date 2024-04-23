@@ -44,16 +44,18 @@ def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> 
     datetime_original = data.get("EXIF:DateTimeOriginal", "Unknown")
     # Get sensor model and rig camera index from metadata
     sensor_model_data = data.get("EXIF:Model", "default")  # Fallback to 'default' if not specified
-    sensort_index = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex') or '5')
+    sensor_index = str(data.get("XMP:RigCameraIndex")) or int(data.get('XMP:SensorIndex'))
     sensor_make=""
 
-    # DJI Phantom4 and DJI Phantom4 RTK have the same sensor and lens
-    if sensor_model_data == "FC6310R":
-        sensor_model_data = "FC6310"
+ 
 
     if sensor_model_data != "default":
+        # DJI Phantom4 and DJI Phantom4 RTK have the same sensor and lens
+        if sensor_model_data == "FC6310R":
+            sensor_model_data = "FC6310"
+
         # Prioritize direct match with sensor model and rig camera index
-        key = (sensor_model_data, sensort_index)
+        key = (sensor_model_data, sensor_index)
         sensor_info = sensor_dimensions.get(key)
 
         # If no direct match, try just with sensor model (for cases without multiple entries)
@@ -67,7 +69,7 @@ def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> 
     # Ensure we have valid sensor_info; otherwise, log error or take necessary action
     if not sensor_info:
         logger.error(
-            f"No sensor information found for {im_file_name} with sensor model {sensor_model_data} and rig camera index {sensort_index}. Using defaults.")
+            f"No sensor information found for {im_file_name} with sensor model {sensor_model_data} and rig camera index {sensor_index}. Using defaults.")
 
         sensor_info = sensor_dimensions.get(("default", 'nan'))
 
@@ -108,7 +110,7 @@ def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> 
             Image_Width=image_width,
             Image_Height=image_height,
             Sensor_Model=sensor_model,
-            Sensor_index=sensort_index,
+            Sensor_index=sensor_index,
             Sensor_Make=sensor_make,
             RelativeAltitude=drone_relative_altitude,
             AbsoluteAltitude=drone_absolute_altitude,
@@ -136,7 +138,7 @@ def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> 
             Image_Width=image_width,
             Image_Height=image_height,
             Sensor_Model=sensor_model,
-            Sensor_index=sensort_index,
+            Sensor_index=sensor_index,
             Sensor_Make=sensor_make,
             RelativeAltitude=drone_relative_altitude,
             AbsoluteAltitude=drone_absolute_altitude,

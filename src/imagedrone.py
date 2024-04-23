@@ -21,9 +21,9 @@ class ImageDrone:
     declination : float = None
     feature_point : dict = field(default_factory=dict)
     feature_polygon : dict = field(default_factory=dict)
+    properties : dict = field(default_factory=dict)
     coord_array : list = field(default_factory=list)
     footprint_coordinates : list = field(default_factory=list)
-
     def __post_init__(self):
         self.file_name = str(self.metadata.get("File:FileName"))
 
@@ -52,33 +52,36 @@ class ImageDrone:
             self.metadata.get("XMP:GimbalYawDegree") or
             self.metadata.get("MakerNotes:CameraYaw") or self.metadata.get("XMP:Yaw"))
         self.flight_pitch_degree = float(self.metadata.get("XMP:FlightPitchDegree")
-                                         or self.metadata.get("MakerNotes:Pitch"))
+                                         or self.metadata.get("MakerNotes:Pitch")or 999)
         self.flight_roll_degree = float(self.metadata.get("XMP:FlightRollDegree")
-                                        or self.metadata.get("MakerNotes:Roll"))
+                                        or self.metadata.get("MakerNotes:Roll")or 999)
         self.flight_yaw_degree = float(self.metadata.get("XMP:FlightYawDegree")
-                                       or self.metadata.get("MakerNotes:Yaw"))
-
+                                       or self.metadata.get("MakerNotes:Yaw")or 999)
         if self.flight_pitch_degree is None : self.flight_pitch_degree = self.gimbal_pitch_degree
         if self.flight_roll_degree is None : self.flight_roll_degree = self.gimbal_roll_degree
         if self.flight_yaw_degree is None : self.flight_yaw_degree = self.gimbal_yaw_degree
 
-
-
         # Extracting image and sensor details
         self.image_width = int(self.metadata.get("EXIF:ImageWidth")
-                               or self.metadata.get("EXIF:ExifImageWidth",1.0)) # pixels
-        self.image_height = int(self.metadata.get("EXIF:ImageHeight",1.0)
+                               or self.metadata.get("EXIF:ExifImageWidth")) # pixels
+        self.image_height = int(self.metadata.get("EXIF:ImageHeight")
                                 or self.metadata.get("EXIF:ExifImageHeight")) # pixels
         self.focal_length = float(self.metadata.get("EXIF:FocalLength"))
-        self.max_aerture_value = self.metadata.get("EXIF:MaxApertureValue")
+        self.max_aperture_value = self.metadata.get("EXIF:MaxApertureValue")
         # date/time of original image capture
         self.datetime_original = self.metadata.get("EXIF:DateTimeOriginal")
         # Get sensor model and rig camera index from metadata
         self.sensor_model_data = self.metadata.get("EXIF:Model")
         self.sensor_index = str(self.metadata.get("XMP:RigCameraIndex")
-                                or self.metadata.get('XMP:SensorIndex','nan'))
+                                or self.metadata.get('XMP:SensorIndex'))
+        self.sensor_make = ""
+
 
         if self.sensor_model_data :
+            # DJI Phantom4 and DJI Phantom4 RTK have the same sensor and lens
+            if self.sensor_model_data == "FC6310R":
+                self.sensor_model_data = "FC6310"
+
             # Prioritize direct match with sensor model and rig camera index
             key = (self.sensor_model_data, self.sensor_index)
             self.sensor_info = self.sensor_dimensions.get((key))
@@ -108,7 +111,7 @@ class ImageDrone:
         self.sensor_height = self.sensor_info[6]
         self.lens_FOV_width = self.sensor_info[7]
         self.lens_FOV_height = self.sensor_info [8]
-
+    
 
         # Special case
         if self.sensor_model in ["FC2103", "FC220", "FC300X", "FC200"]:
@@ -173,3 +176,38 @@ class ImageDrone:
         type_polygon = dict(type="Polygon", coordinates=[closed_array])
         self.feature_point = dict(type="Feature", geometry=type_point, properties=properties)
         self.feature_polygon = dict(type="Feature", geometry=type_polygon, properties=properties)
+
+    def create_properties(self):
+        self.properties = dict(
+            File_Name=self.file_name,
+            Focal_Length=self.focal_length,
+            Image_Width=self.image_width,
+            Image_Height=self.image_height,
+            Sensor_Model=self.sensor_model,
+            Sensor_index=self.sensor_index,
+            Sensor_Make=self.sensor_make,
+            RelativeAltitude=self.relative_altitude,
+            AbsoluteAltitude=self.absolute_altitude,
+            FlightYawDegree=self.flight_yaw_degree,
+            FlightPitchDegree=self.flight_pitch_degree,
+            FlightRollDegree=self.flight_roll_degree,
+            DateTimeOriginal=self.datetime_original,
+            GimbalPitchDegree=self.gimbal_pitch_degree,
+            GimbalYawDegree=self.gimbal_yaw_degree,
+            GimbalRollDegree=self.gimbal_roll_degree,
+            DroneCoordinates=[self.longitude, self.latitude],
+            Sensor_Width=self.sensor_width,
+            Sensor_Height=self.sensor_height,
+            CameraMake=self.camera_make,
+            Drone_Make=self.drone_make,
+            Drone_Model=self.drone_model,
+            MaxApertureValue=self.max_aperture_value,
+            lens_FOV1h=self.lens_FOV_height,
+            lens_FOVw1=self.lens_FOV_width,
+            GSD=self.gsd,
+            epsgCode=self.config.epsg_code)
+        if self.gimbal_pitch_degree == 999:
+            self.properties['FlightYawDegree']=self.gimbal_yaw_degree
+            self.properties['FlightPitchDegree']=self.gimbal_pitch_degree
+            self.properties['FlightRollDegree']=self.gimbal_roll_degree
+ 
