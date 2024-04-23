@@ -32,12 +32,6 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
     pbar = tqdm(total=len(metadata), position=1, leave=False, bar_format='{desc}')
     line_feature = ""
     nb_processed_images = 0
-    file_name = ""
-    sensor_make = ""
-    camera_make = ""
-    sensor_model = ""
-    lens_FOVw = 0.0
-    lens_FOVh = 0.0
     logger.info("Processing images for GeoTiff and GeoJSON creation.")
     drone_checks = []
     images_array = []
@@ -53,48 +47,13 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
 
             properties, drone_check = extract_sensor_info(data, sensor_dimensions, image.file_name)
             drone_checks.append(drone_check)
-            lens_FOVw = properties['lens_FOVw1'] if 'lens_FOVw1' in properties else 1.0
-            lens_FOVh = properties['lens_FOV1h'] if 'lens_FOV1h' in properties else 1.0
             datetime_original = properties['DateTimeOriginal'] if 'DateTimeOriginal' in properties else None,
             config.update_file_name(image.file_name)
             config.update_abso_altitude(image.absolute_altitude)
             config.update_rel_altitude(image.relative_altitude)
 
             # Calculate Field of View (FOV) or any other necessary geometric calculations
-            image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(image,
-                                               camera_info={
-                                                   'sensor_width': image.sensor_width,
-                                                   # mm
-                                                   'sensor_height': image.sensor_height,
-                                                   # mm (Optional if not used in calculations)
-                                                   'image_width': image.image_width,
-                                                   # pixels
-                                                   'image_height': image.image_height,
-                                                   # pixels
-                                                   'Focal_Length': image.focal_length,
-                                                   # mm
-                                                   'lens_FOVw': image.lens_FOV_width,
-                                                   # lens distortion in mm
-                                                   'lens_FOVh': image.lens_FOV_height
-                                                   # lens distortion in mm
-                                               },
-                                               gimbal_orientation={
-                                                   'roll': image.gimbal_roll_degree,
-                                                   # Gimbal roll in degrees
-                                                   'pitch': image.gimbal_pitch_degree,
-                                                   # Gimbal pitch in degrees (negative if pointing downwards)
-                                                   'yaw': image.gimbal_yaw_degree,
-                                                   # Gimbal yaw in degrees
-                                               },
-                                               flight_orientation={
-                                                   'roll': image.flight_roll_degree,
-                                                   # Flight roll in degrees
-                                                   'pitch': image.gimbal_pitch_degree,
-                                                   # Flight pitch in degrees
-                                                   'yaw': image.flight_yaw_degree,
-                                                   # Flight yaw in degrees (direction of flight)
-                                               },
-                                               i=nb_processed_images).get_fov_bbox()
+            image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(image).get_fov_bbox()
 
             image.create_geojson_feature(properties)
             # Generate GeoTIFF for the current image
@@ -109,11 +68,11 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             outer.update(1)
 
         except TypeError as t:
-            logger.exception(f"Missing metadata key: {t} for image: {file_name}")
+            logger.exception(f"Missing metadata key: {t} for image: {image.file_name}")
         except KeyError as k:
-            logger.exception(f"Missing metadata key: {k} for image: {file_name}")
+            logger.exception(f"Missing metadata key: {k} for image: {image.file_name}")
         except ValueError as e:
-            logger.exception(f"Invalid value for metadata key: {e} for image: {file_name}")
+            logger.exception(f"Invalid value for metadata key: {e} for image: {image.file_name}")
         nb_processed_images = nb_processed_images + 1
 
     # Add lines to the GeoJSON feature collection if necessary

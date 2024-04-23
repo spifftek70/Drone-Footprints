@@ -6,6 +6,7 @@ Drone_Footprints.spec
 qodana.yaml
 src/build/
 src/dist/
+src/Utils/
 .venv/
 .venv
 .venv/bin

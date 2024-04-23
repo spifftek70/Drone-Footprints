@@ -1,8 +1,12 @@
 import os
 from dataclasses import dataclass,field
 from pathlib import Path
+from datetime import datetime
 import geojson
 from geojson_rewind import rewind
+from magnetic_field_calculator import MagneticFieldCalculator
+import magnetismi.magnetismi as api
+from Utils.utils import Color
 from shapely.geometry import Polygon
 import Utils.config as config
 from create_geotiffs import generate_geotiff
@@ -14,6 +18,7 @@ class ImageDrone:
     metadata : dict
     sensor_dimensions : tuple
     config: config
+    declination : float = None
     feature_point : dict = field(default_factory=dict)
     feature_polygon : dict = field(default_factory=dict)
     coord_array : list = field(default_factory=list)
@@ -114,6 +119,28 @@ class ImageDrone:
             self.drone_make = "Unknown Drone"
 
         self.gsd = (self.sensor_width * self.relative_altitude) / (self.focal_length * self.image_width)
+
+
+#def find_declination(altitude, focal_length, drone_latitude, drone_longitude, datetime_original):
+    def find_declination(self):
+        str_date = datetime.strptime(self.datetime_original, '%Y:%m:%d %H:%M:%S')
+
+        if str(str_date.year) > str(2019):
+            mag_date = api.dti.date(str_date.year, str_date.month, str_date.day)
+            # Find the magnetic declination reference
+            model = api.Model(mag_date.year)
+            field_point = model.at(lat_dd=self.latitude, lon_dd=self.longitude, alt_ft=self.relative_altitude, date=mag_date)
+            declination = field_point.dec
+        else:
+            calculator = MagneticFieldCalculator()
+            model = calculator.calculate(latitude=self.latitude, longitude=self.longitude)
+            dec = model['field-value']['declination']
+            declination = dec['value']
+
+        if self.relative_altitude < 0 or self.focal_length <= 0:
+            config.pbar.write(Color.RED + ValueError("Altitude and focal length must be positive.") + Color.END)
+        self.declination=declination
+
 
 
     def generate_geotiff(self,indir_path:str, geotiff_dir:str):
