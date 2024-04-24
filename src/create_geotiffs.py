@@ -11,20 +11,21 @@ from loguru import logger
 import lensfunpy
 
 
-def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
+#def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
+def set_raster_extents(image):
     try:
-        jpeg_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        jpeg_img = cv2.imread(image.image_path, cv2.IMREAD_UNCHANGED)
         if jpeg_img is None:
-            logger.warning(f"File not found: {image_path}")
+            logger.warning(f"File not found: {image.image_path}")
             return
-        fixed_polygon = Polygon(coordinate_array)
+        fixed_polygon = Polygon(image.coord_array)
         if config.lense_correction is True:
             try:
-                focal_length = config.drone_properties['FocalLength']
-                distance = config.center_distance
-                cam_maker = config.drone_properties['CameraMake']
-                cam_model = config.drone_properties['SensorModel']
-                aperture = config.drone_properties['MaxApertureValue']
+                focal_length = image.focal_length
+                distance = image.center_distance
+                cam_maker = image.camera_make
+                cam_model = image.sensor_model
+                aperture = image.max_aperture_value
 
                 # Load camera and lens from lensfun database
                 db = lensfunpy.Database()
@@ -62,7 +63,7 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
                 config.update_lense(False)
                 img_undistorted = np.array(jpeg_img)
                 logger.info("Cannot correct lens distortion. Camera properties not found in database.")
-                logger.exception(f"Index error: {e} for {image_path}")
+                logger.exception(f"Index error: {e} for {image.image_path}")
         else:
             img_undistorted = np.array(jpeg_img)
 
@@ -73,14 +74,14 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
         else:
             adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGBA)
 
-        rectify_and_warp_to_geotiff(adjImg, dst_utf8_path, fixed_polygon, coordinate_array)
+        rectify_and_warp_to_geotiff(adjImg, image.geotiff_file, fixed_polygon, image.coord_array)
     except FileNotFoundError as e:
-        logger.exception(f"File not found: {image_path}. {e}")
+        logger.exception(f"File not found: {image.image_path}. {e}")
     except Exception as e:
         logger.exception(f"Error opening or processing image: {e}")
 
 
-def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, coordinate_array):
+def rectify_and_warp_to_geotiff(jpeg_img_array, geotiff_file, fixed_polygon, coordinate_array):
     """
     Warps and rectifies a JPEG image array to a GeoTIFF format based on a fixed polygon and coordinate array.
 
@@ -101,20 +102,6 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, co
 
     # Warp the rasterio dataset to the destination path
     try:
-        warp_ds(dst_utf8_path, dsArray)
+        warp_ds(geotiff_file, dsArray)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error writing GeoTIFF: {e}")
-
-def generate_geotiff(image_path, geotiff_file, coord_array):
-    """
-    Generate a GeoTIFF file for a single image.
-
-    Args:
-        image_path (str): The path to the original image file.
-        geotiff_file (Path): The path where the GeoTIFF should be saved.
-        coord_array (list): A list of coordinate pairs defining the image's footprint.
-    """
-    try:
-        set_raster_extents(image_path, geotiff_file, coord_array)
-    except ValueError as e:
-        logger.opt(exception=True).warning(str(e))

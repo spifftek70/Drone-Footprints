@@ -6,11 +6,10 @@ import geojson
 from geojson_rewind import rewind
 from magnetic_field_calculator import MagneticFieldCalculator
 import magnetismi.magnetismi as api
-from Utils.utils import Color
 from shapely.geometry import Polygon
-import Utils.config as config
-from create_geotiffs import generate_geotiff
-from typing import List
+from Utils.utils import Color
+from Utils import config
+from create_geotiffs import set_raster_extents
 
 
 @dataclass
@@ -25,6 +24,10 @@ class ImageDrone:
     properties : dict = field(default_factory=dict)
     coord_array : list = field(default_factory=list)
     footprint_coordinates : list = field(default_factory=list)
+    image_path : str = ""
+    output_file : str = ""
+    geotiff_file : str = ""
+
     def __post_init__(self):
         self.file_name = str(self.metadata.get("File:FileName"))
 
@@ -112,7 +115,6 @@ class ImageDrone:
         self.sensor_height = self.sensor_info[6]
         self.lens_FOV_width = self.sensor_info[7]
         self.lens_FOV_height = self.sensor_info [8]
-    
 
         # Special case
         if self.sensor_model in ["FC2103", "FC220", "FC300X", "FC200"]:
@@ -125,6 +127,8 @@ class ImageDrone:
         self.gsd = (self.sensor_width * self.relative_altitude) / (self.focal_length * self.image_width)
         self.create_properties()
         self.create_hash()
+
+
 
 #def find_declination(altitude, focal_length, drone_latitude, drone_longitude, datetime_original):
     def find_declination(self):
@@ -148,14 +152,22 @@ class ImageDrone:
 
 
 
-    def generate_geotiff(self,indir_path:str, geotiff_dir:str):
+    def generate_geotiff(self,indir_path:str, geotiff_dir:str,logger):
         """
          Generate GeoTIFF file image
         """
-        image_path = os.path.join(indir_path, self.file_name)
-        output_file = f"{Path(self.file_name).stem}.tif"
-        geotiff_file = Path(geotiff_dir) / output_file
-        generate_geotiff(image_path, geotiff_file, self.coord_array)
+        self.image_path = os.path.join(indir_path, self.file_name)
+        self.output_file = f"{Path(self.file_name).stem}.tif"
+        self.geotiff_file = Path(geotiff_dir) / self.output_file
+        #generate_geotiff(image_path, geotiff_file, self.coord_array)
+        try:
+            set_raster_extents(self)
+        except ValueError as e:
+            logger.opt(exception=True).warning(str(e))
+
+
+
+
 
     def create_geojson_feature(self, properties):
         """
@@ -212,7 +224,7 @@ class ImageDrone:
             self.properties['FlightYawDegree']=self.gimbal_yaw_degree
             self.properties['FlightPitchDegree']=self.gimbal_pitch_degree
             self.properties['FlightRollDegree']=self.gimbal_roll_degree
- 
+
     def create_hash(self) -> bool:
-            self.drone_hash = hash((self.drone_make, self.drone_model ,self.camera_make, self.sensor_model, \
+        self.drone_hash = hash((self.drone_make, self.drone_model ,self.camera_make, self.sensor_model, \
                 self.sensor_width, self.sensor_height, self.lens_FOV_width, self.lens_FOV_height, self.focal_length, self.max_aperture_value))

@@ -149,7 +149,7 @@ class HighAccuracyFOVCalculator:
             elevation_bbox = HighAccuracyFOVCalculator.get_ray_ground_intersections(rotated_vectors, Vector(0, 0, float(
                 corrected_altitude)))
             translated_bbox = find_geodetic_intersections(elevation_bbox, longitude, latitude)
-            drone_distance_to_polygon_center(translated_bbox, (utmx, utmy), corrected_altitude)
+            self.image.center_distance = drone_distance_to_polygon_center(translated_bbox, (utmx, utmy), corrected_altitude)
             new_translated_bbox = translated_bbox
             if config.dtm_path:
                 altitudes = [get_altitude_at_point(*box[:2]) for box in new_translated_bbox]
@@ -267,5 +267,7 @@ def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitud
     centroid = calculate_centroid(polygon_coords)
     centroid_3d = (centroid[0], centroid[1], 0)
     drone_position_3d = (drone_coords[0], drone_coords[1], drone_altitude)
-    config.update_center_distance(distance_3d(centroid_3d, drone_position_3d))
+    center_distance=distance_3d(centroid_3d, drone_position_3d)
+    config.update_center_distance(center_distance)
+    return center_distance
     # Calculate and return the 3D distance

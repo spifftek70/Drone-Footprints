@@ -198,7 +198,7 @@ def main():
         logger.critical("Error reading sensor dimensions from CSV.")
         sys.exit()
 
-    images_array = list[ImageDrone]
+    images_array = []
     feature_collection, images_array= process_metadata(metadata, indir, geotiff_dir, sensor_dimensions)
 
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
