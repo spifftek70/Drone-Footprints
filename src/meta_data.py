@@ -10,9 +10,11 @@ from sensor_data import extract_sensor_info
 from Utils import config
 from imagedrone import ImageDrone
 from new_fov import HighAccuracyFOVCalculator
+import itertools
+from typing import List
 
 
-def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, sensor_dimensions:dict)-> tuple[dict, list[ImageDrone]]:
+def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
     """
     Process and convert image metadata into GeoJSON features and create GeoTIFFs.
 
@@ -33,21 +35,20 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     line_feature = ""
     nb_processed_images = 0
     logger.info("Processing images for GeoTiff and GeoJSON creation.")
-    drone_checks_array = []
-    images_array = []
+    same_drone_as_previous_image_array = []
+    images_array = [ImageDrone]
     datetime_original = ""
     for data in metadata:
         # pprint(data)clear
         try:
             image = ImageDrone(data, sensor_dimensions, config)
-            image.create_properties()
             images_array.append(image)
             pbar.set_description_str(f'{Color.YELLOW}Current file: {image.file_name}{Color.END}')
 
             # Extract detailed sensor and drone info for the current image
 
-            properties, drone_check = extract_sensor_info(data, sensor_dimensions, image.file_name)
-            drone_checks_array.append(drone_check)
+            properties, same_drone_as_previous_image = extract_sensor_info(data, sensor_dimensions, image.file_name)
+            same_drone_as_previous_image_array.append(same_drone_as_previous_image)
             datetime_original = image.datetime_original
             config.update_file_name(image.file_name)
             config.update_abso_altitude(image.absolute_altitude)
@@ -83,17 +84,31 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     now = datetime.datetime.now()
     process_date = f"{now.strftime('%Y-%m-%d %H-%M')}"
     line_geometry = dict(type="LineString", coordinates=line_coordinates)
-    if False in drone_checks_array and drone_props['SensorModel'] != "M3M":
-        mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
-    elif False in drone_checks_array and drone_props['SensorModel'] == "M3M":
+
+    same_drone_for_all_images : bool = None
+    ### Compare drone_data for all images
+    for a , b in itertools.combinations(images_array, 2):
+        if not same_drone_for_all_images:
+            same_drone_for_all_images = a.drone_hash == b.drone_hash 
+        else:
+            same_drone_for_all_images = a.drone_hash == b.drone_hash == same_drone_for_all_images
+            
+
+    # multiple drones and Mavic 3 Multispectral
+    if False in same_drone_as_previous_image_array and drone_props['SensorModel'] == "M3M":
         mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
                              cog=config.cog, drone_model=drone_props['DroneModel'],
                              sensor_make=drone_props['SensorModel'])
+    # multiple drones and not Mavic 3 Multispectral
+    elif False in same_drone_as_previous_image_array:
+        mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
+                             cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
+        # only one drone
     else:
         mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
                              cog=config.cog, drone_model=drone_props['DroneModel'],
                              sensor_make=drone_props['SensorModel'])
+
     line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
     feature_collection["features"].insert(0, line_feature)
 

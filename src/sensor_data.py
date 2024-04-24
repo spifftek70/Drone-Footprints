@@ -88,12 +88,16 @@ def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> 
                       Lens_FOVh=lens_FOVh,
                       FocalLength=focal_length,
                       MaxApertureValue=max_aperture_value)
+    
+    ## First time in this loop
     if config.drone_properties is None:
-        drone_check = True
+        same_drone_as_previous_image = True
+    ## Is it the same drone as previous image ? 
     elif config.drone_properties['DroneModel'] == drone_info['DroneModel']:
-        drone_check = True
+        same_drone_as_previous_image = True
+    ## Is it not same drone as previous image. But we missed the case with Drone A - Drone B - Drone B    
     else:
-        drone_check = False
+        same_drone_as_previous_image = False
     config.update_drone_properties(drone_info)
 
     if sensor_model and drone_make is None:
@@ -162,4 +166,4 @@ def extract_sensor_info(data:dict, sensor_dimensions:dict, im_file_name:str) -> 
             epsgCode=config.epsg_code
         )
 
-    return properties, drone_check
+    return properties, same_drone_as_previous_image

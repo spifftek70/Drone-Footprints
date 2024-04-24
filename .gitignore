@@ -28,3 +28,7 @@ src/Bbox_calculations.py
 /src/drone_sensors.numbers
 src/drone_sensors.numbers
 /src/Utils/lensfun_proc.py
+# General Macos
+.DS_Store
+.AppleDouble
+.LSOverride

@@ -19,6 +19,7 @@ class ImageDrone:
     sensor_dimensions : tuple
     config: config
     declination : float = None
+    drone_hash : int = None
     feature_point : dict = field(default_factory=dict)
     feature_polygon : dict = field(default_factory=dict)
     properties : dict = field(default_factory=dict)
@@ -122,7 +123,8 @@ class ImageDrone:
             self.drone_make = "Unknown Drone"
 
         self.gsd = (self.sensor_width * self.relative_altitude) / (self.focal_length * self.image_width)
-
+        self.create_properties()
+        self.create_hash()
 
 #def find_declination(altitude, focal_length, drone_latitude, drone_longitude, datetime_original):
     def find_declination(self):
@@ -211,3 +213,6 @@ class ImageDrone:
             self.properties['FlightPitchDegree']=self.gimbal_pitch_degree
             self.properties['FlightRollDegree']=self.gimbal_roll_degree
  
+    def create_hash(self) -> bool:
+            self.drone_hash = hash((self.drone_make, self.drone_model ,self.camera_make, self.sensor_model, \
+                self.sensor_width, self.sensor_height, self.lens_FOV_width, self.lens_FOV_height, self.focal_length, self.max_aperture_value))
