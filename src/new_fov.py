@@ -256,7 +256,7 @@ def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitud
     Calculate the distance from a drone to the center of a polygon in UTM coordinates.
 
     Parameters:
-    - polygon_coords: List of tuples, each representing the (x, y) UTM coordinates of a polygon's vertex.
+    - polygon_coords: list of tuples, each representing the (x, y) UTM coordinates of a polygon's vertex.
     - drone_coords: Tuple representing the (x, y) UTM coordinates of the drone's location.
     - drone_altitude: Float representing the drone's altitude in meters above the ground.
 

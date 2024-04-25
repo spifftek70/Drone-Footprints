@@ -9,7 +9,6 @@ import argparse
 import datetime
 from pathlib import Path
 import warnings
-from typing import List
 import exiftool
 import geojson
 from meta_data import process_metadata
@@ -50,7 +49,7 @@ def get_image_files(directory: str) -> list[Path]:
         directory (str): The directory to scan for image files.
 
     Returns:
-        List[Path]: A list of Path objects for each image file found.
+        list[Path]: A list of Path objects for each image file found.
     """
     return sorted(
         [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS],
@@ -58,15 +57,15 @@ def get_image_files(directory: str) -> list[Path]:
     )
 
 
-def get_metadata(files: List[Path]) -> List[dict]:
+def get_metadata(files: list[Path]) -> list[dict]:
     """
     Extract metadata from a list of image files using ExifTool.
 
     Args:
-        files (List[Path]): Paths to the image files from which to extract metadata.
+        files (list[Path]): Paths to the image files from which to extract metadata.
 
     Returns:
-        List[dict]: A list of metadata dictionaries for each file.
+        list[dict]: A list of metadata dictionaries for each file.
     """
     exif_array = []
     with exiftool.ExifToolHelper() as et:
