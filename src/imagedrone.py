@@ -89,9 +89,7 @@ class ImageDrone:
         # Ensure we have valid sensor_info; otherwise, log error or take necessary action
         if not self.sensor_info:
 #            logger.error(
-#               f"No sensor information found for {self.im_file_name} with sensor model {self.sensor_model_data} and rig camera index {self.sensor_index}. Using defaults.")
-            print(f"No sensor information found for {self.im_file_name} with sensor model {self.sensor_model_data} and rig camera index {self.sensor_index}. Using defaults.")
-
+            print(f"No sensor information found for {self.file_name} with sensor model {self.sensor_model_data} and rig camera index {self.sensor_index}. Using defaults.")
             self.sensor_info = self.sensor_dimensions.get(("default", 'nan'))
 
         self.drone_make = self.sensor_info[0]
