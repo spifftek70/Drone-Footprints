@@ -19,7 +19,7 @@ def set_raster_extents(image):
             logger.warning(f"File not found: {image.image_path}")
             return
         fixed_polygon = Polygon(image.coord_array)
-        if config.lense_correction is True:
+        if image.lense_correction is True:
             try:
                 focal_length = image.focal_length
                 distance = image.center_distance
@@ -102,6 +102,6 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, geotiff_file, fixed_polygon, coo
 
     # Warp the rasterio dataset to the destination path
     try:
-        warp_ds(geotiff_file, dsArray)
+        warp_to_geotiff_file(geotiff_file, dsArray)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error writing GeoTIFF: {e}")

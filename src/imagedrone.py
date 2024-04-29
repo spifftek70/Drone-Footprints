@@ -29,7 +29,10 @@ class ImageDrone:
     geotiff_file : str = ""
 
     def __post_init__(self):
+
         self.file_name = str(self.metadata.get("File:FileName"))
+
+        self.lense_correction = config.lense_correction
 
         # Extract detailed sensor and drone info for the current image
         # Extracting latitude, longitude, and altitude details
