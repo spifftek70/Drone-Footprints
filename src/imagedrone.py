@@ -85,10 +85,6 @@ class ImageDrone:
 
 
         if self.sensor_model_data :
-            # DJI Phantom4 and DJI Phantom4 RTK have the same sensor and lens
-            if self.sensor_model_data == "FC6310R":
-                self.sensor_model_data = "FC6310"
-
             # Prioritize direct match with sensor model and rig camera index
             key = (self.sensor_model_data, self.sensor_index)
             self.sensor_info = self.sensor_dimensions.get((key))
