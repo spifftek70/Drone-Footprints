@@ -6,6 +6,7 @@ Drone_Footprints.spec
 qodana.yaml
 src/build/
 src/dist/
+src/Utils/
 .venv/
 .venv
 .venv/bin
@@ -27,3 +28,7 @@ src/Bbox_calculations.py
 /src/drone_sensors.numbers
 src/drone_sensors.numbers
 /src/Utils/lensfun_proc.py
+# General Macos
+.DS_Store
+.AppleDouble
+.LSOverride

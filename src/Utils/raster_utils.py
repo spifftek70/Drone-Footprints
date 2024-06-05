@@ -198,7 +198,7 @@ def suppress_stdout_stderr():
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
 
-def warp_ds(dst_utf8_path, ds):
+def warp_to_geotiff_file(geotiff_file:str, dataset):
     """
     Warps a georeferenced image array into a GeoTIFF file.
 
@@ -211,9 +211,9 @@ def warp_ds(dst_utf8_path, ds):
     dst_crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
 
     transform, width, height = calculate_default_transform(
-        ds.crs, dst_crs, ds.width, ds.height, *ds.bounds)
+        dataset.crs, dst_crs, dataset.width, dataset.height, *dataset.bounds)
 
-    kwargs = ds.meta.copy()
+    kwargs = dataset.meta.copy()
     kwargs.update({
         'crs': dst_crs,
         'transform': transform,
@@ -222,13 +222,13 @@ def warp_ds(dst_utf8_path, ds):
         'nodata': 0  # Set nodata value to 0 (transparent)
     })
 
-    with rasterio.open(dst_utf8_path, 'w', **kwargs) as dst:
-        for i in range(1, ds.count + 1):
+    with rasterio.open(geotiff_file, 'w', **kwargs) as dst:
+        for i in range(1, dataset.count + 1):
             reproject(
-                source=rasterio.band(ds, i),
+                source=rasterio.band(dataset, i),
                 destination=rasterio.band(dst, i),
-                src_transform=ds.transform,
-                src_crs=ds.crs,
+                src_transform=dataset.transform,
+                src_crs=dataset.crs,
                 dst_transform=transform,
                 dst_crs=dst_crs,
                 resampling=Resampling.nearest)
@@ -237,7 +237,7 @@ def warp_ds(dst_utf8_path, ds):
         # Convert the GeoTIFF to a Cloud Optimized GeoTIFF (COG)
         cogeo_profile = 'deflate'
         with suppress_stdout_stderr():
-            cog_translate(dst_utf8_path, dst_utf8_path, cog_profiles.get(cogeo_profile), in_memory=True)
+            cog_translate(geotiff_file, geotiff_file, cog_profiles.get(cogeo_profile), in_memory=True)
 
 
 def calculate_grid(num_images):

@@ -5,49 +5,44 @@
 
 
 import numpy as np
-import quaternion
-from Utils.geospatial_conversions import *
 from mpmath import mp, radians, sqrt
-from vector3d.vector import Vector
-from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open, get_altitudes_from_open
-import Utils.config as config
-from Utils.declination import find_declination
+import quaternion
 from loguru import logger
+from vector3d.vector import Vector
+from Utils.geospatial_conversions import find_geodetic_intersections, gps_to_utm, translate_to_wgs84, utm_to_latlon
+from Utils.new_elevation import get_altitude_at_point, get_altitude_from_open, get_altitudes_from_open
+from Utils import config
 from imagedrone import ImageDrone
 
 latitude = 0
 longitude = 0
-datetime_original = None
 lens_FOVh = 0.0
 lens_FOVw = 0.0
 mp.dps = 50  # set a higher precision
 
 
 class HighAccuracyFOVCalculator:
-#    def __init__(self, drone_gps, drone_altitude, camera_info, gimbal_orientation, flight_orientation,
-#                 datetime_original, i):
-    def __init__(self,image:ImageDrone,  camera_info, gimbal_orientation, flight_orientation,i):
+    def __init__(self,image:ImageDrone):
 
         global latitude, longitude, lens_FOVh, lens_FOVw
+        self.image = image
         self.drone_gps = (image.latitude, image.longitude)
         latitude = image.latitude
         longitude = image.longitude
-        self.datetime_original = image.datetime_original
-        self.drone_altitude = image.relative_altitude
-        self.camera_info = camera_info
-        lens_FOVh = camera_info['lens_FOVh']
-        lens_FOVw = camera_info['lens_FOVw']
-        self.gimbal_orientation = gimbal_orientation
-        self.flight_orientation = flight_orientation
-        self.i = i
+
+        lens_FOVh = self.image.lens_FOV_height
+        lens_FOVw = self.image.lens_FOV_width
 
     def calculate_fov_dimensions(self):
-        FOVw = 2 * mp.atan(mp.mpf(self.camera_info['sensor_width']) / (2 * self.camera_info['Focal_Length']))
-        FOVh = 2 * mp.atan(mp.mpf(self.camera_info['sensor_height']) / (2 * self.camera_info['Focal_Length']))
+        FOVw = 2 * mp.atan(mp.mpf(self.image.sensor_width) / (2 * self.image.focal_length))
+        FOVh = 2 * mp.atan(mp.mpf(self.image.sensor_height) / (2 * self.image.focal_length))
 
-        adj_FOVw, adj_FOVh = HighAccuracyFOVCalculator._sensor_lens_correction(FOVw, FOVh)
+        # _sensor_lens_correction now inside this function
+        corrected_fov_width = FOVw * lens_FOVw
+        corrected_fov_height = FOVh * lens_FOVh
 
-        return adj_FOVw, adj_FOVh
+        return corrected_fov_width, corrected_fov_height
+
 
     @staticmethod
     def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg, declination):
@@ -81,7 +76,7 @@ class HighAccuracyFOVCalculator:
 
         return yaw_rad, pitch_rad, roll_rad
 
-    def getBoundingPolygon(self, FOVh, FOVv):
+    def get_bounding_polygon(self, FOVh, FOVv):
         """
         Calculates the bounding polygon of a camera's footprint given its field of view, position, and orientation.
 
@@ -105,17 +100,18 @@ class HighAccuracyFOVCalculator:
             Vector(mp.tan(FOVv / 2), mp.tan(FOVh / 2), 1).normalize()  # Flip horizontally
         ]
         # Rotate rays according to camera orientation
-        rotated_vectors = self.rotateRays(rays)
+        rotated_vectors = self.rotate_rays(rays)
 
         return rotated_vectors
 
-    def rotateRays(self, rays):
+    def rotate_rays(self, rays):
         # Calculate adjusted angles for gimbal and flight orientations
-        declination = find_declination(self.drone_altitude, self.camera_info['Focal_Length'], *self.drone_gps,
-                                       self.datetime_original)
-        adj_yaw, adj_pitch, adj_roll = self.calculate_rads_from_angles(self.gimbal_orientation['yaw'],
-                                                                       self.gimbal_orientation['pitch'],
-                                                                       self.gimbal_orientation['roll'],
+        self.image.find_declination()
+        declination = self.image.declination
+
+        adj_yaw, adj_pitch, adj_roll = self.calculate_rads_from_angles(self.image.gimbal_yaw_degree,
+                                                                       self.image.gimbal_pitch_degree,
+                                                                       self.image.gimbal_roll_degree,
                                                                        declination)
 
         q = quaternion.from_euler_angles(adj_yaw, adj_pitch, adj_roll)
@@ -128,7 +124,7 @@ class HighAccuracyFOVCalculator:
     def get_fov_bbox(self):
         try:
             FOVw, FOVh = self.calculate_fov_dimensions()
-            rotated_vectors = self.getBoundingPolygon(FOVw, FOVh)
+            rotated_vectors = self.get_bounding_polygon(FOVw, FOVh)
             utmx, utmy, zone_number, zone_letter = gps_to_utm(latitude, longitude)
             new_altitude = None
             # Determine new altitude based on different data sources
@@ -150,10 +146,10 @@ class HighAccuracyFOVCalculator:
 
             corrected_altitude = self._atmospheric_refraction_correction(new_altitude)
 
-            elevation_bbox = HighAccuracyFOVCalculator.getRayGroundIntersections(rotated_vectors, Vector(0, 0, float(
+            elevation_bbox = HighAccuracyFOVCalculator.get_ray_ground_intersections(rotated_vectors, Vector(0, 0, float(
                 corrected_altitude)))
             translated_bbox = find_geodetic_intersections(elevation_bbox, longitude, latitude)
-            drone_distance_to_polygon_center(translated_bbox, (utmx, utmy), corrected_altitude)
+            self.image.center_distance = drone_distance_to_polygon_center(translated_bbox, (utmx, utmy), corrected_altitude)
             new_translated_bbox = translated_bbox
             if config.dtm_path:
                 altitudes = [get_altitude_at_point(*box[:2]) for box in new_translated_bbox]
@@ -197,14 +193,8 @@ class HighAccuracyFOVCalculator:
             logger.warning(f"Error in get_fov_bbox: {e}")
             return None, None
 
-    def _sensor_lens_correction(fov_width, fov_height):
-        # Placeholder for sensor and lens correction
-        corrected_fov_width = fov_width * lens_FOVw  # Example correction factor
-        corrected_fov_height = fov_height * lens_FOVh
-        return corrected_fov_width, corrected_fov_height
-
     @staticmethod
-    def getRayGroundIntersections(rays, origin):
+    def get_ray_ground_intersections(rays, origin):
         """
         Calculates the intersection points of the given rays with the ground plane.
 
@@ -216,13 +206,13 @@ class HighAccuracyFOVCalculator:
             list: A list of Vector objects representing the intersection points on the ground.
         """
 
-        intersections = [HighAccuracyFOVCalculator.findRayGroundIntersection(ray, origin) for ray in rays if
-                         HighAccuracyFOVCalculator.findRayGroundIntersection(ray, origin) is not None]
+        intersections = [HighAccuracyFOVCalculator.find_ray_ground_intersection(ray, origin) for ray in rays if
+                         HighAccuracyFOVCalculator.find_ray_ground_intersection(ray, origin) is not None]
 
         return intersections
 
     @staticmethod
-    def findRayGroundIntersection(ray, origin):
+    def find_ray_ground_intersection(ray, origin):
         """
         Finds the intersection point of a single ray with the ground plane.
 
@@ -258,7 +248,7 @@ def calculate_centroid(polygon_coords):
 
 def distance_3d(point1, point2):
     """Calculate the 3D distance between two points in UTM coordinates."""
-    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
+    return sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
 
 
 def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitude):
@@ -266,7 +256,7 @@ def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitud
     Calculate the distance from a drone to the center of a polygon in UTM coordinates.
 
     Parameters:
-    - polygon_coords: List of tuples, each representing the (x, y) UTM coordinates of a polygon's vertex.
+    - polygon_coords: list of tuples, each representing the (x, y) UTM coordinates of a polygon's vertex.
     - drone_coords: Tuple representing the (x, y) UTM coordinates of the drone's location.
     - drone_altitude: Float representing the drone's altitude in meters above the ground.
 
@@ -277,6 +267,7 @@ def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitud
     centroid = calculate_centroid(polygon_coords)
     centroid_3d = (centroid[0], centroid[1], 0)
     drone_position_3d = (drone_coords[0], drone_coords[1], drone_altitude)
-    config.update_center_distance(distance_3d(centroid_3d, drone_position_3d))
+    center_distance=distance_3d(centroid_3d, drone_position_3d)
+    config.update_center_distance(center_distance)
+    return center_distance
     # Calculate and return the 3D distance
-    return

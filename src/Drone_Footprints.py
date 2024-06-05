@@ -13,10 +13,9 @@ import exiftool
 import geojson
 from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
-from Utils.logger_config import *
+from Utils.logger_config import logger, init_logger
 from Utils.raster_utils import create_mosaic
-import Utils.config as config
-from typing import List
+from Utils import config
 from imagedrone import ImageDrone
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
@@ -39,7 +38,7 @@ def is_valid_file(arg):
     if os.path.isfile(arg):
         return arg
     print(f'{arg}  is not a valid file.  Switching to Default elevation model')
-    return
+    return None
 
 
 def get_image_files(directory: str) -> list[Path]:
@@ -50,7 +49,7 @@ def get_image_files(directory: str) -> list[Path]:
         directory (str): The directory to scan for image files.
 
     Returns:
-        List[Path]: A list of Path objects for each image file found.
+        list[Path]: A list of Path objects for each image file found.
     """
     return sorted(
         [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS],
@@ -58,15 +57,15 @@ def get_image_files(directory: str) -> list[Path]:
     )
 
 
-def get_metadata(files: List[Path]) -> List[dict]:
+def get_metadata(files: list[Path]) -> list[dict]:
     """
     Extract metadata from a list of image files using ExifTool.
 
     Args:
-        files (List[Path]): Paths to the image files from which to extract metadata.
+        files (list[Path]): Paths to the image files from which to extract metadata.
 
     Returns:
-        List[dict]: A list of metadata dictionaries for each file.
+        list[dict]: A list of metadata dictionaries for each file.
     """
     exif_array = []
     with exiftool.ExifToolHelper() as et:
@@ -78,7 +77,7 @@ def get_metadata(files: List[Path]) -> List[dict]:
     sys.exit()
 
 
-def find_MTK(some_dir):
+def find_mtk(some_dir):
     """
     Find MTK file from input dir.
 
@@ -149,26 +148,15 @@ def main():
     config.update_nodejs_graphical_interface(args.nodejs)
     init_logger(log_path=log_path)
 
-   
-    # Access the arguments
-    if args.DSMPATH:
-        pass
-    elif args.elevation_service:
-        pass
-    elif args.DSMPATH:
-        logger.exception("")
-    else:
-        pass
-
     user_args = dict(vars(args))
     args_list = []
     for arg, value in user_args.items():
         if value != parser.get_default(arg):
-            args_list.append(f"&emsp;{Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {value}")
+            args_list.append(f"{Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {value}")
 
     # Joining all the elements in the list into a single string with newline characters
-    args_str = "<br>".join(args_list)
-    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - <br> {args_str}")
+    args_str = "\n".join(args_list)
+    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - {args_str}")
     # logger.exception(f"User arguments - {user_args}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
@@ -180,7 +168,7 @@ def main():
     config.update_equalize(args.image_equalize)
     config.update_lense(args.lense_correction)
     config.update_elevation(args.elevation_service)
-    rtk_rtn = find_MTK(indir)
+    rtk_rtn = find_mtk(indir)
     if rtk_rtn:
         config.update_rtk(True)
     config.update_dtm(args.DSMPATH)
@@ -200,16 +188,18 @@ def main():
     except Exception as exception:
         logger.opt(exception=True).warning(f"Error creating directories: {exception}")
 
+
+
     sensor_dimensions = read_sensor_dimensions_from_csv(
         SENSOR_INFO_CSV, sensor_width, sensor_height
     )
     if sensor_dimensions is None:
         logger.critical("Error reading sensor dimensions from CSV.")
         sys.exit()
-    else:
-        feature_collection, images_array= process_metadata(
-            metadata, indir, geotiff_dir, sensor_dimensions
-        )
+
+    images_array = []
+    feature_collection, images_array= process_metadata(metadata, indir, geotiff_dir, sensor_dimensions)
+
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
     write_geojson_file(geojson_file, geojson_dir, feature_collection)
     if args.nodejs:

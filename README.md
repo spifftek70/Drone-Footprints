@@ -49,7 +49,7 @@ pip install --no-cache-dir --force-reinstall -r requirements.txt  # this current
 
 ### Requirements
 
-Python 3.6 and above
+Python 3.9 and above
 
 ----------------------------------------------------------------------------------------------------------------
 
