@@ -26,5 +26,5 @@ def find_declination(altitude, focal_length, drone_latitude, drone_longitude, da
         declination = dec['value']
 
     if altitude < 0 or focal_length <= 0:
-        config.pbar.write(Color.RED + ValueError("Altitude and focal length must be positive.") + Color.END)
+        config.pbar.write(ValueError("Altitude and focal length must be positive."))
     return declination

@@ -224,7 +224,7 @@ Tested and works with:
 
 ----------------------------------------------------------------------------------------------------------------
 
-## known Issues
+## Known Issues
 
 1. Might not work with some Drones due to difference in metadata keys/values. Older collections may not work for the
    same reason.

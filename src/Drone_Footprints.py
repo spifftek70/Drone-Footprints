@@ -4,6 +4,7 @@
 # Version: 1.0
 
 import os
+import stat
 import sys
 import argparse
 import datetime
@@ -13,33 +14,20 @@ import exiftool
 import geojson
 from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
-from Utils.logger_config import *
+# from Utils.logger_config import get_logg
+from loguru import logger
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
 from typing import List
-from imagedrone import ImageDrone
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
-
 # Constants for image file extensions and the sensor information CSV file path
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 SENSOR_INFO_CSV = "drone_sensors.csv"
 RTK_EXTENSION = {".obs", ".MRK", ".bin", "nav"}
 now = datetime.datetime.now()
+logArray = []
 
-
-def is_valid_directory(arg):
-    if os.path.isdir(arg):
-        return arg
-    # print(f'{arg} is not a valid input directory')
-    sys.exit()
-
-
-def is_valid_file(arg):
-    if os.path.isfile(arg):
-        return arg
-    print(f'{arg}  is not a valid file.  Switching to Default elevation model')
-    return
 
 
 def get_image_files(directory: str) -> list[Path]:
@@ -105,8 +93,12 @@ def write_geojson_file(geojson_file, geojson_dir, feature_collection):
     except Exception as e:
         logger.critical(f"Error writing GeoJSON file: {e}")
 
-
-@logger.catch
+def change_perms(outer_path):
+    for dirpath, dirnames, filenames in os.walk(outer_path):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            os.chmod(file_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)  # 0664 permissions
+# @logger.catch
 def main():
     """
     Main function to orchestrate the processing of drone imagery into GeoJSON and GeoTIFFs.
@@ -114,7 +106,7 @@ def main():
     parser = argparse.ArgumentParser(description="Process drone imagery to generate GeoJSON and GeoTIFFs.")
     parser.add_argument("-o", "--output_directory", help="Path to the output directory for GeoJSON and GeoTIFFs.",
                         required=True)
-    parser.add_argument("-i", "--input_directory", type=is_valid_directory,
+    parser.add_argument("-i", "--input_directory",
                         help="Path to the input directory with images.",
                         required=True)
     parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
@@ -136,19 +128,14 @@ def main():
 
     # Add mutually exclusive arguments
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-v", "--DSMPATH", type=is_valid_file, help="Path to DSM file (optional).",
+    group.add_argument("-v", "--DSMPATH", help="Path to DSM file (optional).",
                        default="", required=False)
     group.add_argument("-m", "--elevation_service", action='store_true', required=False,
                        help="Use elevation services APIs (optional).")
 
     args = parser.parse_args()
-
     outer_path = args.output_directory
-    log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
-    log_path = Path(outer_path) / "logfiles" / log_file
     config.update_nodejs_graphical_interface(args.nodejs)
-    init_logger(log_path=log_path)
-
    
     # Access the arguments
     if args.DSMPATH:
@@ -164,15 +151,14 @@ def main():
     args_list = []
     for arg, value in user_args.items():
         if value != parser.get_default(arg):
-            args_list.append(f"&emsp;{Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {value}")
+            args_list.append(f"&emsp;{arg}: {value}")
 
     # Joining all the elements in the list into a single string with newline characters
-    args_str = "<br>".join(args_list)
-    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - <br> {args_str}")
-    # logger.exception(f"User arguments - {user_args}")
+    # args_str = "<br>".join(args_list)
+    # logger.info(f"User arguments - <br> {args_str}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-    logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
+    logger.info(f"Initializing the Processing of Drone Footprints")
 
     config.update_epsg(args.EPSG)
     config.update_correct_magnetic_declinaison(args.declination)
@@ -186,12 +172,12 @@ def main():
     config.update_dtm(args.DSMPATH)
     files = get_image_files(indir)
     logger.info(
-        f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory." + Color.END)
+        f"Found {len(files)} image files in the specified directory.")
     if files is None or len(files) == 0:
         logger.critical("No image files found in the specified directory.")
         sys.exit()
     metadata = get_metadata(files)
-    logger.info(f"Metadata Gathered for {Color.PURPLE}{len(files)} image files{Color.END}.")
+    logger.info(f"Metadata Gathered for {len(files)} image files.")
     try:
         geojson_dir = Path(outdir) / "geojsons"
         geotiff_dir = Path(outdir) / "geotiffs"
@@ -221,10 +207,10 @@ def main():
         geo_type = "Cloud Optimized"
     else:
         geo_type = "standard"
-
-    logger.success(f"Process Complete. {len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created.")
-    logger.remove()  # Remove existing handlers
-
+    change_perms(outer_path)
+    logger.info(f"{len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created.")
+    logger.remove()
+    return 0
 
 if __name__ == "__main__":
     main()

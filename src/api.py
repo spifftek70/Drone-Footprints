@@ -1,54 +1,52 @@
-from flask import Flask, request, jsonify
-import subprocess
-from Utils.logger_config import logger
-import json
-import time
-from pathlib import Path
-import threading
+from quart import Quart, request, jsonify
+from Utils.logger_config import init_logger, startup, end_logger
+from loguru import logger
+import asyncio
+import sys
 
-app = Flask(__name__)
+app = Quart(__name__)
+
+@app.before_serving
+async def before_serving():
+    # Ensure WebSocket servers are started and logger is initialized
+    await startup()
 
 @app.route('/run_script', methods=['POST'])
-def run_script():
-    data = request.get_json()
-    logger.info(f"Received payload: {data}")
+async def run_script():
+    data = await request.get_json()
     outer_path = data['outputPath']
-    Path(outer_path).mkdir(parents=True, exist_ok=True)
+    file_handler_id = init_logger(outer_path)  # Initialize logger with path for log files
+    logger.info(f"Received payload: {data}")
 
-    args = ["python", "/usr/src/app/Drone_Footprints.py", "-o", outer_path, "-i", data['inputPath']]
-    
-    # Conditional arguments
-    if data.get('declination'):
-        args.append("-d")
-    if data.get('cog'):
-        args.append("-c")
-    if data.get('lense_correction'):
-        args.append("-l")
-    if data.get('image_equalize'):
-        args.append("-z")
-    if data.get('dsmFile'):
-        args.extend(["-v", data['dsmFile']])
-    elif data.get('elevation_service'):
-        args.append("-m")
-    if data.get('sensorWidth'):
-        args.extend(["-w", str(data['sensorWidth'])])  # Convert to string
-    if data.get('sensorHeight'):
-        args.extend(["-t", str(data['sensorHeight'])])  # Convert to string
-    if data.get('nodejs'):
-        args.append("-n")
-    else:
-        args.append("-y")
+    # Construct command line arguments based on the received data
+    args = ["python", "/usr/src/app/Drone_Footprints.py", "-o", str(outer_path), "-i", data['inputPath']]
+    for flag, arg in [('-d', 'declination'), ('-c', 'cog'), ('-l', 'lense_correction'), ('-z', 'image_equalize'),
+                      ('-v', 'dsmFile'), ('-m', 'elevation_service'), ('-e', 'epsg'), ('-w', 'sensorWidth'), ('-t', 'sensorHeight'),
+                      ('-n', 'nodejs'), ('-y', 'not_nodejs')]:
+        if data.get(arg):
+            args.append(flag)
+            if arg in ['dsmFile', 'sensorWidth', 'sensorHeight', 'epsg']:
+                args.append(str(data[arg]))
 
-    process = subprocess.run(args, capture_output=True, text=True)
+    # Execute the command and handle subprocess output
+    process = await asyncio.create_subprocess_exec(
+        *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        bufsize=0  # Set buffering to unbuffered
+    )
+    stdout = process.stdout
+    stderr = process.stderr
+    async for line in process.stdout:
+        # Handle output line by line
+        logger.info(line.decode().strip())  # Log output
+
+    # Read from stdout and stderr
+    stdout, stderr = await process.communicate()
+
     if process.returncode != 0:
-        return jsonify({'status': 'error', 'message': process.stderr}), 500
-    return jsonify({'status': 'success', 'message': process.stdout})
+        logger.error(f"Error occurred while processing: {stderr.decode()}")
+        end_logger(file_handler_id)
+        return jsonify({'status': 'error', 'message': stderr.decode()}), 500
 
-@app.errorhandler(Exception)
-def handle_error(e):
-    logger.error(f"An error occurred: {str(e)}")
-    return jsonify({'error': str(e)}), 500
-
-if __name__ == '__main__':
-    # Now start the Flask application
-    app.run(host='0.0.0.0', port=5050, debug=True)
+    logger.info(f"Processing complete: {stdout.decode()}")
+    end_logger(file_handler_id)
+    return jsonify({'status': 'success', 'message': stdout.decode()})

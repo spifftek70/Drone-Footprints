@@ -6,6 +6,7 @@
 import Utils.config as config
 from loguru import logger
 
+
 def extract_sensor_info(data, sensor_dimensions, im_file_name):
 
     """

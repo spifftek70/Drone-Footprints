@@ -67,15 +67,21 @@ class HighAccuracyFOVCalculator:
         - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
         # Normalize yaw for magnetic declination
+
         if -120 <= gimbal_pitch_deg <= -60:
             pitch_rad = radians(90 - gimbal_pitch_deg)
+            new_yaw_deg = gimbal_yaw_deg
+        elif -30 <= gimbal_pitch_deg <= 30:
+            pitch_rad = radians(gimbal_pitch_deg - 180)
+            new_deg = gimbal_roll_deg + 90
+            new_yaw_deg = gimbal_yaw_deg - new_deg
         else:
             pitch_rad = radians(180 - gimbal_pitch_deg)
-
+            new_yaw_deg = gimbal_yaw_deg
         if config.correct_magnetic_declinaison:
-            yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
+            yaw_rad = (mp.pi / 2) - radians(new_yaw_deg + declination)
         else:
-            yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg)
+            yaw_rad = (mp.pi / 2) - radians(new_yaw_deg)
         yaw_rad = yaw_rad % (2 * mp.pi)
         roll_rad = radians(gimbal_roll_deg)
 
@@ -136,6 +142,9 @@ class HighAccuracyFOVCalculator:
                 new_altitude = get_altitude_at_point(utmx, utmy)
             if config.global_elevation:
                 new_altitude = get_altitude_from_open(latitude, longitude)
+            if config.absolute_altitude == config.relative_altitude:
+                new_elev = get_altitude_from_open(latitude, longitude)
+                new_altitude = config.absolute_altitude - new_elev
             if config.relative_altitude == 0.0:
                 new_altitude = config.absolute_altitude
             if new_altitude and abs(new_altitude - config.relative_altitude) > 20:

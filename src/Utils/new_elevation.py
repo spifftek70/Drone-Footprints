@@ -19,6 +19,7 @@ from time import sleep
 
 ATTEMPS_NUMBERS:int= 10
 
+
 class ElevationAdjuster:
     def __init__(self, elevation_data, crs, affine_transform):
         self.elevation_data = elevation_data

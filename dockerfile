@@ -19,15 +19,20 @@ RUN apt-get update && apt-get install -y \
 
 ENV GDAL_CONFIG=/usr/bin/gdal-config
 ENV LD_LIBRARY_PATH=/usr/lib
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/usr/src/app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && python -c "import flask; print(flask.__version__)"
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install hypercorn
 
-# Assuming UID 1001 for myuser in Node.js Dockerfile
+# Create a user with the same UID as in the Node.js Dockerfile
 RUN groupadd -g 1001 appgroup && \
     useradd -r -u 1001 -g appgroup myuser
 USER myuser
 
+# Copy application source code
 COPY src/ .
 
-CMD ["python", "start_websocket.py", "&", "python", "api.py"]
+# Run the application using Hypercorn
+CMD ["hypercorn", "api:app", "--bind", "0.0.0.0:5050"]

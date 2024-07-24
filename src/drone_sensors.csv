@@ -2,7 +2,7 @@ DroneMake,DroneModel,CameraMake,SensorModel,RigCameraIndex,SensorWidth,SensorHei
 DJI,Zenmuse P1,DJI,ZenmuseP1,5,35.9,24,1.0,1.0
 DJI,Zenmuse X7,DJI,FC6540,5,23.5,15.7,1.0,1.0
 DJI,Inspire 2,DJI,Zenmuse,5,23.5,15.7,1.0,1.0
-DJI,Inspire 2,DJI,Zenmuse X55,5,17.3,13,1.0,1.0
+DJI,Inspire 2,DJI,FC6520,5,17.3,13,1.0,1.0
 DJI,Inspire 1,DJI,Zenmuse X5R,5,17.3,13,1.0,1.0
 DJI,Mavic 3 Pro,Hasselblad,L2D-20c,5,17.3,13,1.0,1.0
 DJI,Mavic 3E Zoom Lens,UNK,,5,6.4,4.8,1.0,1.0
@@ -24,10 +24,10 @@ DJI,Phantom 4 Advanced,DJI,WM331A,5,13.2,8.8,1.0,1.0
 DJI,Phantom 4 Pro v 2.0,UNK,,5,13.2,8.8,1.0,1.0
 DJI,Phantom 4 RTK,DJI,FC6310R,5,13.2,8.8,1.0,1.0
 DJI,Zenmuse X4S (Inspire 2),UNK,,5,13.2,8.8,1.0,1.0
-DJI,Mini Pro 3,UNK,,5,9.7,7.3,1.0,1.0
+DJI,Mini Pro 3,UNK,FC3582,5,9.7,7.3,1.0,1.0
 DJI,Mavic Air 2,UNK,,5,6.4,4.8,1.0,1.0
 DJI,Mavic Air,DJI,FC2103,5,0.0,0.0,1.0,1.0
-DJI,Spark,UNK,,5,6.3,4.7,1.0,1.0
+DJI,Spark,DJI,FC1102,5,6.3,4.7,1.0,1.0
 DJI,Phantom Vision FC200,DJI,FC200,5,0.0,0.0,1.0,1.0
 Autel Robotics,EVO II,Autel,XT705,5,12.8,9.6,1.0,1.0
 GoPro,UNK,UNK,HERO4 Black,5,6.17,4.55,1.0,1.0
