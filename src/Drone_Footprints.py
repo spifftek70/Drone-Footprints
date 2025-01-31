@@ -16,6 +16,7 @@ from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
 # from Utils.logger_config import get_logg
 from loguru import logger
+from Utils.logger_config import complete_logger, package_received
 from Utils.raster_utils import create_mosaic
 import Utils.config as config
 from typing import List
@@ -27,7 +28,6 @@ SENSOR_INFO_CSV = "drone_sensors.csv"
 RTK_EXTENSION = {".obs", ".MRK", ".bin", "nav"}
 now = datetime.datetime.now()
 logArray = []
-
 
 
 def get_image_files(directory: str) -> list[Path]:
@@ -136,6 +136,12 @@ def main():
     args = parser.parse_args()
     outer_path = args.output_directory
     config.update_nodejs_graphical_interface(args.nodejs)
+
+    # Create the filtered_data dictionary
+    filtered_data = {k: v for k, v in vars(args).items() if v and k not in ['input_directory', 'output_directory']}
+    
+    # Call package_received with the filtered data
+    package_received(filtered_data)
    
     # Access the arguments
     if args.DSMPATH:
@@ -158,7 +164,6 @@ def main():
     # logger.info(f"User arguments - <br> {args_str}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-    logger.info(f"Initializing the Processing of Drone Footprints")
 
     config.update_epsg(args.EPSG)
     config.update_correct_magnetic_declinaison(args.declination)
@@ -208,8 +213,8 @@ def main():
     else:
         geo_type = "standard"
     change_perms(outer_path)
-    logger.info(f"{len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created.")
-    logger.remove()
+    taDa = f"{len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created."
+    complete_logger(taDa)  # Ensure this is called only once at the end
     return 0
 
 if __name__ == "__main__":

@@ -89,10 +89,15 @@ def get_altitude_from_open(lat:float, long:float)->float:
             with urlopen(url) as response:
                 data = response.read().decode('utf-8')
             elevation = json.loads(data)['results'][0]['elevation']
-            logger.info(f"Successfull connection to OpenElevation for file{config.im_file_name} with coordinates {lat},{long}")
-            return config.absolute_altitude - elevation
+            # print(f"elevation: {elevation}")
+            # print(f"absolute_altitude: {config.absolute_altitude}")
+            logger.info(f"Successful connection to OpenElevation for file {config.im_file_name} with coordinates {lat},{long}")
+            # if elevation > config.absolute_altitude:
+            return elevation #+ config.absolute_altitude
+            # else:
+            #     return config.absolute_altitude - elevation
         except HTTPError as err:
-            logger.warning(f"Connexion error for OpenElevation file:{config.im_file_name} coordinates {lat},{long}. Error: {err}")
+            logger.warning(f"Connection error for OpenElevation file:{config.im_file_name} coordinates {lat},{long}. Error: {err}")
             nb_of_failed_connection += 1
             # Sleep random time before next try
             sleep(nb_of_failed_connection)

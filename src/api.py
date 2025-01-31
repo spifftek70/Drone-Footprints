@@ -6,6 +6,8 @@ import sys
 
 app = Quart(__name__)
 
+comp_val = ''
+
 @app.before_serving
 async def before_serving():
     # Ensure WebSocket servers are started and logger is initialized
@@ -16,7 +18,6 @@ async def run_script():
     data = await request.get_json()
     outer_path = data['outputPath']
     file_handler_id = init_logger(outer_path)  # Initialize logger with path for log files
-    logger.info(f"Received payload: {data}")
 
     # Construct command line arguments based on the received data
     args = ["python", "/usr/src/app/Drone_Footprints.py", "-o", str(outer_path), "-i", data['inputPath']]
@@ -33,11 +34,9 @@ async def run_script():
         *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
         bufsize=0  # Set buffering to unbuffered
     )
-    stdout = process.stdout
-    stderr = process.stderr
+
     async for line in process.stdout:
-        # Handle output line by line
-        logger.info(line.decode().strip())  # Log output
+        logger.info(line.decode().strip())  # Log output line by line
 
     # Read from stdout and stderr
     stdout, stderr = await process.communicate()
@@ -46,7 +45,10 @@ async def run_script():
         logger.error(f"Error occurred while processing: {stderr.decode()}")
         end_logger(file_handler_id)
         return jsonify({'status': 'error', 'message': stderr.decode()}), 500
+    # else:
+    # Log completion message
+        # complete_logger("4 Cloud Optimized GeoTIFFs and a GeoJSON file were created.")  # Adjust this message as needed
 
-    logger.info(f"Processing complete: {stdout.decode()}")
+    # logger.info(f"Image processing complete: {stdout.decode()}")
     end_logger(file_handler_id)
     return jsonify({'status': 'success', 'message': stdout.decode()})

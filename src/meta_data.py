@@ -9,10 +9,53 @@ from sensor_data import extract_sensor_info
 import Utils.config as config
 from imagedrone import ImageDrone
 from new_fov import HighAccuracyFOVCalculator
+import geopandas as gpd
+from shapely.geometry import Polygon
+import json
+import os
+
 
 logger = get_logger()
 
+def calculate_area_in_square_meters(coords):
+    # Create a GeoDataFrame
+    gdf = gpd.GeoDataFrame({'geometry': [Polygon(coords)]}, crs='EPSG:4326')
+    
+    # Reproject to a CRS that uses meters (e.g., UTM or an equal-area projection)
+    gdf = gdf.to_crs(epsg=3857)  # EPSG:3857 is Web Mercator, which uses meters
+    
+    # Calculate area in square meters
+    area_sq_meters = gdf.geometry.area[0]
+    
+    return area_sq_meters
+
+
+def save_pretty_json_to_file(new_data):
+    file_path = '/Users/dean/Downloads/metadata_test/data.json'
+    # Check if the file exists
+    if os.path.exists(file_path):
+        # If it exists, read the existing data
+        with open(file_path, 'r') as file:
+            try:
+                existing_data = json.load(file)
+                if not isinstance(existing_data, list):
+                    raise ValueError("Existing data is not a list")
+            except json.JSONDecodeError:
+                existing_data = []
+    else:
+        # If it doesn't exist, create an empty list
+        existing_data = []
+
+    # Add new data to the existing data
+    existing_data.append(new_data)
+
+    # Save the updated data back to the file in a pretty JSON format
+    with open(file_path, 'w') as file:
+        json.dump(existing_data, file, indent=4, sort_keys=True)
+
+
 def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
+    # print("sensor_dimensions: ", sensor_dimensions)
     """
     Process and convert image metadata into GeoJSON features and create GeoTIFFs.
 
@@ -33,9 +76,10 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
         line_feature = ""
         nb_processed_images = 0
         file_name = ""
-        sensor_make = ""
-        camera_make = ""
+        sensor_make  = ""
         sensor_model = ""
+        drone_model = ""
+        drone_make = ""
         lens_FOVw = 0.0
         lens_FOVh = 0.0
         logger.info("Processing images for GeoTiff and GeoJSON creation.")
@@ -48,10 +92,22 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 image = ImageDrone(data, sensor_dimensions, config)
                 images_array.append(image)
                 pbar.set_description_str(f' Current file: {image.file_name}')
-
+            
                 # Extract detailed sensor and drone info for the current image
-
+                # print("data is: ", data, "sensor_dimensions is: ", sensor_dimensions, "im_file_name is: ", image.file_name)
+        
                 properties, drone_check = extract_sensor_info(data, sensor_dimensions, image.file_name)
+
+                if image.gimbal_pitch_degree < -30 and image.gimbal_pitch_degree > -60:
+                    logger.warning(f"The gimbal / flight pitch angle is too high for {image.file_name} and cannot be processed. Skipping this image.")
+                    continue
+                drone_model = properties['Drone_Model']
+                sensor_model = properties['Sensor_Model']
+                sensor_make = properties['Sensor_Make']
+                drone_make = properties['Drone_Make']
+
+                if drone_model in {"eBee, Mini"}:
+                    logger.warning(f"Support for {drone_make} {drone_model} is still in development and will not produce accurate results.")
                 drone_checks.append(drone_check)
                 lens_FOVw = properties['lens_FOVw1'] if 'lens_FOVw1' in properties else 1.0
                 lens_FOVh = properties['lens_FOV1h'] if 'lens_FOV1h' in properties else 1.0
@@ -95,8 +151,13 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                                                     # Flight yaw in degrees (direction of flight)
                                                 },
                                                 i=nb_processed_images).get_fov_bbox()
-
+                square_meters = calculate_area_in_square_meters(image.footprint_coordinates)
+                rounded_area = f"{square_meters:.3f}"
+                sqrmtrs = {'square_meters': rounded_area}
+                # Update properties dictionary directly
+                properties.update(sqrmtrs)
                 image.create_geojson_feature(properties)
+
                 # Generate GeoTIFF for the current image
                 image.generate_geotiff(indir_path, geotiff_dir)
 
@@ -108,7 +169,7 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
                 # broadcast_log(f"Progress: {(outer.n / outer.total) * 100:.2f}%", 6061)
 
             except TypeError as t:
-                logger.exception(f"Missing metadata key: {t} for image: {file_name}")
+                logger.exception(f"Type error: {t} for image: {file_name}")
             except KeyError as k:
                 logger.exception(f"Missing metadata key: {k} for image: {file_name}")
             except ValueError as e:
@@ -116,27 +177,56 @@ def process_metadata(metadata, indir_path, geotiff_dir, sensor_dimensions):
             outer.update(1)
             pbar.update(1)
             nb_processed_images = nb_processed_images + 1
+            # Save the updated data back to the file in a pretty JSON format
+            # save_pretty_json_to_file(metadata)
     except Exception as e:
         logger.exception(e)
     # Add lines to the GeoJSON feature collection if necessary
     Drone_props = config.drone_properties
-    # print("Drone Props", Drone_props)
-    # exit()
     now = datetime.now()
     process_date = f"{now.strftime('%Y-%m-%d %H-%M')}"
     line_geometry = dict(type="LineString", coordinates=line_coordinates)
     if False in drone_checks and Drone_props['SensorModel'] != "M3M":
-        mission_props = dict(mission_date=datetime_original, process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
+        mission_props = {
+            'mission_date': datetime_original,
+            'process_date': process_date,
+            'epsg': config.epsg_code,
+            'cog': config.cog,
+            'drone_model': drone_model,
+            'sensor_make': sensor_make,
+            'sensor_model': "Multiple",
+            'drone_make': drone_make
+        }
     elif False in drone_checks and Drone_props['SensorModel'] == "M3M":
-        mission_props = dict(mission_date=datetime_original, process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model=Drone_props['DroneModel'],
-                             sensor_make=Drone_props['SensorModel'])
+        mission_props = {
+            'mission_date': datetime_original,
+            'process_date': process_date,
+            'epsg': config.epsg_code,
+            'cog': config.cog,
+            'drone_model': drone_model,
+            'sensor_model': sensor_model,
+            'sensor_make': sensor_make,
+            'drone_make': drone_make
+        }
     else:
-        mission_props = dict(mission_date=datetime_original, process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model=Drone_props['DroneModel'],
-                             sensor_make=Drone_props['SensorModel'])
-    line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
+        mission_props = {
+            'mission_date': datetime_original,
+            'process_date': process_date,
+            'epsg': config.epsg_code,
+            'cog': config.cog,
+            'drone_model': drone_model,
+            'sensor_model': sensor_model,
+            'sensor_make': sensor_make,
+            'drone_make': drone_make
+        }
+
+    line_feature = {
+        'type': "Feature",
+        'geometry': line_geometry,
+        'properties': mission_props
+    }
+    # print("line feature", line_feature)
+
     feature_collection["features"].insert(0, line_feature)
 
     pbar.close()

@@ -9,24 +9,24 @@ from shapely.geometry import Polygon
 
 
 def create_geojson_feature(coord_array, Drone_Lon, Drone_Lat, properties):
+    # print("\n\n HEY YOU FUCKED UP\n\n")
     """
     Create GeoJSON features for a single image's metadata.
 
     Args:
-        data (dict): A dictionary containing metadata for one image.
         coord_array (list): A list of coordinate pairs that define the image's footprint.
-        sensor_info (tuple): Contains sensor width, sensor height, drone make, and drone model.
-        file_Name (str): The name of the file being processed.
+        Drone_Lon (list): List containing drone longitude.
+        Drone_Lat (list): List containing drone latitude.
+        properties (dict): Additional properties for the GeoJSON feature.
 
     Returns:
         tuple: Contains a GeoJSON point feature and a GeoJSON polygon feature.
     """
-    # Properties setup and other related processing goes here.
-    # This is simplified to focus on structure. Implement as needed based on the original function.
-
     polygon = Polygon(coord_array)
+    square_meters = polygon.area  # Calculate area in square meters
+    
     geojson_polygon = geojson.dumps(polygon)
-    rewound_polygon = rewind(geojson.loads(geojson_polygon))
+    rewound_polygon = geojson.loads(geojson_polygon)
     array_rw = rewound_polygon["coordinates"][0]
     closed_array = [
         (array_rw[0]),
@@ -41,8 +41,13 @@ def create_geojson_feature(coord_array, Drone_Lon, Drone_Lat, properties):
     feature_point = dict(
         type="Feature", geometry=type_point, properties=properties
     )
+    # feature_polygon = dict(
+    #     type="Feature", geometry=type_polygon, properties={**properties, 'square_meters': square_meters}
+    # )
+    sqrmtrs = {'square_meters': square_meters}
+    properties[17].append(sqrmtrs)
     feature_polygon = dict(
         type="Feature", geometry=type_polygon, properties=properties
     )
-
+    # print("properties: ", properties)
     return feature_point, feature_polygon

@@ -9,13 +9,13 @@ geopandas
 geopy
 gps-time
 hypercorn
-lensfunpy
+lensfunpy~=1.15.0
 loguru
 magnetic-field-calculator
 magnetismi
 mpmath
 numpy-quaternion
-numpy
+numpy>=1.24.0,<1.25.0
 opencv-python
 pandas
 pillow

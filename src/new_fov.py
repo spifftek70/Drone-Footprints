@@ -24,8 +24,7 @@ mp.dps = 50  # set a higher precision
 
 
 class HighAccuracyFOVCalculator:
-#    def __init__(self, drone_gps, drone_altitude, camera_info, gimbal_orientation, flight_orientation,
-#                 datetime_original, i):
+
     def __init__(self,image:ImageDrone,  camera_info, gimbal_orientation, flight_orientation,i):
 
         global latitude, longitude, lens_FOVh, lens_FOVw
@@ -49,6 +48,7 @@ class HighAccuracyFOVCalculator:
 
         return adj_FOVw, adj_FOVh
 
+
     @staticmethod
     def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg, declination):
         """
@@ -66,26 +66,30 @@ class HighAccuracyFOVCalculator:
         Returns:
         - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
-        # Normalize yaw for magnetic declination
-
+        # print("\n\nyaw_deg: ", gimbal_yaw_deg, "\nType: ", type(gimbal_yaw_deg).__name__, "\n\n")
+        # if gimbal_yaw_deg <= -30:
+        #     adj_yaw_deg = 180 + gimbal_yaw_deg
+        # else:
+        # adj_yaw_deg = gimbal_yaw_deg
         if -120 <= gimbal_pitch_deg <= -60:
             pitch_rad = radians(90 - gimbal_pitch_deg)
             new_yaw_deg = gimbal_yaw_deg
         elif -30 <= gimbal_pitch_deg <= 30:
-            pitch_rad = radians(gimbal_pitch_deg - 180)
-            new_deg = gimbal_roll_deg + 90
-            new_yaw_deg = gimbal_yaw_deg - new_deg
+            pitch_rad = radians(gimbal_pitch_deg + 180)
+            new_yaw_deg = gimbal_yaw_deg 
         else:
-            pitch_rad = radians(180 - gimbal_pitch_deg)
-            new_yaw_deg = gimbal_yaw_deg
+            pitch_rad = radians(gimbal_pitch_deg % 90)
+            new_yaw_deg = gimbal_yaw_deg - 90
         if config.correct_magnetic_declinaison:
             yaw_rad = (mp.pi / 2) - radians(new_yaw_deg + declination)
         else:
             yaw_rad = (mp.pi / 2) - radians(new_yaw_deg)
         yaw_rad = yaw_rad % (2 * mp.pi)
+        new_yaw = yaw_rad % 360
         roll_rad = radians(gimbal_roll_deg)
 
-        return yaw_rad, pitch_rad, roll_rad
+        return new_yaw, pitch_rad, roll_rad
+
 
     def getBoundingPolygon(self, FOVh, FOVv):
         """
@@ -132,31 +136,34 @@ class HighAccuracyFOVCalculator:
         return [Vector(*(q * np.quaternion(0, ray.x, ray.y, ray.z) * q.inverse()).vec) for ray in rays]
 
     def get_fov_bbox(self):
+        new_altitude = None
         try:
             FOVw, FOVh = self.calculate_fov_dimensions()
             rotated_vectors = self.getBoundingPolygon(FOVw, FOVh)
             utmx, utmy, zone_number, zone_letter = gps_to_utm(latitude, longitude)
             new_altitude = None
+
             # Determine new altitude based on different data sources
             if config.dtm_path:
                 new_altitude = get_altitude_at_point(utmx, utmy)
             if config.global_elevation:
                 new_altitude = get_altitude_from_open(latitude, longitude)
-            if config.absolute_altitude == config.relative_altitude:
-                new_elev = get_altitude_from_open(latitude, longitude)
-                new_altitude = config.absolute_altitude - new_elev
             if config.relative_altitude == 0.0:
                 new_altitude = config.absolute_altitude
             if new_altitude and abs(new_altitude - config.relative_altitude) > 20:
                 new_altitude = config.relative_altitude
             if config.absolute_altitude == config.relative_altitude:
-                new_altitude = get_altitude_from_open(latitude, longitude)
+                new_altitude =config.relative_altitude
             if new_altitude is None:  # and not config.dtm_path or not config.global_elevation is False or config.rtk:
                 new_altitude = config.relative_altitude
                 if config.global_elevation is True or config.dtm_path:
                     logger.warning(
                         f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
-
+                    
+            # Correct for atmospheric refraction
+            # print("\nAltitude: ", new_altitude, "\n")
+            # print("absolute altitude: ", config.absolute_altitude, "\n")
+            # print("relative altitude: ", config.relative_altitude, "\n")
             corrected_altitude = self._atmospheric_refraction_correction(new_altitude)
 
             elevation_bbox = HighAccuracyFOVCalculator.getRayGroundIntersections(rotated_vectors, Vector(0, 0, float(

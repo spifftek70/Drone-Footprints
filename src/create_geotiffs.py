@@ -22,8 +22,12 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
             try:
                 focal_length = config.drone_properties['FocalLength']
                 distance = config.center_distance
-                cam_maker = config.drone_properties['CameraMake']
+                cam_maker = config.drone_properties['SensorMake']
                 cam_model = config.drone_properties['SensorModel']
+                # print("Drone Properties: ", config.drone_properties)
+                if cam_model == 'M3E':
+                    cam_model = 'L2D-20c'
+                    cam_maker = 'Hasselblad'
                 aperture = config.drone_properties['MaxApertureValue']
 
                 # Load camera and lens from lensfun database
@@ -62,7 +66,7 @@ def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
                 config.update_lense(False)
                 img_undistorted = np.array(jpeg_img)
                 logger.info(f"Cannot correct lens distortion. Camera properties not found in database.")
-                logger.exception(f"Index error: {e} for {image_path}")
+                # logger.info(f"Index error: Camera not found.")
         else:
             img_undistorted = np.array(jpeg_img)
 
@@ -95,15 +99,19 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, dst_utf8_path, fixed_polygon, co
 
     try:
         georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
-        dsArray = array2ds(georef_image_array, polygon_wkt)
-    except Exception as e:
-        logger.opt(exception=True).warning(f"Error during warping or dataset creation: {e}")
+        if georef_image_array is None:
+            raise ValueError("Georeferenced image array is invalid.")
 
-    # Warp the rasterio dataset to the destination path
-    try:
-        warp_ds(dst_utf8_path, dsArray)
+        # Get dataset directly from array2ds
+        dataset = array2ds(georef_image_array, polygon_wkt)
+        if dataset is None:
+            raise ValueError("Failed to create in-memory dataset.")
+
+        # Pass dataset directly to warp_ds
+        warp_ds(dst_utf8_path, dataset)
+
     except Exception as e:
-        logger.opt(exception=True).warning(f"Error writing GeoTIFF: {e}")
+        logger.opt(exception=True).warning(f"Error during rectification or warping: {e}")
 
 def generate_geotiff(image_path, geotiff_file, coord_array):
     """

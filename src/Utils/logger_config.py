@@ -1,4 +1,5 @@
-from quart import Quart
+from quart import Quart, jsonify
+from quart import request
 import asyncio
 import json
 from loguru import logger
@@ -14,6 +15,9 @@ app = Quart(__name__)
 handlers_added = False
 log_cache = deque(maxlen=150)  # Adjust maxlen to your needs
 
+@app.route('/ready')
+async def ready():
+    return jsonify({"status": "ready"}), 200
 
 class WebSocketHandler:
     def __init__(self, port):
@@ -46,16 +50,9 @@ async def startup():
         handlers_added = True
     await start_websocket_server(log_websocket_handler, 6060)
 
-def websocket_log_formatter(message):
-    if "tqdm" not in message.record["message"]:
-        record = message.record
-        log_dict = {
-            "time": record["time"].strftime("%Y-%m-%d %H:%M:%S"),
-            "level": record["level"].name,
-            "message": record["message"]
-        }
-        formatted_message = json.dumps(log_dict)
-        asyncio.run_coroutine_threadsafe(log_websocket_handler.send(formatted_message), asyncio.get_event_loop())
+async def main():
+    websocket_server_task = asyncio.create_task(start_websocket_server(log_websocket_handler, 6060))
+    await app.run_task()
 
 def hash_message(message):
     return hashlib.md5(message.encode()).hexdigest()
@@ -78,18 +75,39 @@ def websocket_log_formatter(message):
         formatted_message = json.dumps(log_dict)
         asyncio.run_coroutine_threadsafe(log_websocket_handler.send(formatted_message), asyncio.get_event_loop())
 
-
 def init_logger(outer_path):
     log_path = Path(outer_path) / "logfiles" / f"log_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    file_handler_id = logger.add(log_path, format="{time} | {level} | {message}\n", level="INFO")  # File output  # File output
+    file_handler_id = logger.add(log_path, format="{time} | {level} | {message}\n", level="INFO")  # File output
     return file_handler_id
 
 def get_logger():
     logger.remove()  # Remove all previous handlers to prevent duplication
-    logger.add(sys.stdout, format="{time} | {level} | {message}", level="INFO", filter=unique_log_filter)  # Console output
-    logger.add(websocket_log_formatter, format="{time} | {level} | {message}", level="INFO", filter=lambda record: "tqdm" not in record["message"])
+
+    logger.level("COMPLETE", no=25, color="<green>", icon="✔️")
+    logger.level("START", no=26, color="<blue>", icon="✔️")
+
+    # Define a custom time format without the microseconds and timezone
+    custom_time_format = "{time:YYYY-MM-DD HH:mm:ss}"
+
+    # Configure log outputs (file, stdout, WebSocket)
+    logger.add(sys.stdout, format=f"{custom_time_format} | {{level}} | {{message}}", level="START", filter=unique_log_filter) 
+    logger.add(sys.stdout, format=f"{custom_time_format} | {{level}} | {{message}}", level="COMPLETE", filter=unique_log_filter) 
+    logger.add(sys.stdout, format=f"{custom_time_format} | {{level}} | {{message}}", level="INFO", filter=unique_log_filter)  # Console output
+    
+    # Configure WebSocket formatter
+    logger.add(websocket_log_formatter, format=f"{custom_time_format} | {{level}} | {{message}}", level="START", filter=lambda record: "tqdm" not in record["message"])
+    logger.add(websocket_log_formatter, format=f"{custom_time_format} | {{level}} | {{message}}", level="COMPLETE", filter=lambda record: "tqdm" not in record["message"])
+    logger.add(websocket_log_formatter, format=f"{custom_time_format} | {{level}} | {{message}}", level="INFO", filter=lambda record: "tqdm" not in record["message"])
+
+    # Define the custom method for START and COMPLETE levels
+    logger.start = lambda message: logger.log("START", message)
+    logger.complete = lambda message: logger.log("COMPLETE", message)
+
     return logger
+
+def end_logger(file_handler_id):
+    logger.remove(file_handler_id)
 
 class TqdmWebSocket(tqdm):
     def __init__(self, *args, **kwargs):
@@ -118,9 +136,18 @@ class TqdmWebSocket(tqdm):
         }
         try:
             asyncio.run_coroutine_threadsafe(self.websocket_handler.send(json.dumps(message)), asyncio.get_event_loop())
-            logger.info(f"Sent WebSocket progress completion message.")
+            # logger.info(f"Sent WebSocket progress completion message.")
         except Exception as e:
             logger.error(f"Failed to send WebSocket progress completion message: {e}")
 
-def end_logger(file_handler_id):
-    logger.remove(file_handler_id)
+
+def package_received(filtered_data):
+    logger.info(f"Parameters received! {filtered_data}")
+    logger.start("Starting Processes")  # Now includes the proper format
+
+def complete_logger(complete_logger):
+    logger.complete(complete_logger)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

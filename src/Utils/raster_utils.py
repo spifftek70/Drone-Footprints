@@ -7,7 +7,7 @@ import sys
 from contextlib import contextmanager
 import rasterio
 from rasterio.transform import from_bounds
-from rasterio.enums import ColorInterp
+from rasterio.enums import ColorInterp, Resampling
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from rio_cogeo.cogeo import cog_translate
 from rio_cogeo.profiles import cog_profiles
@@ -166,25 +166,29 @@ def array2ds(cv2_array, polygon_wkt):
     transform = from_bounds(minx, miny, maxx, maxy, width, height)
     crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
 
-    with rasterio.MemoryFile() as memfile:
-        with memfile.open(driver='GTiff', height=height, width=width, count=bands, dtype=dtype, crs=crs,
-                          transform=transform) as dst:
-            if len(cv2_array.shape) == 3:  # For color images
-                for i in range(1, bands + 1):
-                    dst.write(cv2_array[:, :, i - 1], i)
-                    # Set color interpretation for each band if applicable
-                    if bands == 3:
-                        color_interpretations = [ColorInterp.red, ColorInterp.green, ColorInterp.blue]
-                        dst.colorinterp = color_interpretations[:bands]
-                    elif bands == 4:
-                        color_interpretations = [ColorInterp.red, ColorInterp.green, ColorInterp.blue,
-                                                 ColorInterp.alpha]
-                        dst.colorinterp = color_interpretations[:bands]
-            else:  # For grayscale images
-                dst.write(cv2_array, 1)
-                color_interpretations = [ColorInterp.gray]
-                dst.colorinterp = color_interpretations[:bands]
-        return memfile.open()
+    try:
+        memfile = rasterio.MemoryFile()
+        dataset = memfile.open(driver='GTiff', height=height, width=width, count=bands, dtype=dtype, crs=crs,
+                               transform=transform)
+        if len(cv2_array.shape) == 3:  # For color images
+            for i in range(1, bands + 1):
+                dataset.write(cv2_array[:, :, i - 1], i)
+                # Set color interpretation for each band if applicable
+                if bands == 3:
+                    color_interpretations = [ColorInterp.red, ColorInterp.green, ColorInterp.blue]
+                    dataset.colorinterp = color_interpretations[:bands]
+                elif bands == 4:
+                    color_interpretations = [ColorInterp.red, ColorInterp.green, ColorInterp.blue, ColorInterp.alpha]
+                    dataset.colorinterp = color_interpretations[:bands]
+        else:  # For grayscale images
+            dataset.write(cv2_array, 1)
+            color_interpretations = [ColorInterp.gray]
+            dataset.colorinterp = color_interpretations[:bands]
+        
+        return dataset  # Keep the dataset open for further processing
+    except Exception as e:
+        logger.opt(exception=True).error(f"Error creating rasterio dataset: {e}")
+        raise
 
 
 @contextmanager
@@ -208,37 +212,57 @@ def warp_ds(dst_utf8_path, ds):
 
     No return value.
     """
-    dst_crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
+    try:
+        # Ensure the dataset is open and valid
+        if ds.closed:
+            raise rasterio.errors.RasterioIOError(f"The dataset {ds.name} is already closed.")
 
-    transform, width, height = calculate_default_transform(
-        ds.crs, dst_crs, ds.width, ds.height, *ds.bounds)
+        dst_crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
 
-    kwargs = ds.meta.copy()
-    kwargs.update({
-        'crs': dst_crs,
-        'transform': transform,
-        'width': width,
-        'height': height,
-        'nodata': 0  # Set nodata value to 0 (transparent)
-    })
+        # Calculate the transformation and metadata for the new CRS
+        transform, width, height = calculate_default_transform(
+            ds.crs, dst_crs, ds.width, ds.height, *ds.bounds
+        )
 
-    with rasterio.open(dst_utf8_path, 'w', **kwargs) as dst:
-        for i in range(1, ds.count + 1):
-            reproject(
-                source=rasterio.band(ds, i),
-                destination=rasterio.band(dst, i),
-                src_transform=ds.transform,
-                src_crs=ds.crs,
-                dst_transform=transform,
-                dst_crs=dst_crs,
-                resampling=Resampling.nearest)
+        kwargs = ds.meta.copy()
+        kwargs.update({
+            'crs': dst_crs,
+            'transform': transform,
+            'width': width,
+            'height': height,
+            'nodata': 0  # Set nodata value to 0 (transparent)
+        })
 
-    if config.cog:
-        # Convert the GeoTIFF to a Cloud Optimized GeoTIFF (COG)
-        cogeo_profile = 'deflate'
-        with suppress_stdout_stderr():
-            cog_translate(dst_utf8_path, dst_utf8_path, cog_profiles.get(cogeo_profile), in_memory=True)
+        # Write the warped dataset to the destination path
+        with rasterio.open(dst_utf8_path, 'w', **kwargs) as dst:
+            for i in range(1, ds.count + 1):
+                reproject(
+                    source=rasterio.band(ds, i),
+                    destination=rasterio.band(dst, i),
+                    src_transform=ds.transform,
+                    src_crs=ds.crs,
+                    dst_transform=transform,
+                    dst_crs=dst_crs,
+                    resampling=Resampling.nearest
+                )
 
+        # Optional: Convert the GeoTIFF to a Cloud Optimized GeoTIFF (COG)
+        if config.cog:
+            cogeo_profile = cog_profiles.get('deflate')
+            cogeo_profile.update({
+                'blockxsize': min(512, width, height),
+                'blockysize': min(512, width, height),
+                'compress': 'DEFLATE',
+                'predictor': 2,
+                'zlevel': 9
+            })
+            with suppress_stdout_stderr():
+                cog_translate(dst_utf8_path, dst_utf8_path, cogeo_profile, in_memory=True)
+
+    except rasterio.errors.RasterioIOError as rio_error:
+        logger.error(f"RasterioIOError occurred: {rio_error}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
 
 def calculate_grid(num_images):
     """
@@ -303,5 +327,5 @@ def create_mosaic(directory, output_base_path, mosaic_size=(400, 350), border_si
     # Adjusting output path to ensure it points to the correct subdirectory and file
     output_path = Path(output_base_path) / "mosaic.jpg"
     output_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the mosaic directory exists
-
     mosaic_image.save(output_path, format='JPEG')
+    # logger.info(f"Mosaic saved to: {output_path}")
