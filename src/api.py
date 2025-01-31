@@ -32,7 +32,7 @@ async def run_script():
     # Execute the command and handle subprocess output
     process = await asyncio.create_subprocess_exec(
         *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-        bufsize=0  # Set buffering to unbuffered
+        bufsize=0  # Set buffering to unbufferedd
     )
 
     async for line in process.stdout:
