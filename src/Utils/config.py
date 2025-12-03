@@ -10,6 +10,7 @@ rtk = False
 correct_magnetic_declinaison = False
 utm_zone = ""
 hemisphere = ""
+
 cog = False
 dtm_path = ""
 global_elevation = False

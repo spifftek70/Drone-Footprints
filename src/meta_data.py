@@ -3,13 +3,12 @@
 # License: AGPL
 # Version: 1.0
 import datetime
+import itertools
 from tqdm import tqdm
 from loguru import logger
 from Utils.utils import Color
 from Utils import config
 from imagedrone import ImageDrone
-from new_fov import HighAccuracyFOVCalculator
-import itertools
 
 
 def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
@@ -39,7 +38,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     for data in metadata:
         # pprint(data)clear
         try:
-            image = ImageDrone(data, sensor_dimensions, config)
+            image = ImageDrone(data, sensor_dimensions, config,logger)
             images_array.append(image)
             pbar.set_description_str(f'{Color.YELLOW}Current file: {image.file_name}{Color.END}')
 
@@ -54,9 +53,9 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             config.update_rel_altitude(image.relative_altitude)
 
             # Calculate Field of View (FOV) or any other necessary geometric calculations
-            image.coord_array, image.footprint_coordinates = HighAccuracyFOVCalculator(image).get_fov_bbox()
+            image.get_HighAccuracyFOV()
 
-            image.create_geojson_feature(image.properties)
+            image.create_geojson_feature()
             # Generate GeoTIFF for the current image
             image.generate_geotiff(indir_path, geotiff_dir,logger)
 
@@ -76,10 +75,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             logger.exception(f"Invalid value for metadata key: {e} for image: {image.file_name}")
         nb_processed_images = nb_processed_images + 1
 
-    # Add lines to the GeoJSON feature collection if necessary
-    drone_props = config.drone_properties
-    # print("Drone Props", Drone_props)
-    # exit()
+
     now = datetime.datetime.now()
     process_date = f"{now.strftime('%Y-%m-%d %H-%M')}"
     line_geometry = dict(type="LineString", coordinates=line_coordinates)
@@ -88,7 +84,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     ### Compare drone_data for all images
     for a , b in itertools.combinations(images_array, 2):
         if not same_drone_for_all_images:
-            same_drone_for_all_images = a.drone_hash == b.drone_hash 
+            same_drone_for_all_images = a.drone_hash == b.drone_hash
         else:
             same_drone_for_all_images = a.drone_hash == b.drone_hash == same_drone_for_all_images
 
@@ -99,7 +95,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
 
     if not same_drone_for_all_images and image.sensor_model != "M3M":
         mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model="Multiple", sensor_make="Multiple") 
+                             cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
 
 
     # # multiple drones and Mavic 3 Multispectral

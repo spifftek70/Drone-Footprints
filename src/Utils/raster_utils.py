@@ -222,7 +222,7 @@ def warp_to_geotiff_file(geotiff_file:str, dataset):
         'nodata': 0  # Set nodata value to 0 (transparent)
     })
 
-    with rasterio.open(geotiff_file, 'w', **kwargs) as dst:
+    with rasterio.open(geotiff_file, 'w', num_threads='all_cpus', **kwargs) as dst:
         for i in range(1, dataset.count + 1):
             reproject(
                 source=rasterio.band(dataset, i),

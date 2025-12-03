@@ -3,9 +3,16 @@
 #  __license__ = "AGPL"
 #  __version__ = "1.0"
 
+import warnings
 from rasterio import rasterio
 from rasterio.transform import rowcol
+from rasterio.errors import NotGeoreferencedWarning
 from pyproj import Transformer
+
+# Suppress rasterio/GDAL warnings
+warnings.filterwarnings('ignore', category=NotGeoreferencedWarning)
+import logging
+logging.getLogger('rasterio').setLevel(logging.ERROR)
 from scipy.ndimage import map_coordinates
 from urllib.request import urlopen
 from urllib.error import HTTPError

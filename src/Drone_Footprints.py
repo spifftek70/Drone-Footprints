@@ -16,7 +16,6 @@ from Utils.utils import read_sensor_dimensions_from_csv, Color
 from Utils.logger_config import logger, init_logger
 from Utils.raster_utils import create_mosaic
 from Utils import config
-from imagedrone import ImageDrone
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 
@@ -160,7 +159,7 @@ def main():
     # logger.exception(f"User arguments - {user_args}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-    logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
+    logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints{Color.END}")
 
     config.update_epsg(args.EPSG)
     config.update_correct_magnetic_declinaison(args.declination)
@@ -173,8 +172,7 @@ def main():
         config.update_rtk(True)
     config.update_dtm(args.DSMPATH)
     files = get_image_files(indir)
-    logger.info(
-        f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory." + Color.END)
+    logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
     if files is None or len(files) == 0:
         logger.critical("No image files found in the specified directory.")
         sys.exit()
@@ -207,10 +205,7 @@ def main():
         mosaic_path.mkdir(parents=True, exist_ok=True)
         create_mosaic(indir, mosaic_path)
 
-    if config.cog is True:
-        geo_type = "Cloud Optimized"
-    else:
-        geo_type = "standard"
+    geo_type = "Cloud Optimized" if config.cog is True else "standard"
 
     logger.success(f"Process Complete. {len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created.")
     logger.remove()  # Remove existing handlers

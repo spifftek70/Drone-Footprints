@@ -8,6 +8,7 @@ import utm
 from pyproj import Transformer, CRS, Geod
 import Utils.config as config
 from loguru import logger
+from mpmath import mp, radians, sqrt
 
 
 def decimal_degrees_to_utm(latitude, longitude):
@@ -24,6 +25,7 @@ def decimal_degrees_to_utm(latitude, longitude):
     utm_zone = int((longitude + 180) / 6) + 1
     hemisphere = "north" if latitude >= 0 else "south"
     easting, northing, zone_number, zone_letter = utm.from_latlon(latitude, longitude)
+    print(f"Converted DD ({latitude}, {longitude}) to UTM ({easting}, {northing}, Zone {zone_number}{zone_letter})")
     return easting, northing, zone_number, hemisphere
 
 
@@ -47,8 +49,7 @@ def get_utm_transformer(latitude, longitude):
     is_southern = latitude < 0
     utm_crs = CRS(proj="utm", zone=zone_number, ellps="WGS84", datum="WGS84", south=is_southern)
     wgs84_crs = CRS(proj="latlong", datum="WGS84")
-    transformer = Transformer.from_crs(wgs84_crs, utm_crs, always_xy=True)
-    return transformer
+    return Transformer.from_crs(wgs84_crs, utm_crs, always_xy=True)
 
 
 def find_epsg_code(utm_x, utm_y):
@@ -64,8 +65,7 @@ def find_epsg_code(utm_x, utm_y):
     """
     utm_band = str((math.floor((utm_y + 180) / 6) % 60) + 1)
     utm_band = utm_band.zfill(2)
-    epsg_code = "326" + utm_band if utm_x >= 0 else "327" + utm_band
-    return epsg_code
+    return f"326{utm_band}" if utm_x >= 0 else f"327{utm_band}"
 
 
 def utm_to_latlon(easting, northing, zone_number, hemi):
@@ -146,8 +146,7 @@ def proj_stuff2(zone_number, hemisphere):
     """
     south_flag = "+south" if hemisphere == "S" else ""
     proj_utm = f"+proj=utm +zone={zone_number} {south_flag} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-    transformer = Transformer.from_proj(proj_utm, "epsg:3857", always_xy=True)
-    return transformer
+    return Transformer.from_proj(proj_utm, "epsg:3857", always_xy=True)
 
 
 def calculate_geographic_offset(latitude, longitude, distance_meters, bearing_degrees):
@@ -327,3 +326,72 @@ def translate_to_geo_tgt(intersection, drone_lon, drone_lat):
     # Convert points back to geographic coordinates
     lon, lat = transformer_to_geo.transform(point_easting, point_northing)
     return lat, lon
+
+
+
+def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitude):
+    """
+    Calculate the distance from a drone to the center of a polygon in UTM coordinates.
+
+    Parameters:
+    - polygon_coords: list of tuples, each representing the (x, y) UTM coordinates of a polygon's vertex.
+    - drone_coords: Tuple representing the (x, y) UTM coordinates of the drone's location.
+    - drone_altitude: Float representing the drone's altitude in meters above the ground.
+
+    Returns:
+    - Float: The distance from the drone to the centroid of the polygon.
+    """
+    # Calculate the centroid of the polygon
+    centroid = calculate_centroid(polygon_coords)
+    centroid_3d = (centroid[0], centroid[1], 0)
+    drone_position_3d = (drone_coords[0], drone_coords[1], drone_altitude)
+    center_distance=distance_3d(centroid_3d, drone_position_3d)
+    config.update_center_distance(center_distance)
+    return center_distance
+    # Calculate and return the 3D distance
+
+def calculate_centroid(polygon_coords):
+    """Calculate the centroid of a polygon given its vertices in UTM coordinates."""
+    x_sum = 0
+    y_sum = 0
+    for (x, y) in polygon_coords:
+        x_sum += x
+        y_sum += y
+    return (x_sum / len(polygon_coords), y_sum / len(polygon_coords))
+
+
+def distance_3d(point1, point2):
+    """Calculate the 3D distance between two points in UTM coordinates."""
+    return sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
+
+
+def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg, declination):
+    """
+    Adjusts the gimbal's angles for magnetic declination and normalizes the roll orientation.
+    - Yaw is adjusted for magnetic declination.
+    - Roll is normalized if within a specific range to handle edge cases around 90 degrees.
+    - Pitch is converted directly to radians.
+
+    Parameters:
+    - gimbal_yaw_deg (float): The gimbal's yaw angle in degrees.
+    - gimbal_pitch_deg (float): The gimbal's pitch angle in degrees.
+    - gimbal_roll_deg (float): The gimbal's roll angle in degrees.
+    - declination (float): Magnetic declination in degrees.
+
+    Returns:
+    - tuple: Adjusted yaw, pitch, and roll angles in radians.
+    """
+    # Normalize yaw for magnetic declination
+    if -120 <= gimbal_pitch_deg <= -60:
+        pitch_rad = radians(90 - gimbal_pitch_deg)
+    else:
+        pitch_rad = radians(180 - gimbal_pitch_deg)
+
+    if config.correct_magnetic_declinaison:
+        yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
+    else:
+        yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg)
+    yaw_rad = yaw_rad % (2 * mp.pi)
+    roll_rad = radians(gimbal_roll_deg)
+
+    return yaw_rad, pitch_rad, roll_rad
