@@ -162,7 +162,7 @@ class ImageDrone:
 
             # Determine new altitude based on different data sources
             if self.config.dtm_path:
-                self.new_altitude = get_altitude_at_point(self.utmx, self.utmy, self.config.dtm_path, self.absolute_altitude)
+                self.new_altitude = get_altitude_at_point(self.utmx, self.utmy, self.config, self.absolute_altitude, self.file_name)
             elif self.config.global_elevation:
                 self.new_altitude = get_altitude_from_open(self.latitude, self.longitude)
             else:
@@ -176,7 +176,7 @@ class ImageDrone:
             self.new_translated_bbox = self.translated_bbox
 
             if self.config.dtm_path:
-                altitudes = [get_altitude_at_point(*box[:2], self.config.dtm_path, self.absolute_altitude) for box in self.new_translated_bbox]
+                altitudes = [get_altitude_at_point(*box[:2], self.config, self.absolute_altitude,self.file_name) for box in self.new_translated_bbox]
                 if None in altitudes:
                     logger.warning(
                         f"Failed to get elevation for image {self.file_name}. See log for details.")

@@ -57,8 +57,14 @@ def load_elevation_data_and_crs(dtm_path):
         return dsm, crs, src, affine_transform
 
 
-def translate_geo_to_utm(drone_longitude, drone_latitude, dtm_path):
-    elevation_data, crs, _, affine_transform = load_elevation_data_and_crs(dtm_path)
+def translate_geo_to_utm(drone_longitude, drone_latitude, config):
+    # elevation_data, crs, _, affine_transform = load_elevation_data_and_crs(dtm_path)
+    if config.dtm_cached is None:
+        logger.error("DTM cache not initialized")
+        return None, None, None
+
+    elevation_data, crs, affine_transform = config.dtm_cached
+
     adjuster = ElevationAdjuster(elevation_data, crs, affine_transform)
 
     # Initialize transformer to convert from geographic coordinates to the CRS of the raster
@@ -70,15 +76,21 @@ def translate_geo_to_utm(drone_longitude, drone_latitude, dtm_path):
     return utm_x, utm_y, adjuster
 
 
-def get_altitude_at_point(x, y, dtm_path, absolute_altitude):
-    elevation_data, _, _, affine_transform = load_elevation_data_and_crs(dtm_path)
+def get_altitude_at_point(x, y, config, absolute_altitude,file_name) -> float:
+    # elevation_data, _, _, affine_transform = load_elevation_data_and_crs(dtm_path)
+    if config.dtm_cached is None:
+        logger.error(f"DTM cache not initialized for file {file_name}")
+        return None
+
+    elevation_data, _, affine_transform = config.dtm_cached
+
     row, col = rowcol(affine_transform, x, y)
     if 0 <= row < elevation_data.shape[0] and 0 <= col < elevation_data.shape[1]:
         elevation = elevation_data[row, col]
         return absolute_altitude - elevation
 
     logger.warning(
-        f"Point ({x}, {y}) is outside the elevation data bounds for file {config.im_file_name}. Switching to default elevation.")
+        f"Point ({x}, {y}) is outside the elevation data bounds for file {file_name}. Switching to default elevation.")
     return None
 
 

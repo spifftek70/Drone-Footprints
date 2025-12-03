@@ -208,7 +208,6 @@ def warp_to_geotiff_file(geotiff_file:str, dataset, config):
     No return value.
     """
     dst_crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
-    print("cocou")
 
     transform, width, height = calculate_default_transform(
         dataset.crs, dst_crs, dataset.width, dataset.height, *dataset.bounds)

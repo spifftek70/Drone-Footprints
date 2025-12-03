@@ -146,10 +146,8 @@ def main():
     log_path = Path(outer_path) / "logfiles" / log_file
     config = Config()
     config.nodejgraphical_interface = args.nodejs
-    print("coucou")
 
     init_logger(log_path=log_path, local_config=config)
-    print("coucou")
 
     user_args = dict(vars(args))
     args_list = []
@@ -174,7 +172,8 @@ def main():
 
     config.rtk_file_available = find_mtk(indir)
 
-    config.dtm_path = Path(args.DSMPATH)
+    config.dtm_path = Path(args.DSMPATH) if args.DSMPATH else None
+    config.init_dtm_cache()  # Initialize DTM cache after setting dtm_path
     files = get_image_files(indir)
     logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
     if files is None or len(files) == 0:

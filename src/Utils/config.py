@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from networkx import config
+import rasterio
 
 
 @dataclass
@@ -28,9 +29,20 @@ class Config:
     geo_type: str = "standard"
 
     def __post_init__(self):
-            self.crs_utm = f"+proj=utm +zone={self.utm_zone} +{self.hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-            if self.cog :
-                self.geo_type = "Cloud Optimized"
+        self.crs_utm = f"+proj=utm +zone={self.utm_zone} +{self.hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+        if self.cog :
+            self.geo_type = "Cloud Optimized"
+        self.dtm_cached = None
+
+    def init_dtm_cache(self):
+        """Initialize DTM cache after dtm_path is set"""
+        if self.dtm_path and self.dtm_path.exists():
+            with rasterio.open(self.dtm_path) as src:
+                dtm_data = src.read(1)
+                dtm_crs = src.crs
+                dtm_transform = src.transform
+            self.dtm_cached = (dtm_data, dtm_crs, dtm_transform)
+
 
 
 def update_utm_data(self,utm_zone, hemisphere):

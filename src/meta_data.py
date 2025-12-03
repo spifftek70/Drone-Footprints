@@ -9,6 +9,7 @@ from loguru import logger
 from Utils.utils import Color
 from Utils import config
 from imagedrone import ImageDrone
+from functools import lru_cache
 
 
 def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:str, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
@@ -125,3 +126,8 @@ def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:st
     pbar.close()
     outer.close()
     return feature_collection, images_array
+
+@lru_cache(maxsize=100)
+def get_cached_declination(lat_rounded, lon_rounded, date_str):
+    # Round to 0.1 degrees for caching
+    return calculate_declination(lat_rounded, lon_rounded, date_str)
