@@ -44,21 +44,21 @@ class ElevationAdjuster:
             return config.absolute_altitude
 
 
-def load_elevation_data_and_crs():
-    if config.dtm_path is not None:
+def load_elevation_data_and_crs(dtm_path):
+    if dtm_path is not None:
         dsm = ''
         crs = ''
         src = ''
         affine_transform = ''
-        with rasterio.open(config.dtm_path) as src:
+        with rasterio.open(dtm_path) as src:
             dsm = src.read(1)
             crs = src.crs  # Get the CRS directly
             affine_transform = src.transform  # Get the affine transform
         return dsm, crs, src, affine_transform
 
 
-def translate_geo_to_utm(drone_longitude, drone_latitude):
-    elevation_data, crs, _, affine_transform = load_elevation_data_and_crs()
+def translate_geo_to_utm(drone_longitude, drone_latitude, dtm_path):
+    elevation_data, crs, _, affine_transform = load_elevation_data_and_crs(dtm_path)
     adjuster = ElevationAdjuster(elevation_data, crs, affine_transform)
 
     # Initialize transformer to convert from geographic coordinates to the CRS of the raster
@@ -70,12 +70,12 @@ def translate_geo_to_utm(drone_longitude, drone_latitude):
     return utm_x, utm_y, adjuster
 
 
-def get_altitude_at_point(x, y):
-    elevation_data, _, _, affine_transform = load_elevation_data_and_crs()
+def get_altitude_at_point(x, y, dtm_path, absolute_altitude):
+    elevation_data, _, _, affine_transform = load_elevation_data_and_crs(dtm_path)
     row, col = rowcol(affine_transform, x, y)
     if 0 <= row < elevation_data.shape[0] and 0 <= col < elevation_data.shape[1]:
         elevation = elevation_data[row, col]
-        return config.absolute_altitude - elevation
+        return absolute_altitude - elevation
 
     logger.warning(
         f"Point ({x}, {y}) is outside the elevation data bounds for file {config.im_file_name}. Switching to default elevation.")

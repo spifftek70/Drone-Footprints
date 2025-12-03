@@ -170,7 +170,7 @@ def calculate_geographic_offset(latitude, longitude, distance_meters, bearing_de
     return new_latitude, new_longitude
 
 
-def translate_to_wgs84(bbox, drone_lon, drone_lat):
+def translate_to_wgs84(bbox, drone_lon, drone_lat,epsg_code):
     """
     Translates a bounding box to geographic coordinates based on the drone's location.
 
@@ -184,13 +184,12 @@ def translate_to_wgs84(bbox, drone_lon, drone_lat):
     """
     # Determine UTM zone and hemisphere from drone's coordinates
     crs_geo_outDD = "epsg:4326"
-    crs_geo_out = f"epsg:{config.epsg_code}"
+    crs_geo_out = f"epsg:{epsg_code}"
     # crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
     # utm_crs_code = find_epsg_code(bbox[0][0], bbox[0][1])
     utm_zone = int((drone_lon + 180) / 6) + 1
     hemisphere = "north" if drone_lat >= 0 else "south"
     crs_geo_outDD = "epsg:4326"
-    # crs_geo_out = config.epsg_code
     crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
 
     # Initialize transformers for coordinate conversion
@@ -269,7 +268,7 @@ def geographic_to_utm(lon, lat):
     return easting, northing, epsg_code, hemisphere
 
 
-def find_geodetic_intersections(bbox, drone_lon, drone_lat):
+def find_geodetic_intersections(bbox, drone_lon, drone_lat,epsg_code):
     """
     Translates a bounding box to geographic coordinates based on the drone's location.
 
@@ -289,7 +288,7 @@ def find_geodetic_intersections(bbox, drone_lon, drone_lat):
 
     # Initialize transformers for coordinate conversion
     transformer_to_utm = Transformer.from_crs(crs_geo_in, crs_utm, always_xy=True)
-    transformer_to_geo = Transformer.from_crs(crs_utm, config.epsg_code, always_xy=True)
+    transformer_to_geo = Transformer.from_crs(crs_utm, epsg_code, always_xy=True)
 
     # Convert drone's location to UTM coordinates
     drone_easting, drone_northing = transformer_to_utm.transform(drone_lon, drone_lat)
@@ -346,7 +345,7 @@ def drone_distance_to_polygon_center(polygon_coords, drone_coords, drone_altitud
     centroid_3d = (centroid[0], centroid[1], 0)
     drone_position_3d = (drone_coords[0], drone_coords[1], drone_altitude)
     center_distance=distance_3d(centroid_3d, drone_position_3d)
-    config.update_center_distance(center_distance)
+    config.center_distance = center_distance
     return center_distance
     # Calculate and return the 3D distance
 
@@ -365,7 +364,7 @@ def distance_3d(point1, point2):
     return sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
 
 
-def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg, declination):
+def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg, declination,correct_magnetic_declinaison):
     """
     Adjusts the gimbal's angles for magnetic declination and normalizes the roll orientation.
     - Yaw is adjusted for magnetic declination.
@@ -387,7 +386,7 @@ def calculate_rads_from_angles(gimbal_yaw_deg, gimbal_pitch_deg, gimbal_roll_deg
     else:
         pitch_rad = radians(180 - gimbal_pitch_deg)
 
-    if config.correct_magnetic_declinaison:
+    if correct_magnetic_declinaison:
         yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
     else:
         yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg)

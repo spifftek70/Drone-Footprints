@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass,field
 from pathlib import Path
 from datetime import datetime
+import sys
 import geojson
 from geojson_rewind import rewind
 from magnetic_field_calculator import MagneticFieldCalculator
@@ -12,18 +13,20 @@ from shapely.geometry import Polygon
 from Utils.geospatial_conversions import *
 from Utils.new_elevation import *
 from Utils.utils import Color
-from Utils import config
+from Utils.config import Config
 from create_geotiffs import set_raster_extents
 from mpmath import mp, radians, sqrt
 from vector3d.vector import Vector
 from loguru import logger
+from typing import Any
 
 
 @dataclass
 class ImageDrone:
     metadata : dict
     sensor_dimensions : tuple
-    config: config
+    config: Config
+    logger: Any = None  # Ajout de l'annotation de type
     declination : float = None
     drone_hash : int = None
     feature_point : dict = field(default_factory=dict)
@@ -38,8 +41,6 @@ class ImageDrone:
     def __post_init__(self):
 
         self.file_name = str(self.metadata.get("File:FileName"))
-
-        self.lense_correction = config.lense_correction
 
         # Extract detailed sensor and drone info for the current image
         # Extracting latitude, longitude, and altitude details
@@ -151,8 +152,6 @@ class ImageDrone:
             dec = model['field-value']['declination']
             declination = dec['value']
 
-        if self.relative_altitude < 0 or self.focal_length <= 0:
-            config.pbar.write(Color.RED + ValueError("Altitude and focal length must be positive.") + Color.END)
         self.declination=declination
 
     def get_HighAccuracyFOV(self):
@@ -162,26 +161,26 @@ class ImageDrone:
             self.utmx, self.utmy, self.zone_number, self.zone_letter = gps_to_utm(self.latitude, self.longitude)
 
             # Determine new altitude based on different data sources
-            if config.dtm_path:
-                self.new_altitude = get_altitude_at_point(self.utmx, self.utmy)
-            elif config.global_elevation:
+            if self.config.dtm_path:
+                self.new_altitude = get_altitude_at_point(self.utmx, self.utmy, self.config.dtm_path, self.absolute_altitude)
+            elif self.config.global_elevation:
                 self.new_altitude = get_altitude_from_open(self.latitude, self.longitude)
             else:
-                self.new_altitude = config.absolute_altitude
+                self.new_altitude = self.config.absolute_altitude
             #print(f"config.relative_altitude {config.relative_altitude} config.absolute_altitude {config.absolute_altitude} new_altitude: {self.new_altitude}")
             self.corrected_altitude = self.new_altitude
             self.elevation_bbox = self.get_ray_ground_intersections()
 
-            self.translated_bbox= find_geodetic_intersections(self.elevation_bbox, self.longitude, self.latitude)
+            self.translated_bbox= find_geodetic_intersections(self.elevation_bbox, self.longitude, self.latitude,self.config.epsg_code)
             self.center_distance = drone_distance_to_polygon_center(self.translated_bbox, (self.utmx, self.utmy), self.corrected_altitude)
             self.new_translated_bbox = self.translated_bbox
 
-            if config.dtm_path:
-                altitudes = [get_altitude_at_point(*box[:2]) for box in self.new_translated_bbox]
+            if self.config.dtm_path:
+                altitudes = [get_altitude_at_point(*box[:2], self.config.dtm_path, self.absolute_altitude) for box in self.new_translated_bbox]
                 if None in altitudes:
                     logger.warning(
                         f"Failed to get elevation for image {self.file_name}. See log for details.")
-                    self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude)
+                    self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
                     return
                 # Calculate the ratios of distances to check the 5 times condition
                 distances = [sqrt((self.new_translated_bbox[(i + 1) % len(self.new_translated_bbox)][0] - box[0]) ** 2 +
@@ -191,16 +190,16 @@ class ImageDrone:
                     if any(other_dist * 6 < dist for other_dist in distances if other_dist != dist):
                         logger.warning(
                             f"One side of the polygon for {self.file_name} is at least 5 times longer than another.")
-                        self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude)
+                        self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
                         return
 
-            elif config.global_elevation:
+            elif self.config.global_elevation:
                     trans_utmbox = [utm_to_latlon(box[0], box[1], self.zone_number, self.zone_letter) for box in self.new_translated_bbox]
                     altitudes = get_altitudes_from_open(trans_utmbox)
 
                     if None in altitudes:
                         logger.warning(f"Failed to get elevation at point for {self.file_name}.")
-                        self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude)
+                        self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
 
                     # Calculate the ratios of distances to check the 5 times condition
                     distances = [sqrt((self.new_translated_bbox[(i + 1) % len(self.new_translated_bbox)][0] - box[0]) ** 2 +
@@ -210,10 +209,10 @@ class ImageDrone:
                         if any(other_dist * 5 < dist for other_dist in distances if other_dist != dist):
                             logger.warning(
                                 f"One side of the polygon for {self.file_name} is at least 5 times longer than another.")
-                            self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude)
+                            self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
                             return
                 # If no special conditions are met, process normally
-            self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude)
+            self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
             return
         except Exception as e:
             logger.warning(f"Error in get_fov_bbox: {e}")
@@ -294,7 +293,7 @@ class ImageDrone:
         adj_yaw, adj_pitch, adj_roll = calculate_rads_from_angles(self.gimbal_yaw_degree,
                                                                        self.gimbal_pitch_degree,
                                                                        self.gimbal_roll_degree,
-                                                                       self.declination)
+                                                                       self.declination, self.config.correct_magnetic_declinaison)
 
         q = quaternion.from_euler_angles(adj_yaw, adj_pitch, adj_roll)
         # Normalize the quaternion
@@ -327,6 +326,11 @@ class ImageDrone:
         """
         # Properties setup and other related processing goes here.
         # This is simplified to focus on structure. Implement as needed based on the original function.
+
+        # Check if footprint_coordinates is valid
+        if self.footprint_coordinates is None or len(self.footprint_coordinates) == 0:
+            logger.error(f"Cannot create GeoJSON feature for {self.file_name}: footprint_coordinates is None or empty")
+            return
 
         geojson_polygon = geojson.dumps(Polygon(self.footprint_coordinates))
         rewound_polygon = rewind(geojson.loads(geojson_polygon))
@@ -370,12 +374,17 @@ class ImageDrone:
             MaxApertureValue=self.max_aperture_value,
             lens_FOV1h=self.lens_FOV_height,
             lens_FOVw1=self.lens_FOV_width,
-            GSD=self.gsd,
-            epsgCode=self.config.epsg_code)
+            GSD=self.gsd)
         if self.gimbal_pitch_degree == 999:
             self.properties['FlightYawDegree']=self.gimbal_yaw_degree
             self.properties['FlightPitchDegree']=self.gimbal_pitch_degree
             self.properties['FlightRollDegree']=self.gimbal_roll_degree
+
+        if self.focal_length <= 0:
+            error_msg = f"Focal length must be positive for image {self.file_name}. Got: {self.focal_length}"
+            print(Color.RED + error_msg + Color.END)
+            logger.error(error_msg)
+            sys.exit(1)
 
     def create_hash(self) -> bool:
         self.drone_hash = hash((self.drone_make, self.drone_model ,self.camera_make, self.sensor_model, \

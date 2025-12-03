@@ -11,11 +11,11 @@ from pathlib import Path
 import warnings
 import exiftool
 import geojson
+from Utils.config import Config
 from meta_data import process_metadata
 from Utils.utils import read_sensor_dimensions_from_csv, Color
 from Utils.logger_config import logger, init_logger
 from Utils.raster_utils import create_mosaic
-from Utils import config
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 
@@ -144,8 +144,12 @@ def main():
     outer_path = args.output_directory
     log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
     log_path = Path(outer_path) / "logfiles" / log_file
-    config.update_nodejs_graphical_interface(args.nodejs)
-    init_logger(log_path=log_path)
+    config = Config()
+    config.nodejgraphical_interface = args.nodejs
+    print("coucou")
+
+    init_logger(log_path=log_path, local_config=config)
+    print("coucou")
 
     user_args = dict(vars(args))
     args_list = []
@@ -161,16 +165,16 @@ def main():
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
     logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints{Color.END}")
 
-    config.update_epsg(args.EPSG)
-    config.update_correct_magnetic_declinaison(args.declination)
-    config.update_cog(args.COG)
-    config.update_equalize(args.image_equalize)
-    config.update_lense(args.lense_correction)
-    config.update_elevation(args.elevation_service)
-    rtk_rtn = find_mtk(indir)
-    if rtk_rtn:
-        config.update_rtk(True)
-    config.update_dtm(args.DSMPATH)
+    config.epsg_code = args.EPSG
+    config.correct_magnetic_declinaison = args.declination
+    config.cog = args.COG
+    config.image_equalize = args.image_equalize
+    config.lense_correction = args.lense_correction
+    config.global_elevation = args.elevation_service
+
+    config.rtk_file_available = find_mtk(indir)
+
+    config.dtm_path = Path(args.DSMPATH)
     files = get_image_files(indir)
     logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
     if files is None or len(files) == 0:
@@ -187,7 +191,6 @@ def main():
         logger.opt(exception=True).warning(f"Error creating directories: {exception}")
 
 
-
     sensor_dimensions = read_sensor_dimensions_from_csv(
         SENSOR_INFO_CSV, sensor_width, sensor_height
     )
@@ -196,7 +199,7 @@ def main():
         sys.exit()
 
     images_array = []
-    feature_collection, images_array= process_metadata(metadata, indir, geotiff_dir, sensor_dimensions)
+    feature_collection, images_array= process_metadata(metadata, config,indir, geotiff_dir, sensor_dimensions)
 
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
     write_geojson_file(geojson_file, geojson_dir, feature_collection)
@@ -205,9 +208,8 @@ def main():
         mosaic_path.mkdir(parents=True, exist_ok=True)
         create_mosaic(indir, mosaic_path)
 
-    geo_type = "Cloud Optimized" if config.cog is True else "standard"
 
-    logger.success(f"Process Complete. {len(images_array)} {geo_type} GeoTIFFs and a GeoJSON file were created.")
+    logger.success(f"Process Complete. {len(images_array)} {config.geo_type} GeoTIFFs and a GeoJSON file were created.")
     logger.remove()  # Remove existing handlers
 
 

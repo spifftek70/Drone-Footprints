@@ -11,7 +11,7 @@ from Utils import config
 from imagedrone import ImageDrone
 
 
-def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
+def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:str, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
     """
     Process and convert image metadata into GeoJSON features and create GeoTIFFs.
 
@@ -26,6 +26,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     """
     feature_collection = {"type": "FeatureCollection", "features": []}
     line_coordinates = []
+    local_config = config
     outer = tqdm(total=len(metadata),position=0,desc=f'{Color.CYAN}Image Files',leave=False)
     pbar = tqdm(total=len(metadata), position=1, leave=False, bar_format='{desc}')
     line_feature = ""
@@ -38,7 +39,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     for data in metadata:
         # pprint(data)clear
         try:
-            image = ImageDrone(data, sensor_dimensions, config,logger)
+            image = ImageDrone(metadata=data, sensor_dimensions=sensor_dimensions, config=local_config,logger=logger)
             images_array.append(image)
             pbar.set_description_str(f'{Color.YELLOW}Current file: {image.file_name}{Color.END}')
 
@@ -48,19 +49,24 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             #same_drone_as_previous_image_array.append(same_drone_as_previous_image)
 
             datetime_original = image.datetime_original
-            config.update_file_name(image.file_name)
-            config.update_abso_altitude(image.absolute_altitude)
-            config.update_rel_altitude(image.relative_altitude)
+            local_config.im_file_name= image.file_name
+            local_config.absolute_altitude = image.absolute_altitude
+            local_config.relative_altitude = image.relative_altitude
 
             # Calculate Field of View (FOV) or any other necessary geometric calculations
             image.get_HighAccuracyFOV()
 
             image.create_geojson_feature()
-            # Generate GeoTIFF for the current image
-            image.generate_geotiff(indir_path, geotiff_dir,logger)
 
-            feature_collection["features"].append(image.feature_point)
-            feature_collection["features"].append(image.feature_polygon)
+            # Only add features if they were successfully created
+            if image.feature_point and image.feature_polygon:
+                # Generate GeoTIFF for the current image
+                image.generate_geotiff(indir_path, geotiff_dir,logger)
+
+                feature_collection["features"].append(image.feature_point)
+                feature_collection["features"].append(image.feature_polygon)
+            else:
+                logger.warning(f"Skipping GeoJSON features for {image.file_name} due to missing footprint data")
 
             # Update line coordinates for potential LineString creation
             line_coordinates.append([image.longitude, image.latitude])
@@ -89,13 +95,13 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             same_drone_for_all_images = a.drone_hash == b.drone_hash == same_drone_for_all_images
 
 
-    mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model=image.drone_model,
+    mission_props = dict(date=datetime_original, Process_date=process_date, epsg=local_config.epsg_code,
+                             cog=local_config.cog, drone_model=image.drone_model,
                              sensor_make=image.sensor_model)
 
     if not same_drone_for_all_images and image.sensor_model != "M3M":
-        mission_props = dict(date=datetime_original, Process_date=process_date, epsg=config.epsg_code,
-                             cog=config.cog, drone_model="Multiple", sensor_make="Multiple")
+        mission_props = dict(date=datetime_original, Process_date=process_date, epsg=local_config.epsg_code,
+                             cog=local_config.cog, drone_model="Multiple", sensor_make="Multiple")
 
 
     # # multiple drones and Mavic 3 Multispectral

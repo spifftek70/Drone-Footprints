@@ -25,7 +25,7 @@ import math
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 
 
-def warp_image_to_polygon(img_arry, polygon, coordinate_array):
+def warp_image_to_polygon(img_arry, polygon, coordinate_array,image_equalize):
     """
     Warps an image array to fit within a specified polygon using coordinates mapping
     after applying auto-leveling for color, brightness, and contrast adjustments.
@@ -39,7 +39,7 @@ def warp_image_to_polygon(img_arry, polygon, coordinate_array):
     - The auto-leveled and then warped image array.
     """
 
-    if config.image_equalize is True:
+    if image_equalize is True:
         img_arry_equalized = equalize_adapthist(img_arry, clip_limit=0.03)
     else:
         img_arry_equalized = img_arry
@@ -118,7 +118,7 @@ def gps_to_pixel(gps_coord, x_min, y_max, resolution_x, resolution_y):
     return int(Px), int(Py)
 
 
-def array2ds(cv2_array, polygon_wkt):
+def array2ds(cv2_array, polygon_wkt,epsg_code):
     """
     Converts an OpenCV image array to a rasterio dataset with geospatial data.
 
@@ -135,8 +135,7 @@ def array2ds(cv2_array, polygon_wkt):
         logger.opt(exception=True).warning(f"cv2_array must be a numpy array.")
     if not isinstance(polygon_wkt, str):
         logger.opt(exception=True).warning(f"polygon_wkt must be a string.")
-    if not isinstance(config.epsg_code, int):
-        logger.opt(exception=True).warning(f"epsg_code must be an integer.")
+
 
     polygon = loads(polygon_wkt)
     minx, miny, maxx, maxy = polygon.bounds
@@ -164,7 +163,7 @@ def array2ds(cv2_array, polygon_wkt):
 
     # Create and configure the rasterio dataset
     transform = from_bounds(minx, miny, maxx, maxy, width, height)
-    crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
+    crs = rasterio.crs.CRS.from_epsg(epsg_code)
 
     with rasterio.MemoryFile() as memfile:
         with memfile.open(driver='GTiff', height=height, width=width, count=bands, dtype=dtype, crs=crs,
@@ -198,7 +197,7 @@ def suppress_stdout_stderr():
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
 
-def warp_to_geotiff_file(geotiff_file:str, dataset):
+def warp_to_geotiff_file(geotiff_file:str, dataset, config):
     """
     Warps a georeferenced image array into a GeoTIFF file.
 
@@ -209,6 +208,7 @@ def warp_to_geotiff_file(geotiff_file:str, dataset):
     No return value.
     """
     dst_crs = rasterio.crs.CRS.from_epsg(config.epsg_code)
+    print("cocou")
 
     transform, width, height = calculate_default_transform(
         dataset.crs, dst_crs, dataset.width, dataset.height, *dataset.bounds)

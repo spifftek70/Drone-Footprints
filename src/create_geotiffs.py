@@ -19,7 +19,7 @@ def set_raster_extents(image):
             logger.warning(f"File not found: {image.image_path}")
             return
         fixed_polygon = Polygon(image.coord_array)
-        if image.lense_correction is True:
+        if image.config.lense_correction is True:
             try:
                 focal_length = image.focal_length
                 distance = image.center_distance
@@ -74,14 +74,14 @@ def set_raster_extents(image):
         else:
             adjImg = cv2.cvtColor(img_undistorted, cv2.COLOR_BGR2RGBA)
 
-        rectify_and_warp_to_geotiff(adjImg, image.geotiff_file, fixed_polygon, image.coord_array)
+        rectify_and_warp_to_geotiff(adjImg, image.geotiff_file, fixed_polygon, image.coord_array,image.config)
     except FileNotFoundError as e:
         logger.exception(f"File not found: {image.image_path}. {e}")
     except Exception as e:
         logger.exception(f"Error opening or processing image: {e}")
 
 
-def rectify_and_warp_to_geotiff(jpeg_img_array, geotiff_file, fixed_polygon, coordinate_array):
+def rectify_and_warp_to_geotiff(jpeg_img_array, geotiff_file, fixed_polygon, coordinate_array,config):
     """
     Warps and rectifies a JPEG image array to a GeoTIFF format based on a fixed polygon and coordinate array.
 
@@ -90,18 +90,19 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, geotiff_file, fixed_polygon, coo
     - dst_utf8_path: Destination path for the output GeoTIFF image.
     - fixed_polygon: The shapely Polygon object defining the target area.
     - coordinate_array: Array of coordinates used for warping the image.
+    - epsg_code: EPSG code for the spatial reference system.
     """
     # Convert the Polygon to WKT format
     polygon_wkt = str(fixed_polygon)
 
     try:
-        georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
-        dsArray = array2ds(georef_image_array, polygon_wkt)
+        georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array,config.image_equalize)
+        dsArray = array2ds(georef_image_array, polygon_wkt, config.epsg_code)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error during warping or dataset creation: {e}")
 
     # Warp the rasterio dataset to the destination path
     try:
-        warp_to_geotiff_file(geotiff_file, dsArray)
+        warp_to_geotiff_file(geotiff_file, dsArray, config)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error writing GeoTIFF: {e}")
