@@ -52,8 +52,7 @@ def get_image_files(directory: Path) -> list[Path]:
     return sorted(
         [file for file in directory.iterdir()
          if file.suffix.lower() in IMAGE_EXTENSIONS],
-        key=lambda x: int("".join(filter(str.isdigit, str(x.name))) or "0")
-    )
+        key=lambda x: int("".join(filter(str.isdigit, str(x.name)))))
 
 
 def get_metadata(files: list[Path]) -> list[dict]:
@@ -104,6 +103,69 @@ def write_geojson_file(geojson_file: str, geojson_dir: Path, feature_collection:
         logger.critical(f"Error writing GeoJSON file: {e}")
 
 
+def setup_logging(output_path: Path, nodejs: bool) -> None:
+    """Configure le système de logging"""
+    log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
+    log_path = Path(output_path) / "logfiles" / log_file
+
+
+    init_logger(nodejs_graphical_interface=nodejs, log_path=log_path)
+
+
+def validate_inputs(args: argparse.Namespace) -> None:
+    """Valide tous les arguments d'entrée"""
+    input_image_directory = Path(args.input_directory)
+    output_directory_path = Path(args.output_directory)
+
+    if not input_image_directory.is_dir():
+        logger.critical(f"Input directory {input_image_directory} is not valid.")
+        sys.exit()
+
+    if not output_directory_path.is_dir():
+        logger.critical(f"Output directory {output_directory_path} is not valid.")
+        sys.exit()
+    return input_image_directory, output_directory_path
+
+
+def initialize_config(args: argparse.Namespace) -> Config:
+    """Crée et initialise l'objet Config"""
+    config = Config()
+    config.epsg_code = args.EPSG
+    config.correct_magnetic_declinaison = args.declination
+    config.cog = args.COG
+    config.image_equalize = args.image_equalize
+    config.lense_correction = args.lense_correction
+    config.global_elevation = args.elevation_service
+
+    return config
+
+
+def process_images(config: Config, input_dir: Path, sensor_dimensions: tuple, output_directory_path: Path) -> tuple:
+    """Traite toutes les images"""
+    files = get_image_files(input_dir)
+    logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
+
+    if not files:
+        logger.critical("No image files found in the specified directory.")
+        sys.exit()
+
+    metadata = get_metadata(files)
+
+    logger.info(f"Metadata Gathered for {Color.PURPLE}{len(files)} image files{Color.END}.")
+    try:
+        geojson_dir = Path(output_directory_path) / "geojsons"
+        geotiff_dir = Path(output_directory_path) / "geotiffs"
+        geojson_dir.mkdir(parents=True, exist_ok=True)
+        geotiff_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as exception:
+        logger.opt(exception=True).warning(f"Error creating directories: {exception}")
+
+
+    feature_collection, nb_processed_images= process_metadata(metadata, config,input_dir, geotiff_dir, sensor_dimensions)
+
+    return feature_collection, nb_processed_images
+
+
 @logger.catch
 def main() -> None:
     """
@@ -141,82 +203,40 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    input_image_directory = Path(args.input_directory)
-    output_directory_path = Path(args.output_directory)
+    input_dir, output_dir = validate_inputs(args)
 
-    log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
-    log_path = Path(output_directory_path) / "logfiles" / log_file
-    config = Config()
-    config.nodejgraphical_interface = args.nodejs
+    geojson_dir = output_dir / "geojsons"
 
-    init_logger(log_path=log_path, local_config=config)
+    setup_logging(output_dir, args.nodejs)
 
-    user_args = dict(vars(args))
-    args_list = []
-    for arg, value in user_args.items():
-        if value != parser.get_default(arg):
-            args_list.append(f"{Color.PURPLE}{Color.BOLD}{arg}{Color.END}: {value}")
-
-    # Joining all the elements in the list into a single string with newline characters
-    args_str = "\n".join(args_list)
-    logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - {args_str}")
-    # logger.exception(f"User arguments - {user_args}")
-    sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-    logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints{Color.END}")
-
-    config.epsg_code = args.EPSG
-    config.correct_magnetic_declinaison = args.declination
-    config.cog = args.COG
-    config.image_equalize = args.image_equalize
-    config.lense_correction = args.lense_correction
-    config.global_elevation = args.elevation_service
-
-    config.rtk_file_available = find_mtk(input_image_directory)
-
+    config = initialize_config(args)
+    config.rtk_file_available = bool(find_mtk(input_dir))
     config.dtm_path = Path(args.DSMPATH) if args.DSMPATH else None
     try:
         config.init_dtm_cache()
     except Exception as e:
         logger.warning(f"Failed to initialize DTM cache: {e}")
         sys.exit()
-    files = get_image_files(input_image_directory)
-    logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
-
-    if not files:
-        logger.critical("No image files found in the specified directory.")
-        sys.exit()
-
-    metadata = get_metadata(files)
-
-    logger.info(f"Metadata Gathered for {Color.PURPLE}{len(files)} image files{Color.END}.")
-    try:
-        geojson_dir = Path(output_directory_path) / "geojsons"
-        geotiff_dir = Path(output_directory_path) / "geotiffs"
-        geojson_dir.mkdir(parents=True, exist_ok=True)
-        geotiff_dir.mkdir(parents=True, exist_ok=True)
-    except Exception as exception:
-        logger.opt(exception=True).warning(f"Error creating directories: {exception}")
-
 
     sensor_dimensions = read_sensor_dimensions_from_csv(
-        SENSOR_INFO_CSV, sensor_width, sensor_height
+        SENSOR_INFO_CSV, args.sensorWidth, args.sensorHeight
     )
     if sensor_dimensions is None:
         logger.critical("Error reading sensor dimensions from CSV.")
         sys.exit()
 
-    images_array = []
-    feature_collection, images_array= process_metadata(metadata, config,input_image_directory, geotiff_dir, sensor_dimensions)
+
+    feature_collection, nb_processed_images = process_images(config, input_dir, sensor_dimensions, output_dir)
 
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
     write_geojson_file(geojson_file, geojson_dir, feature_collection)
     if args.nodejs:
-        mosaic_path = Path(output_directory_path) / "mosaic"
+        mosaic_path = output_dir / "mosaic"
         mosaic_path.mkdir(parents=True, exist_ok=True)
-        create_mosaic(input_image_directory, mosaic_path)
+        create_mosaic(input_dir, mosaic_path)
 
 
-    logger.success(f"Process Complete. {len(images_array)} {config.geo_type} GeoTIFFs and a GeoJSON file were created.")
+    logger.success(f"Process Complete. {nb_processed_images} {config.geo_type} GeoTIFFs and a GeoJSON file were created.")
     logger.remove()  # Remove existing handlers
 
 

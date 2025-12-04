@@ -26,7 +26,7 @@ class ImageDrone:
     sensor_dimensions : tuple
     config: Config
     logger: Any = None  # Ajout de l'annotation de type
-    declination : float = None
+    declination : float = 0.0
     drone_hash : int = None
     feature_point : dict = field(default_factory=dict)
     feature_polygon : dict = field(default_factory=dict)
@@ -143,14 +143,13 @@ class ImageDrone:
             # Find the magnetic declination reference
             model = api.Model(mag_date.year)
             field_point = model.at(lat_dd=self.latitude, lon_dd=self.longitude, alt_ft=self.relative_altitude, date=mag_date)
-            declination = field_point.dec
+            self.declination = field_point.dec
         else:
             calculator = MagneticFieldCalculator()
             model = calculator.calculate(latitude=self.latitude, longitude=self.longitude)
             dec = model['field-value']['declination']
-            declination = dec['value']
+            self.declination = dec['value']
 
-        self.declination=declination
 
     def get_HighAccuracyFOV(self):
         try:

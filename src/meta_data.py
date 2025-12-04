@@ -126,9 +126,5 @@ def process_metadata(metadata:list[dict], config, indir_path:Path, geotiff_dir:P
 
     pbar_tqdm.close()
     outer_tqdm.close()
-    return feature_collection, images_array
-
-@lru_cache(maxsize=100)
-def get_cached_declination(lat_rounded, lon_rounded, date_str):
-    # Round to 0.1 degrees for caching
-    return calculate_declination(lat_rounded, lon_rounded, date_str)
+    # return feature_collection, images_array
+    return feature_collection, nb_processed_images

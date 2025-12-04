@@ -7,7 +7,7 @@ script_path = Path(__file__).resolve()
 script_dir = script_path.parent
 
 
-def init_logger(local_config, log_path=None):
+def init_logger(nodejs_graphical_interface, log_path=None):
     global current_log_path
 
     if log_path is not None:
@@ -23,7 +23,7 @@ def init_logger(local_config, log_path=None):
 
     logger.remove()  # Clear existing configuration
 
-    if local_config.nodejgraphical_interface is True:
+    if nodejs_graphical_interface is True:
         logger.add(lambda msg: tqdm.write(msg, end=""),
                    colorize=True, level="INFO", format="{time} {level} {message}",
                    filter=lambda record: record["level"].name in ["INFO", "SUCCESS", "WARNING"])

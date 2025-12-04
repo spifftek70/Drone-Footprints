@@ -14,7 +14,6 @@ class Config:
     image_equalize: bool = False
     global_elevation: bool = False
     lense_correction: bool = True
-    nodejgraphical_interface: bool = False
     epsg_code: int = 4326
     center_distance: float = 0.0
     relative_altitude: float = 0.0
