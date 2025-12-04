@@ -4,6 +4,7 @@
 # Version: 1.0
 import datetime
 import itertools
+from pathlib import Path
 from tqdm import tqdm
 from loguru import logger
 from Utils.utils import Color
@@ -12,7 +13,7 @@ from imagedrone import ImageDrone
 from functools import lru_cache
 
 
-def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:str, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
+def process_metadata(metadata:list[dict], config, indir_path:Path, geotiff_dir:Path, sensor_dimensions:dict) -> tuple[dict, list[ImageDrone]]:
     """
     Process and convert image metadata into GeoJSON features and create GeoTIFFs.
 
@@ -28,8 +29,8 @@ def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:st
     feature_collection = {"type": "FeatureCollection", "features": []}
     line_coordinates = []
     local_config = config
-    outer = tqdm(total=len(metadata),position=0,desc=f'{Color.CYAN}Image Files',leave=False)
-    pbar = tqdm(total=len(metadata), position=1, leave=False, bar_format='{desc}')
+    outer_tqdm = tqdm(total=len(metadata),position=0,desc=f'{Color.CYAN}Image Files',leave=False)
+    pbar_tqdm = tqdm(total=len(metadata), position=1, leave=False, bar_format='{desc}')
     line_feature = ""
     nb_processed_images = 0
     logger.info("Processing images for GeoTiff and GeoJSON creation.")
@@ -42,7 +43,7 @@ def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:st
         try:
             image = ImageDrone(metadata=data, sensor_dimensions=sensor_dimensions, config=local_config,logger=logger)
             images_array.append(image)
-            pbar.set_description_str(f'{Color.YELLOW}Current file: {image.file_name}{Color.END}')
+            pbar_tqdm.set_description_str(f'{Color.YELLOW}Current file: {image.file_name}{Color.END}')
 
             # Extract detailed sensor and drone info for the current image
 
@@ -62,7 +63,7 @@ def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:st
             # Only add features if they were successfully created
             if image.feature_point and image.feature_polygon:
                 # Generate GeoTIFF for the current image
-                image.generate_geotiff(indir_path, geotiff_dir,logger)
+                image.generate_geotiff(indir_path, geotiff_dir)
 
                 feature_collection["features"].append(image.feature_point)
                 feature_collection["features"].append(image.feature_polygon)
@@ -72,7 +73,7 @@ def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:st
             # Update line coordinates for potential LineString creation
             line_coordinates.append([image.longitude, image.latitude])
 
-            outer.update(1)
+            outer_tqdm.update(1)
 
         except TypeError as t:
             logger.exception(f"Missing metadata key: {t} for image: {image.file_name}")
@@ -123,8 +124,8 @@ def process_metadata(metadata:list[dict], config, indir_path:str, geotiff_dir:st
     line_feature = dict(type="Feature", geometry=line_geometry, properties=mission_props)
     feature_collection["features"].insert(0, line_feature)
 
-    pbar.close()
-    outer.close()
+    pbar_tqdm.close()
+    outer_tqdm.close()
     return feature_collection, images_array
 
 @lru_cache(maxsize=100)

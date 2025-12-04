@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass,field
 from pathlib import Path
 from datetime import datetime
@@ -35,7 +34,6 @@ class ImageDrone:
     coord_array : list = field(default_factory=list)
     footprint_coordinates : list = field(default_factory=list)
     image_path : str = ""
-    output_file : str = ""
     geotiff_file : str = ""
 
     def __post_init__(self):
@@ -169,16 +167,15 @@ class ImageDrone:
                 self.new_altitude = self.config.absolute_altitude
             #print(f"config.relative_altitude {config.relative_altitude} config.absolute_altitude {config.absolute_altitude} new_altitude: {self.new_altitude}")
             self.corrected_altitude = self.new_altitude
-            self.elevation_bbox = self.get_ray_ground_intersections()
+            elevation_bbox = self.get_ray_ground_intersections()
 
-            self.translated_bbox= find_geodetic_intersections(self.elevation_bbox, self.longitude, self.latitude,self.config.epsg_code)
-            self.center_distance = drone_distance_to_polygon_center(self.translated_bbox, (self.utmx, self.utmy), self.corrected_altitude)
-            self.new_translated_bbox = self.translated_bbox
+            self.new_translated_bbox = find_geodetic_intersections(elevation_bbox, self.longitude, self.latitude,self.config.epsg_code)
+            self.center_distance = drone_distance_to_polygon_center(self.new_translated_bbox , (self.utmx, self.utmy), self.corrected_altitude)
 
             if self.config.dtm_path:
                 altitudes = [get_altitude_at_point(*box[:2], self.config, self.absolute_altitude,self.file_name) for box in self.new_translated_bbox]
                 if None in altitudes:
-                    logger.warning(
+                    self.logger.warning(
                         f"Failed to get elevation for image {self.file_name}. See log for details.")
                     self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
                     return
@@ -188,7 +185,7 @@ class ImageDrone:
                                 for i, box in enumerate(self.new_translated_bbox)]
                 for dist in distances:
                     if any(other_dist * 6 < dist for other_dist in distances if other_dist != dist):
-                        logger.warning(
+                        self.logger.warning(
                             f"One side of the polygon for {self.file_name} is at least 5 times longer than another.")
                         self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
                         return
@@ -198,7 +195,7 @@ class ImageDrone:
                     altitudes = get_altitudes_from_open(trans_utmbox)
 
                     if None in altitudes:
-                        logger.warning(f"Failed to get elevation at point for {self.file_name}.")
+                        self.logger.warning(f"Failed to get elevation at point for {self.file_name}.")
                         self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
 
                     # Calculate the ratios of distances to check the 5 times condition
@@ -207,7 +204,7 @@ class ImageDrone:
                                 for i, box in enumerate(self.new_translated_bbox)]
                     for dist in distances:
                         if any(other_dist * 5 < dist for other_dist in distances if other_dist != dist):
-                            logger.warning(
+                            self.logger.warning(
                                 f"One side of the polygon for {self.file_name} is at least 5 times longer than another.")
                             self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
                             return
@@ -215,7 +212,7 @@ class ImageDrone:
             self.coord_array, self.footprint_coordinates = translate_to_wgs84(self.new_translated_bbox, self.longitude, self.latitude,self.config.epsg_code)
             return
         except Exception as e:
-            logger.warning(f"Error in get_fov_bbox: {e}")
+            self.logger.warning(f"Error in get_fov_bbox: {e}")
             self.coord_array, self.footprint_coordinates = None, None
 
     def get_ray_ground_intersections(self):
@@ -280,7 +277,7 @@ class ImageDrone:
         """
 
         # Define camera rays based on field of view
-        self.rays = [
+        rays = [
             Vector(-mp.tan(self.corrected_fov_height / 2), mp.tan(self.corrected_fov_width / 2), 1).normalize(),  # Flip horizontally
             Vector(-mp.tan(self.corrected_fov_height / 2), -mp.tan(self.corrected_fov_width / 2), 1).normalize(),  # Flip horizontally
             Vector(mp.tan(self.corrected_fov_height / 2), -mp.tan(self.corrected_fov_width / 2), 1).normalize(),  # Flip horizontally
@@ -300,21 +297,19 @@ class ImageDrone:
         q = q.normalized()
 
         # Apply rotation to each ray
-        self.rotated_vectors = [Vector(*(q * np.quaternion(0, ray.x, ray.y, ray.z) * q.inverse()).vec) for ray in self.rays]
+        self.rotated_vectors = [Vector(*(q * np.quaternion(0, ray.x, ray.y, ray.z) * q.inverse()).vec) for ray in rays]
 
 
-    def generate_geotiff(self,indir_path:str, geotiff_dir:str,logger):
+    def generate_geotiff(self,indir_path:Path, geotiff_dir:Path):
         """
          Generate GeoTIFF file image
         """
-        self.image_path = os.path.join(indir_path, self.file_name)
-        self.output_file = f"{Path(self.file_name).stem}.tif"
-        self.geotiff_file = Path(geotiff_dir) / self.output_file
-        #generate_geotiff(image_path, geotiff_file, self.coord_array)
+        self.image_path = Path(indir_path) / self.file_name
+        self.geotiff_file = Path(geotiff_dir) / f"{Path(self.file_name).stem}.tif"
         try:
             set_raster_extents(self)
         except ValueError as e:
-            logger.opt(exception=True).warning(str(e))
+            self.logger.opt(exception=True).warning(str(e))
 
 
 
@@ -329,7 +324,7 @@ class ImageDrone:
 
         # Check if footprint_coordinates is valid
         if self.footprint_coordinates is None or len(self.footprint_coordinates) == 0:
-            logger.error(f"Cannot create GeoJSON feature for {self.file_name}: footprint_coordinates is None or empty")
+            self.logger.error(f"Cannot create GeoJSON feature for {self.file_name}: footprint_coordinates is None or empty")
             return
 
         geojson_polygon = geojson.dumps(Polygon(self.footprint_coordinates))
@@ -383,7 +378,7 @@ class ImageDrone:
         if self.focal_length <= 0:
             error_msg = f"Focal length must be positive for image {self.file_name}. Got: {self.focal_length}"
             print(Color.RED + error_msg + Color.END)
-            logger.error(error_msg)
+            self.logger.error(error_msg)
             sys.exit(1)
 
     def create_hash(self) -> bool:

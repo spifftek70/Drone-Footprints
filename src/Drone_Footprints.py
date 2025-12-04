@@ -3,7 +3,6 @@
 # License: AGPL
 # Version: 1.0
 
-import os
 import sys
 import argparse
 import datetime
@@ -22,25 +21,25 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 # Constants for image file extensions and the sensor information CSV file path
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 SENSOR_INFO_CSV = "drone_sensors.csv"
-RTK_EXTENSION = {".obs", ".MRK", ".bin", "nav"}
+RTK_EXTENSION = {".obs", ".MRK", ".bin", ".nav"}
 now = datetime.datetime.now()
 
 
 def is_valid_directory(arg):
-    if os.path.isdir(arg):
+    if Path(arg).is_dir():
         return arg
-    # print(f'{arg} is not a valid input directory')
+    print(f'{arg} is not a valid input directory')
     sys.exit()
 
 
 def is_valid_file(arg):
-    if os.path.isfile(arg):
+    if Path(arg).is_file():
         return arg
-    print(f'{arg}  is not a valid file.  Switching to Default elevation model')
+    logger.warning(f'{arg} is not a valid file. Using default elevation model')
     return None
 
 
-def get_image_files(directory: str) -> list[Path]:
+def get_image_files(directory: Path) -> list[Path]:
     """
     Retrieve image files from the specified directory that match the defined extensions.
 
@@ -51,8 +50,9 @@ def get_image_files(directory: str) -> list[Path]:
         list[Path]: A list of Path objects for each image file found.
     """
     return sorted(
-        [file for file in Path(directory).iterdir() if file.suffix.lower() in IMAGE_EXTENSIONS],
-        key=lambda x: int("".join(filter(str.isdigit, str(x.name))))
+        [file for file in directory.iterdir()
+         if file.suffix.lower() in IMAGE_EXTENSIONS],
+        key=lambda x: int("".join(filter(str.isdigit, str(x.name))) or "0")
     )
 
 
@@ -87,7 +87,7 @@ def find_mtk(some_dir):
     )
 
 
-def write_geojson_file(geojson_file, geojson_dir, feature_collection):
+def write_geojson_file(geojson_file: str, geojson_dir: Path, feature_collection: dict) -> None:
     """
     Write the GeoJSON feature collection to a file.
 
@@ -105,7 +105,7 @@ def write_geojson_file(geojson_file, geojson_dir, feature_collection):
 
 
 @logger.catch
-def main():
+def main() -> None:
     """
     Main function to orchestrate the processing of drone imagery into GeoJSON and GeoTIFFs.
     """
@@ -141,9 +141,11 @@ def main():
 
     args = parser.parse_args()
 
-    outer_path = args.output_directory
+    input_image_directory = Path(args.input_directory)
+    output_directory_path = Path(args.output_directory)
+
     log_file = f"L_M_{now.strftime('%Y-%m-%d_%H-%M')}.log"
-    log_path = Path(outer_path) / "logfiles" / log_file
+    log_path = Path(output_directory_path) / "logfiles" / log_file
     config = Config()
     config.nodejgraphical_interface = args.nodejs
 
@@ -159,7 +161,6 @@ def main():
     args_str = "\n".join(args_list)
     logger.info(f"{Color.ORANGE}{Color.BOLD}User arguments{Color.END} - {args_str}")
     # logger.exception(f"User arguments - {user_args}")
-    indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
     logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints{Color.END}")
 
@@ -170,20 +171,27 @@ def main():
     config.lense_correction = args.lense_correction
     config.global_elevation = args.elevation_service
 
-    config.rtk_file_available = find_mtk(indir)
+    config.rtk_file_available = find_mtk(input_image_directory)
 
     config.dtm_path = Path(args.DSMPATH) if args.DSMPATH else None
-    config.init_dtm_cache()  # Initialize DTM cache after setting dtm_path
-    files = get_image_files(indir)
+    try:
+        config.init_dtm_cache()
+    except Exception as e:
+        logger.warning(f"Failed to initialize DTM cache: {e}")
+        sys.exit()
+    files = get_image_files(input_image_directory)
     logger.info(f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
-    if files is None or len(files) == 0:
+
+    if not files:
         logger.critical("No image files found in the specified directory.")
         sys.exit()
+
     metadata = get_metadata(files)
+
     logger.info(f"Metadata Gathered for {Color.PURPLE}{len(files)} image files{Color.END}.")
     try:
-        geojson_dir = Path(outdir) / "geojsons"
-        geotiff_dir = Path(outdir) / "geotiffs"
+        geojson_dir = Path(output_directory_path) / "geojsons"
+        geotiff_dir = Path(output_directory_path) / "geotiffs"
         geojson_dir.mkdir(parents=True, exist_ok=True)
         geotiff_dir.mkdir(parents=True, exist_ok=True)
     except Exception as exception:
@@ -198,14 +206,14 @@ def main():
         sys.exit()
 
     images_array = []
-    feature_collection, images_array= process_metadata(metadata, config,indir, geotiff_dir, sensor_dimensions)
+    feature_collection, images_array= process_metadata(metadata, config,input_image_directory, geotiff_dir, sensor_dimensions)
 
     geojson_file = f"M_{now.strftime('%Y-%m-%d_%H-%M')}.json"
     write_geojson_file(geojson_file, geojson_dir, feature_collection)
     if args.nodejs:
-        mosaic_path = Path(outdir) / "mosaic"
+        mosaic_path = Path(output_directory_path) / "mosaic"
         mosaic_path.mkdir(parents=True, exist_ok=True)
-        create_mosaic(indir, mosaic_path)
+        create_mosaic(input_image_directory, mosaic_path)
 
 
     logger.success(f"Process Complete. {len(images_array)} {config.geo_type} GeoTIFFs and a GeoJSON file were created.")

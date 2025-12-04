@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from networkx import config
 import rasterio
 
 
@@ -18,10 +17,8 @@ class Config:
     nodejgraphical_interface: bool = False
     epsg_code: int = 4326
     center_distance: float = 0.0
-    global_target_delta: float = 0.0
     relative_altitude: float = 0.0
     absolute_altitude: float = 0.0
-    drone_properties = None
     utm_zone: str = ""
     hemisphere: str = ""
     im_file_name: str = ""

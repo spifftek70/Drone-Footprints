@@ -11,10 +11,9 @@ from loguru import logger
 import lensfunpy
 
 
-#def set_raster_extents(image_path, dst_utf8_path, coordinate_array):
 def set_raster_extents(image):
     try:
-        jpeg_img = cv2.imread(image.image_path, cv2.IMREAD_UNCHANGED)
+        jpeg_img = cv2.imread(str(image.image_path), cv2.IMREAD_UNCHANGED)
         if jpeg_img is None:
             logger.warning(f"File not found: {image.image_path}")
             return
@@ -60,7 +59,7 @@ def set_raster_extents(image):
 
                 img_undistorted = cv2.remap(jpeg_img, map_x, map_y, interpolation=cv2.INTER_LANCZOS4)
             except IndexError as e:
-                config.update_lense(False)
+                config.lense_correction=False
                 img_undistorted = np.array(jpeg_img)
                 logger.info("Cannot correct lens distortion. Camera properties not found in database.")
                 logger.exception(f"Index error: {e} for {image.image_path}")
