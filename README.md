@@ -32,19 +32,48 @@ sudo apt-get install libgdal-dev
 brew install gdal
 ```
 
-Installation via pip
-
-First, you probably want to install into a virtual environment or similar, for example:
+### Clone the repository
 
 ```
-python3 -m venv .venv # Install with compatible maximum version of Python (Requires-Python >=3.7,<3.11)
+git clone https://github.com/spifftek70/Drone-Footprints.git
+cd Drone-Footprints
+```
+
+### Installation via uv (recommended)
+
+[uv](https://docs.astral.sh/uv/) is a fast Python package and project manager. Install it once with:
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then, from the repository root, run:
+
+```
+uv sync
+```
+
+This will automatically create a virtual environment, install the correct Python version, and install all dependencies.
+
+To run the application:
+
+```
+uv run python src/Drone_Footprints.py -i '/Path/To/images' -o '/Path/To/output'
+```
+
+### Installation via pip (alternative)
+
+First, create and activate a virtual environment:
+
+```
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-The we install using the requirements list as follows:
+Then install dependencies:
 
 ```
-pip install --no-cache-dir --force-reinstall -r requirements.txt  # this current version of GDAL demands the extra tags
+pip install --no-cache-dir --force-reinstall -r requirements.txt
 ```
 
 ### Requirements
