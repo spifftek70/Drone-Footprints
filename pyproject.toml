@@ -23,7 +23,7 @@ dependencies = [
     "numpy-quaternion~=2024.0.13",
     "opencv-python~=4.9.0.80",
     "pandas>=3.0.1",
-    "pillow~=10.3.0",
+    "pillow~=12.1.1",
     "pyexiftool>=0.5.6",
     "pyproj>=3.5.0,<3.6.0 ; python_full_version < '3.12'",
     "pyproj>=3.6.0 ; python_full_version >= '3.12'",
