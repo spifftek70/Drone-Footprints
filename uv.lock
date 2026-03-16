@@ -186,13 +186,12 @@ requires-dist = [
     { name = "geopandas", specifier = ">=1.1.3" },
     { name = "geopy", specifier = "~=2.4.1" },
     { name = "gps-time", specifier = ">=3.0.0" },
-    { name = "lensfunpy", specifier = "~=1.15.0" },
+    { name = "lensfunpy", specifier = "~=1.18.0" },
     { name = "loguru", specifier = "~=0.7.2" },
     { name = "magnetic-field-calculator", specifier = "~=1.0.2" },
     { name = "magnetismi", specifier = "~=2022.10.9" },
     { name = "mpmath", specifier = "~=1.3.0" },
-    { name = "numpy", marker = "python_full_version < '3.12'", specifier = ">=1.24.0,<1.25.0" },
-    { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=1.26.3" },
+    { name = "numpy", specifier = ">=1.26.3" },
     { name = "numpy-quaternion", specifier = "~=2023.0.3" },
     { name = "opencv-python", specifier = "~=4.9.0.80" },
     { name = "pandas", specifier = ">=3.0.1" },
@@ -318,17 +317,27 @@ wheels = [
 
 [[package]]
 name = "lensfunpy"
-version = "1.15.0"
+version = "1.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/3b/fc09a749e2667874aeec9af6127cb55d141229c4fbf12fa283759d5502fd/lensfunpy-1.15.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:b57a5f728cefb777a1b761fd4b07409bd5c59d5e0ae0e5fd57e2a8d9cb5ce232", size = 1485018, upload-time = "2024-02-10T09:23:01.785Z" },
-    { url = "https://files.pythonhosted.org/packages/5f/09/092dd0faada6e8151098751c44773046b048452d9f13bb41ade6d663cd8d/lensfunpy-1.15.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:73d604879e10eb945481a613cb16107c504ee001295c1e0e0f90ba802f3c7985", size = 1328586, upload-time = "2024-02-10T09:23:03.797Z" },
-    { url = "https://files.pythonhosted.org/packages/fc/e2/b5536f43ea962ab6e6da8c7ebf03596b4b96d6a752cf5d2678072629ec28/lensfunpy-1.15.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:96c5431413467bec759e5fe6b7e71e5b6f3e6ea71579e1910575d01525f3a285", size = 1521984, upload-time = "2024-02-10T09:23:06.118Z" },
-    { url = "https://files.pythonhosted.org/packages/23/8c/b398039a2c9b997f7046923987092e12403879dc68b16775b14c19f3b329/lensfunpy-1.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bc5980767e5f28c49a4c33165273ee8ac115d0ddcce4646d1c6215905368bb17", size = 1539533, upload-time = "2024-02-10T09:23:07.734Z" },
-    { url = "https://files.pythonhosted.org/packages/d9/66/8d604a93641829fce2c84e0f4f9b9847a9a4a0181b5614da90fc29062792/lensfunpy-1.15.0-cp312-cp312-win_amd64.whl", hash = "sha256:fe3c9702bd753c575690f4030250e4654b1ffd06f05ac6f206223ef7e137a72b", size = 2174879, upload-time = "2024-02-10T09:23:10.065Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/d8/34979caba2e4058500f4c27b24428f305da8619b0c37a89ec5a5480b5b00/lensfunpy-1.18.0-cp312-cp312-macosx_13_0_x86_64.whl", hash = "sha256:568243e44a55c9a30517a81294c72e6f929e4ec269856edaf884513a8e1378e4", size = 1660384, upload-time = "2026-01-26T01:37:50.107Z" },
+    { url = "https://files.pythonhosted.org/packages/36/13/634dc9f608b1e5e8f9b479d430c64c2b10143e9308e2bdd9d03498ffb524/lensfunpy-1.18.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:63ce75611e7d2c7a4703b24b245f4a459f65558b8fec9dd53948bcefbfe90c8f", size = 1556508, upload-time = "2026-01-26T01:37:52.098Z" },
+    { url = "https://files.pythonhosted.org/packages/11/3e/2121fcf2c142950c52036f231230c5268fcc2a0f25fed8ca3515e3cd2875/lensfunpy-1.18.0-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:83eaee5b805a069a2081a5beae7ca62dce781f2199785ccf064560207f6255cf", size = 1571475, upload-time = "2026-01-26T01:37:54.251Z" },
+    { url = "https://files.pythonhosted.org/packages/04/8c/b7fca55a2751fdf57581b0d3b019fb44b8aaa9d990e2166c92a22dd0941e/lensfunpy-1.18.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f8975097cb3cfa645bcbfb64070a261c082a64c333f8cb96172ee6d7e349c419", size = 1583905, upload-time = "2026-01-26T01:37:56.236Z" },
+    { url = "https://files.pythonhosted.org/packages/24/f1/7180bb0138166a0730954d7bb4a15158362f3fb6fc0e3b11c6d80ad64390/lensfunpy-1.18.0-cp312-cp312-win_amd64.whl", hash = "sha256:8d81a1813bfa272dba1bfe89535151a37fe7faff73e6323509db136a2f66f727", size = 2273651, upload-time = "2026-01-26T01:37:57.755Z" },
+    { url = "https://files.pythonhosted.org/packages/2a/ba/c0794e12e13aaa181b761ecf5bdacafb5cfa1a600666799f681c22a4d75e/lensfunpy-1.18.0-cp313-cp313-macosx_13_0_x86_64.whl", hash = "sha256:56cc28d9f361c71e20179137d9bb65a0127f8860f9b0492c90b8c4c46a990fb5", size = 1660177, upload-time = "2026-01-26T01:37:59.743Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/42/ed4ef4bbe9fa78ef6a90ab8eabe7ddc887e4fab6421a25f01a8ce81fcb64/lensfunpy-1.18.0-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:cc68439b423232611c023aca4a7036ddea1f9988975f773bec170ba7ab8d13b5", size = 1556075, upload-time = "2026-01-26T01:38:01.137Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/0d/181f7dcda2c2eadb4e3a11dcd4c4b3926355f76c39fb12ac4f5cb44b1e14/lensfunpy-1.18.0-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:7e8257ebe95dca1a5f417078bd729e6ea7e798cd7db949a0d920d56eea884ba0", size = 1570224, upload-time = "2026-01-26T01:38:03.149Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/02/b51eb9f3b0ab905043dc4c60e9526b838db9469690805a912fbf24cbc893/lensfunpy-1.18.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:018b0cca46028ff7f6509a25f2bbb5a11032dc1ed91cb4c55be7a45bb89a7c7c", size = 1584148, upload-time = "2026-01-26T01:38:04.668Z" },
+    { url = "https://files.pythonhosted.org/packages/53/a9/6d8b9ce87881c3e1b28256bb5c0aa82311c323c84a068ce16b0dce0e2959/lensfunpy-1.18.0-cp313-cp313-win_amd64.whl", hash = "sha256:09ade2b1c91407cba31a88b05f9050c286906057b085e590990f01fa7b90968a", size = 2273801, upload-time = "2026-01-26T01:38:06.673Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/c2/583381e83da51193a8dd955f23305569b1f5a53ae1dbef792690478f0948/lensfunpy-1.18.0-cp314-cp314-macosx_13_0_x86_64.whl", hash = "sha256:ab161ea6b4a1b2fcd4d8b7dc52c24bd4146a716b4c69bae9d16cfc18e0b5fc74", size = 1659860, upload-time = "2026-01-26T01:38:08.295Z" },
+    { url = "https://files.pythonhosted.org/packages/99/77/f905b50227f25047c1ed617886df763cf26d0848fe85aeaa1e910958a4a1/lensfunpy-1.18.0-cp314-cp314-macosx_14_0_arm64.whl", hash = "sha256:fec6751b1fb8d63a36a3fbb428e882b0dccaa256b8771c42360a5350541bb324", size = 1555869, upload-time = "2026-01-26T01:38:09.642Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/76/d778b67b76c8361200da9a571922ec895da949b90d6312ffea7a53c5c27b/lensfunpy-1.18.0-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:0e741a19a07eedb3f32f9afe06261f9717a3d8045e6fd2562f41d70cda661fc0", size = 1566364, upload-time = "2026-01-26T01:38:11.119Z" },
+    { url = "https://files.pythonhosted.org/packages/13/61/9ba55b21010198949411aff5445bd882ade7197dbe205ce321d9dabe5ee1/lensfunpy-1.18.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a929ae4366d25b9cc760ea7daf84d8a066c0a778cd02783e8dcae97819ec748b", size = 1574550, upload-time = "2026-01-26T01:38:12.606Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/85/5083fa63b528411ac7b14fd8e7c242877723c793c1ad1c64f8675bd3ceab/lensfunpy-1.18.0-cp314-cp314-win_amd64.whl", hash = "sha256:f7cea9548e5d78d346ab8e3a004e485a1bcabb5ab99b6936d34f1247268d6fc9", size = 2331410, upload-time = "2026-01-26T01:38:14.072Z" },
 ]
 
 [[package]]
