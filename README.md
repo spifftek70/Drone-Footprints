@@ -80,6 +80,10 @@ extends processing time
 
 `-l` - Applies lens distortion correction using [lensfun](https://lensfun.github.io) api (optional)
 
+`-a` - Absolute altitude of the ground reference in meters (optional). When provided, the drone height above
+ground is calculated as `AbsoluteAltitude - absolute_ground` instead of using the relative altitude embedded
+in the image metadata. Example: `-a -45.5` means the ground is at -45.5 m (AMSL).
+
 :warning: _you can only select `-m` or `-v` but not both!_
 ----------------------------------------------------------------------------------------------------------------
 
@@ -101,6 +105,10 @@ python Drone_Footprints.py -i "/Path/To/Dataset3/images" -o "/Path/To/Dataset3/o
 
 ```
 python Drone_Footprints.py -i "/Path/To/Dataset4/images" -o "/Path/To/Dataset4/output" -e 3857 -c n
+```
+
+```
+python Drone_Footprints.py -i "/Path/To/Dataset5/images" -o "/Path/To/Dataset5/output" -a -45.5
 ```
 
 ----------------------------------------------------------------------------------------------------------------

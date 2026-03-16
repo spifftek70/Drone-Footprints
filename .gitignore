@@ -32,3 +32,13 @@ src/drone_sensors.numbers
 .DS_Store
 .AppleDouble
 .LSOverride
+# images
+*.jpg
+*.JPG
+*.jpeg
+*.JPEG
+*.tif
+*.TIF
+*.tiff
+*.TIFF
+

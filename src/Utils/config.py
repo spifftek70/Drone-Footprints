@@ -18,6 +18,7 @@ image_equalize = False
 im_file_name = ""
 relative_altitude = 0.0
 absolute_altitude = 0.0
+absolute_ground = None
 dsm = None
 drone_properties = None
 lense_correction = True
@@ -28,7 +29,7 @@ crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +
 
 
 def init():
-    global epsg_code, rtk, correct_magnetic_declinaison, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, relative_altitude, absolute_altitude, dsm, drone_properties, center_distance, lense_correction, nodejgraphical_interface
+    global epsg_code, rtk, correct_magnetic_declinaison, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, relative_altitude, absolute_altitude, absolute_ground, dsm, drone_properties, center_distance, lense_correction, nodejgraphical_interface
     correct_magnetic_declinaison = False
     epsg_code = 4326
     utm_zone = ""
@@ -43,6 +44,7 @@ def init():
     im_file_name = ""
     relative_altitude = 0.0
     absolute_altitude = 0.0
+    absolute_ground = None
     dsm = None
     drone_properties = None
     lense_correction = True
@@ -124,6 +126,11 @@ def update_lense(v):
 def update_abso_altitude(q):
     global absolute_altitude
     absolute_altitude = q
+
+
+def update_absolute_ground(q):
+    global absolute_ground
+    absolute_ground = q
 
 
 def update_drone_properties(s):

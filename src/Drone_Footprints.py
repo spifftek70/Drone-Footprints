@@ -130,6 +130,10 @@ def main():
                         help="Improve local contrast option to can make details more visible (optional).")
     parser.add_argument("-l", "--lense_correction", action='store_true', required=False,
                         help="Applies lens distortion correction using lensfun api (optional).")
+    parser.add_argument("-a", "--absolute_ground", type=float, default=None, required=False,
+                        help="Absolute altitude of the ground reference in meters (optional). "
+                             "When provided, drone height above ground is computed as "
+                             "AbsoluteAltitude - absolute_ground.")
     parser.add_argument("-n", "--nodejs", action='store_true', required=False,
                         help="Experimental Nodejs graphical interface (optional).")
 
@@ -160,7 +164,9 @@ def main():
     # logger.exception(f"User arguments - {user_args}")
     indir, outdir = args.input_directory, args.output_directory
     sensor_width, sensor_height = args.sensorWidth, args.sensorHeight
-    logger.info(f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints" + Color.END)
+    logger.info(
+        f"{Color.PURPLE}Initializing {Color.END}{Color.BOLD}the Processing of Drone Footprints{Color.END}"
+    )
 
     config.update_epsg(args.EPSG)
     config.update_correct_magnetic_declinaison(args.declination)
@@ -168,13 +174,14 @@ def main():
     config.update_equalize(args.image_equalize)
     config.update_lense(args.lense_correction)
     config.update_elevation(args.elevation_service)
+    config.update_absolute_ground(args.absolute_ground)
     rtk_rtn = find_mtk(indir)
     if rtk_rtn:
         config.update_rtk(True)
     config.update_dtm(args.DSMPATH)
     files = get_image_files(indir)
     logger.info(
-        f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory." + Color.END)
+        f"Found {Color.PURPLE}{len(files)} image files{Color.END}{Color.BOLD} in the specified directory.{Color.END}")
     if files is None or len(files) == 0:
         logger.critical("No image files found in the specified directory.")
         sys.exit()
@@ -207,7 +214,7 @@ def main():
         mosaic_path.mkdir(parents=True, exist_ok=True)
         create_mosaic(indir, mosaic_path)
 
-    if config.cog is True:
+    if config.cog:
         geo_type = "Cloud Optimized"
     else:
         geo_type = "standard"

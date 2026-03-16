@@ -128,21 +128,25 @@ class HighAccuracyFOVCalculator:
             utmx, utmy, zone_number, zone_letter = gps_to_utm(latitude, longitude)
             new_altitude = None
             # Determine new altitude based on different data sources
-            if config.dtm_path:
-                new_altitude = get_altitude_at_point(utmx, utmy)
-            if config.global_elevation:
-                new_altitude = get_altitude_from_open(latitude, longitude)
-            if config.relative_altitude == 0.0:
-                new_altitude = config.absolute_altitude
-            if new_altitude and abs(new_altitude - config.relative_altitude) > 20:
-                new_altitude = config.relative_altitude
-            if config.absolute_altitude == config.relative_altitude:
-                new_altitude = get_altitude_from_open(latitude, longitude)
-            if new_altitude is None:  # and not config.dtm_path or not config.global_elevation is False or config.rtk:
-                new_altitude = config.relative_altitude
-                if config.global_elevation is True or config.dtm_path:
-                    logger.warning(
-                        f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
+            if config.absolute_ground is not None:
+                # -a flag: height above ground = AbsoluteAltitude - absolute_ground reference
+                new_altitude = config.absolute_altitude - config.absolute_ground
+            else:
+                if config.dtm_path:
+                    new_altitude = get_altitude_at_point(utmx, utmy)
+                if config.global_elevation:
+                    new_altitude = get_altitude_from_open(latitude, longitude)
+                if config.relative_altitude == 0.0:
+                    new_altitude = config.absolute_altitude
+                if new_altitude and abs(new_altitude - config.relative_altitude) > 20:
+                    new_altitude = config.relative_altitude
+                if config.absolute_altitude == config.relative_altitude:
+                    new_altitude = get_altitude_from_open(latitude, longitude)
+                if new_altitude is None:  # and not config.dtm_path or not config.global_elevation is False or config.rtk:
+                    new_altitude = config.relative_altitude
+                    if config.global_elevation is True or config.dtm_path:
+                        logger.warning(
+                            f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
 
             corrected_altitude = self._atmospheric_refraction_correction(new_altitude)
 

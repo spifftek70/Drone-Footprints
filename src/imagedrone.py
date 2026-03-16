@@ -123,6 +123,11 @@ class ImageDrone:
             self.drone_make = "Unknown Drone"
 
         self.gsd = (self.sensor_width * self.relative_altitude) / (self.focal_length * self.image_width)
+        if config.absolute_ground is not None:
+            self.effective_altitude = self.absolute_altitude - config.absolute_ground
+            self.gsd = (self.sensor_width * self.effective_altitude) / (self.focal_length * self.image_width)
+        else:
+            self.effective_altitude = self.relative_altitude
         self.create_properties()
         self.create_hash()
 
@@ -200,6 +205,7 @@ class ImageDrone:
             Sensor_Make=self.sensor_make,
             RelativeAltitude=self.relative_altitude,
             AbsoluteAltitude=self.absolute_altitude,
+            EffectiveAltitude=self.effective_altitude,
             FlightYawDegree=self.flight_yaw_degree,
             FlightPitchDegree=self.flight_pitch_degree,
             FlightRollDegree=self.flight_roll_degree,
