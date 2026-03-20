@@ -22,6 +22,7 @@ absolute_ground = None
 dsm = None
 drone_properties = None
 lense_correction = True
+dewarp_exif = False
 center_distance = 0.0
 nodejs_graphical_interface = False
 pbar = tqdm(total=0, position=1, bar_format='{desc}')
@@ -29,7 +30,7 @@ crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +
 
 
 def init():
-    global epsg_code, rtk, correct_magnetic_declinaison, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, relative_altitude, absolute_altitude, absolute_ground, dsm, drone_properties, center_distance, lense_correction, nodejgraphical_interface
+    global epsg_code, rtk, correct_magnetic_declinaison, utm_zone, hemisphere, cog, dtm_path, global_elevation, crs_utm, global_target_delta, pbar, image_equalize, im_file_name, relative_altitude, absolute_altitude, absolute_ground, dsm, drone_properties, center_distance, lense_correction, dewarp_exif, nodejgraphical_interface
     correct_magnetic_declinaison = False
     epsg_code = 4326
     utm_zone = ""
@@ -48,6 +49,7 @@ def init():
     dsm = None
     drone_properties = None
     lense_correction = True
+    dewarp_exif = False
     nodejgraphical_interface = False
     pbar = tqdm(total=0, position=1, bar_format='{desc}')
     crs_utm = f"+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
@@ -121,6 +123,11 @@ def update_rel_altitude(q):
 def update_lense(v):
     global lense_correction
     lense_correction = v
+
+
+def update_dewarp_exif(v):
+    global dewarp_exif
+    dewarp_exif = v
 
 
 def update_abso_altitude(q):

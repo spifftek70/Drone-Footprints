@@ -12,6 +12,32 @@ from Utils import config
 from create_geotiffs import set_raster_extents
 
 
+# Gimbal pitch conventions by drone make.
+# Target convention (DJI): -90 = nadir, 0 = horizontal/forward.
+# Add entries here for makes that differ from DJI convention.
+# Each value is a callable (float) -> float that converts native pitch to DJI convention.
+GIMBAL_PITCH_CONVENTIONS = {
+    # DJI: native == target, no conversion needed
+    "DJI": lambda p: p,
+    # Autel Robotics: same convention as DJI
+    "Autel Robotics": lambda p: p,
+    # senseFly / AgEagle: uses 0=nadir convention (convert: dji_pitch = p - 90)
+    "senseFly": lambda p: p - 90,
+    # Add other makes here as their conventions become known
+}
+
+def normalize_gimbal_pitch(drone_make: str, pitch: float) -> float:
+    """Normalize gimbal pitch to DJI convention (-90=nadir, 0=forward)."""
+    converter = GIMBAL_PITCH_CONVENTIONS.get(drone_make)
+    if converter is None:
+        # Unknown make: assume DJI convention and warn
+        from loguru import logger
+        logger.warning(f"Unknown gimbal pitch convention for drone make '{drone_make}'. "
+                       f"Assuming DJI convention (-90=nadir). Add to GIMBAL_PITCH_CONVENTIONS if incorrect.")
+        return pitch
+    return converter(pitch)
+
+
 @dataclass
 class ImageDrone:
     metadata : dict
@@ -123,6 +149,9 @@ class ImageDrone:
         if self.sensor_model and self.drone_make is None:
             self.drone_model = ""
             self.drone_make = "Unknown Drone"
+
+        # Normalize gimbal pitch to DJI convention (-90=nadir, 0=forward)
+        self.gimbal_pitch_degree = normalize_gimbal_pitch(self.drone_make, self.gimbal_pitch_degree)
 
         self.gsd = (self.sensor_width * self.relative_altitude) / (self.focal_length * self.image_width)
         if config.absolute_ground is not None:

@@ -25,6 +25,45 @@ import math
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
 
 
+def apply_dewarp_from_exif(img, image):
+    """
+    Apply lens undistortion using DJI DewarpData EXIF parameters.
+
+    DewarpData format: "date;fx,fy,cx,cy,k1,k2,p1,p2,k3"
+    Camera matrix principal point: (width/2 - cx, height/2 + cy) per DJI convention.
+    Skips correction if DewarpFlag=1 (already applied by the drone) or DewarpData is absent.
+    """
+    dewarp_data = image.metadata.get("XMP:DewarpData")
+    dewarp_flag = image.metadata.get("XMP:DewarpFlag", 0)
+
+    if dewarp_data is None:
+        logger.warning(f"No XMP:DewarpData found for {image.file_name}, skipping EXIF dewarp.")
+        return img
+
+    if int(dewarp_flag) == 1:
+        logger.info(f"XMP:DewarpFlag=1 for {image.file_name}: correction already applied by drone, skipping.")
+        return img
+
+    try:
+        params_str = dewarp_data.split(";")[1]
+        fx, fy, cx, cy, k1, k2, p1, p2, k3 = [float(v) for v in params_str.split(",")]
+    except Exception as e:
+        logger.warning(f"Failed to parse XMP:DewarpData for {image.file_name}: {e}")
+        return img
+
+    h, w = img.shape[:2]
+    # DJI principal point convention: offset is (w/2 - cx, h/2 + cy)
+    cam_matrix = np.array([
+        [fx,  0,  w / 2.0 - cx],
+        [ 0, fy,  h / 2.0 + cy],
+        [ 0,  0,  1.0]
+    ], dtype=np.float64)
+    dist_coeffs = np.array([k1, k2, p1, p2, k3], dtype=np.float64)
+
+    map1, map2 = cv.initUndistortRectifyMap(cam_matrix, dist_coeffs, None, cam_matrix, (w, h), cv.CV_32FC1)
+    return cv.remap(img, map1, map2, cv.INTER_LINEAR)
+
+
 def warp_image_to_polygon(img_arry, polygon, coordinate_array):
     """
     Warps an image array to fit within a specified polygon using coordinates mapping

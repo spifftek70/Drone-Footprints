@@ -109,6 +109,8 @@ extends processing time
 
 `-l` - Applies lens distortion correction using [lensfun](https://lensfun.github.io) api (optional)
 
+`-x` - Apply lens undistortion using `XMP:DewarpData` parameters embedded in the image EXIF (optional). Uses the DJI dewarp model (fx, fy, cx, cy, k1, k2, p1, p2, k3). Skipped automatically if `XMP:DewarpFlag=1` (correction already applied by drone) or if `XMP:DewarpData` is absent. Mutually exclusive with `-l`.
+
 `-a` - Absolute altitude of the ground reference in meters (optional). When provided, the drone height above
 ground is calculated as `AbsoluteAltitude - absolute_ground` instead of using the relative altitude embedded
 in the image metadata. Example: `-a -45.5` means the ground is at -45.5 m (AMSL).

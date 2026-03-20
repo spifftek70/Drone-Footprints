@@ -19,7 +19,9 @@ def set_raster_extents(image):
             logger.warning(f"File not found: {image.image_path}")
             return
         fixed_polygon = Polygon(image.coord_array)
-        if image.lense_correction is True:
+        if config.dewarp_exif:
+            img_undistorted = apply_dewarp_from_exif(jpeg_img, image)
+        elif image.lense_correction is True:
             try:
                 focal_length = image.focal_length
                 distance = image.center_distance
@@ -66,7 +68,6 @@ def set_raster_extents(image):
                 logger.exception(f"Index error: {e} for {image.image_path}")
         else:
             img_undistorted = np.array(jpeg_img)
-
         if jpeg_img.ndim == 2:  # Single band image
             adjImg = img_undistorted
         elif jpeg_img.ndim == 3:  # Multiband image
@@ -96,9 +97,13 @@ def rectify_and_warp_to_geotiff(jpeg_img_array, geotiff_file, fixed_polygon, coo
 
     try:
         georef_image_array = warp_image_to_polygon(jpeg_img_array, fixed_polygon, coordinate_array)
+        if georef_image_array is None:
+            logger.warning(f"Warp failed for {geotiff_file}, skipping GeoTIFF creation.")
+            return
         dsArray = array2ds(georef_image_array, polygon_wkt)
     except Exception as e:
         logger.opt(exception=True).warning(f"Error during warping or dataset creation: {e}")
+        return
 
     # Warp the rasterio dataset to the destination path
     try:

@@ -116,9 +116,11 @@ def main():
     parser.add_argument("-i", "--input_directory", type=is_valid_directory,
                         help="Path to the input directory with images.",
                         required=True)
-    parser.add_argument("-w", "--sensorWidth", type=float, help="Sensor width in millimeters (optional).",
+    parser.add_argument("-w", "--sensorWidth", type=float, default=13.2,
+                        help="Sensor width in millimeters (optional, default: 13.2).",
                         required=False)
-    parser.add_argument("-t", "--sensorHeight", type=float, help="Sensor height in millimeters (optional).",
+    parser.add_argument("-t", "--sensorHeight", type=float, default=8.8,
+                        help="Sensor height in millimeters (optional, default: 8.8).",
                         required=False)
     parser.add_argument("-e", "--EPSG", type=int, default=4326, help="Desired EPSG code for output files (optional).",
                         required=False)
@@ -130,6 +132,10 @@ def main():
                         help="Improve local contrast option to can make details more visible (optional).")
     parser.add_argument("-l", "--lense_correction", action='store_true', required=False,
                         help="Applies lens distortion correction using lensfun api (optional).")
+    parser.add_argument("-x", "--dewarp_exif", action='store_true', required=False,
+                        help="Apply lens undistortion using DewarpData parameters embedded in the image EXIF "
+                             "(XMP:DewarpData). Mutually exclusive with -l. Skipped if DewarpFlag=1 "
+                             "(correction already applied by drone) or if DewarpData is absent.")
     parser.add_argument("-a", "--absolute_ground", type=float, default=None, required=False,
                         help="Absolute altitude of the ground reference in meters (optional). "
                              "When provided, drone height above ground is computed as "
@@ -173,6 +179,7 @@ def main():
     config.update_cog(args.COG)
     config.update_equalize(args.image_equalize)
     config.update_lense(args.lense_correction)
+    config.update_dewarp_exif(args.dewarp_exif)
     config.update_elevation(args.elevation_service)
     config.update_absolute_ground(args.absolute_ground)
     rtk_rtn = find_mtk(indir)

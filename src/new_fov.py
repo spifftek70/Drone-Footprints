@@ -61,11 +61,9 @@ class HighAccuracyFOVCalculator:
         Returns:
         - tuple: Adjusted yaw, pitch, and roll angles in radians.
         """
-        # Normalize yaw for magnetic declination
-        if -120 <= gimbal_pitch_deg <= -60:
-            pitch_rad = radians(90 - gimbal_pitch_deg)
-        else:
-            pitch_rad = radians(180 - gimbal_pitch_deg)
+        # After normalization in imagedrone.py, all makes use DJI convention: -90=nadir, 0=forward.
+        # pitch_rad: -90 -> π (pointing straight down), 0 -> π/2 (pointing forward)
+        pitch_rad = radians(90 - gimbal_pitch_deg)
 
         if config.correct_magnetic_declinaison:
             yaw_rad = (mp.pi / 2) - radians(gimbal_yaw_deg + declination)
