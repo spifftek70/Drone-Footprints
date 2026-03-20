@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="osgeo")
 
 # Constants for image file extensions and the sensor information CSV file path
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".tif", ".tiff"}
-SENSOR_INFO_CSV = "drone_sensors.csv"
+SENSOR_INFO_CSV = Path(__file__).parent / "drone_sensors.csv"
 RTK_EXTENSION = {".obs", ".MRK", ".bin", "nav"}
 now = datetime.datetime.now()
 

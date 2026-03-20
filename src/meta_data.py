@@ -38,6 +38,7 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
     datetime_original = ""
     for data in metadata:
         # pprint(data)clear
+        image = None
         try:
             image = ImageDrone(data, sensor_dimensions, config)
             images_array.append(image)
@@ -69,11 +70,14 @@ def process_metadata(metadata:list[dict], indir_path:str, geotiff_dir:str, senso
             outer.update(1)
 
         except TypeError as t:
-            logger.exception(f"Missing metadata key: {t} for image: {image.file_name}")
+            file_name = image.file_name if image is not None else data.get('SourceFile', 'unknown')
+            logger.exception(f"Missing metadata key: {t} for image: {file_name}")
         except KeyError as k:
-            logger.exception(f"Missing metadata key: {k} for image: {image.file_name}")
+            file_name = image.file_name if image is not None else data.get('SourceFile', 'unknown')
+            logger.exception(f"Missing metadata key: {k} for image: {file_name}")
         except ValueError as e:
-            logger.exception(f"Invalid value for metadata key: {e} for image: {image.file_name}")
+            file_name = image.file_name if image is not None else data.get('SourceFile', 'unknown')
+            logger.exception(f"Invalid value for metadata key: {e} for image: {file_name}")
         nb_processed_images = nb_processed_images + 1
 
     # Add lines to the GeoJSON feature collection if necessary

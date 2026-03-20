@@ -93,16 +93,18 @@ class ImageDrone:
             if self.sensor_info is None :
                 self.sensor_info = next(
                     (value for (model, idx), value in self.sensor_dimensions.items() if model == self.sensor_model_data), None)
+            if self.sensor_info is None:
+                self.sensor_info = self.sensor_dimensions.get(("default", 'default'))
         else:
             # Use default when sensor_model_data is 'default'
-            self.sensor_info = self.sensor_dimensions.get(("default", 'nan'))
+            self.sensor_info = self.sensor_dimensions.get(("default", 'default'))
 
         # Ensure we have valid sensor_info; otherwise, log error or take necessary action
         if not self.sensor_info:
 #            logger.error(
 
             print(f"No sensor information found for {self.file_name} with sensor model {self.sensor_model_data} and rig camera index {self.sensor_index}. Using defaults.")
-            self.sensor_info = self.sensor_dimensions.get(("default", 'nan'))
+            self.sensor_info = self.sensor_dimensions.get(("default", 'default'))
 
         self.drone_make = self.sensor_info[0]
         self.drone_model = self.sensor_info[1]
