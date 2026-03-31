@@ -19,6 +19,25 @@ output includes a orthorectified GeoTiff image file, accompanied by a GeoJSON fi
 
 ## Installation
 
+### ExifTool requirement
+
+[ExifTool](https://exiftool.org) must be installed separately and available on your system `PATH`.
+
+#### On Windows
+1. Download the **Windows Executable** (`exiftool-<version>.zip`) from https://exiftool.org
+2. Extract `exiftool(-k).exe`, rename it to `exiftool.exe`, and place it in a folder that is on your `PATH`
+   (e.g. `C:\Windows\` or any directory listed in your `PATH` environment variable).
+
+#### On macOS with brew
+```
+brew install exiftool
+```
+
+#### On Ubuntu / Debian
+```
+sudo apt-get install libimage-exiftool-perl
+```
+
 ### GDAL requirement
 #### On Ubuntu, you can install as follows a ready-made gdal (version 3.8.3 or later) :
 ```

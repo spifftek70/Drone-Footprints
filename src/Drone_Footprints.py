@@ -68,7 +68,18 @@ def get_metadata(files: list[Path]) -> list[dict]:
         list[dict]: A list of metadata dictionaries for each file.
     """
     exif_array = []
-    with exiftool.ExifToolHelper() as et:
+    try:
+        et_helper = exiftool.ExifToolHelper()
+    except FileNotFoundError:
+        logger.critical(
+            "ExifTool executable not found. Please install ExifTool and ensure it is "
+            "available on your system PATH.\n"
+            "  - Windows: download from https://exiftool.org and add to PATH\n"
+            "  - macOS:   brew install exiftool\n"
+            "  - Linux:   sudo apt-get install libimage-exiftool-perl"
+        )
+        sys.exit(1)
+    with et_helper as et:
         metadata = iter(et.get_metadata(files))
         exif_array.extend(iter(metadata))
     if exif_array is not None and exif_array:
