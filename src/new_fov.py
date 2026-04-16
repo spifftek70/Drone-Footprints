@@ -140,6 +140,7 @@ class HighAccuracyFOVCalculator:
                     logger.warning(f"Failed to get elevation for {config.im_file_name}, using drone altitude.")
 
             corrected_altitude = self._atmospheric_refraction_correction(new_altitude)
+            print(f"{corrected_altitude=}")
 
             elevation_bbox = HighAccuracyFOVCalculator.get_ray_ground_intersections(rotated_vectors, Vector(0, 0, float(
                 corrected_altitude)))

@@ -41,4 +41,6 @@ src/drone_sensors.numbers
 *.TIF
 *.tiff
 *.TIFF
-
+*.log
+*.JSON
+*.json

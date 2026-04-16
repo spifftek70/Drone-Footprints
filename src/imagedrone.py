@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass,field
 from pathlib import Path
 from datetime import datetime
+import sys
 import geojson
 from geojson_rewind import rewind
 from magnetic_field_calculator import MagneticFieldCalculator
@@ -15,7 +16,7 @@ from create_geotiffs import set_raster_extents
 @dataclass
 class ImageDrone:
     metadata : dict
-    sensor_dimensions : tuple
+    sensor_dimensions : dict
     config: config
     declination : float = None
     drone_hash : int = None
@@ -83,18 +84,24 @@ class ImageDrone:
                                 or self.metadata.get('XMP:SensorIndex'))
         self.sensor_make = ""
 
+        if not self.focal_length:
+            print(f"{Color.RED}Warning: Focal length is missing in {self.file_name}. ")
+            sys.exit(1)
 
         if self.sensor_model_data :
             # Prioritize direct match with sensor model and rig camera index
             key = (self.sensor_model_data, self.sensor_index)
             self.sensor_info = self.sensor_dimensions.get((key))
+
             #from IPython import embed; embed()
             # If no direct match, try just with sensor model (for cases without multiple entries)
             if self.sensor_info is None :
                 self.sensor_info = next(
                     (value for (model, idx), value in self.sensor_dimensions.items() if model == self.sensor_model_data), None)
+
             if self.sensor_info is None:
                 self.sensor_info = self.sensor_dimensions.get(("default", 'default'))
+
         else:
             # Use default when sensor_model_data is 'default'
             self.sensor_info = self.sensor_dimensions.get(("default", 'default'))
@@ -130,6 +137,7 @@ class ImageDrone:
             self.gsd = (self.sensor_width * self.effective_altitude) / (self.focal_length * self.image_width)
         else:
             self.effective_altitude = self.relative_altitude
+        print(f"{self.gsd=}")
         self.create_properties()
         self.create_hash()
 
